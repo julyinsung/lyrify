@@ -8818,6 +8818,30 @@ open_issues: []
 {input_sections}
 """
         else:
+            scaffold_ref_str = ""
+            if is_scaffold_wave:
+                scaffold_ref_str = (
+                    "scaffold_reference_contracts:\n"
+                    "  note: \"SCR/UI IDs from trace-context are reference-only for skeleton structure. UI evidence and UI Pass are Gate 4 QA targets.\"\n"
+                    f"  scr: {format_yaml_list(scaffold_reference_contracts.get('scr', []))}\n"
+                    f"  ui: {format_yaml_list(scaffold_reference_contracts.get('ui', []))}"
+                )
+
+            contract_skeleton_str = ""
+            if is_scaffold_wave:
+                contract_skeleton_str = (
+                    "  contract_skeleton:\n"
+                    "    mode: \"new\"\n"
+                    "    files:\n"
+                    "      - path: \"TBD: skeleton 파일 경로\"\n"
+                    "        create: \"TBD: 생성/확인할 class/interface/method/DTO\"\n"
+                    "    forbidden:\n"
+                    "      - \"업무 로직 완성\"\n"
+                    "      - \"전체 E2E 또는 Gate 4 QA Pass 선언\"\n"
+                    "    smoke_commands:\n"
+                    "      - \"TBD: compile/import/build smoke 명령\""
+                )
+
             content = f"""# {run_id} Build Wave {bw_id} - {run_title}
 
 ```yaml
@@ -8835,7 +8859,7 @@ related_ids: {format_yaml_list(ids)}
 {format_trace_context_metadata(trace_info)}
 target_contracts:
 {format_yaml_mapping_sequences(wave_contracts, 2)}
-{"scaffold_reference_contracts:\n  note: \"SCR/UI IDs from trace-context are reference-only for skeleton structure. UI evidence and UI Pass are Gate 4 QA targets.\"\n  scr: " + format_yaml_list(scaffold_reference_contracts.get("scr", [])) + "\n  ui: " + format_yaml_list(scaffold_reference_contracts.get("ui", [])) if is_scaffold_wave else ""}
+{scaffold_ref_str}
   interface_contract:
     language: "TBD: Program Design 기준 언어/런타임"
     signatures:
@@ -8844,7 +8868,7 @@ target_contracts:
       - "TBD: DTO/Entity/State schema를 Program Design에서 복사"
     error_contracts:
       - "TBD: 오류 코드/예외/사용자 메시지 계약을 Program Design/API/Security에서 복사"
-{"  contract_skeleton:\n    mode: \"new\"\n    files:\n      - path: \"TBD: skeleton 파일 경로\"\n        create: \"TBD: 생성/확인할 class/interface/method/DTO\"\n    forbidden:\n      - \"업무 로직 완성\"\n      - \"전체 E2E 또는 Gate 4 QA Pass 선언\"\n    smoke_commands:\n      - \"TBD: compile/import/build smoke 명령\"" if is_scaffold_wave else ""}
+{contract_skeleton_str}
 development_standards_applied:
 {format_development_standards_applied(AUDIT_DEVELOPMENT_STANDARDS_APPLIED, 2)}
 development_standard_checklist:

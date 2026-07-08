@@ -17,5 +17,87 @@
   "started": "2026-07-08",
   "completed": [],
   "pending": [],
-  "blocked": []
+  "blocked": [],
+  "stats": {
+    "requirements": {
+      "groups": 1,
+      "total": 1,
+      "implemented": 0,
+      "pending": 1,
+      "ac_defined": 1,
+      "ac_missing": 0
+    },
+    "implementation": {
+      "requirements": {
+        "total": 1,
+        "implemented": 0,
+        "pending": 1,
+        "completed_ids": []
+      },
+      "waves": {
+        "total": 0,
+        "completed": 0,
+        "current": "",
+        "items": []
+      }
+    },
+    "tests": {
+      "total": 2,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "pending": 1
+    },
+    "docs": {
+      "discovery": 0,
+      "requirements": 0,
+      "design": 0,
+      "test_plan": 0,
+      "review": 0,
+      "release": 0,
+      "backlog": 0,
+      "runs": 0,
+      "total": 0
+    },
+    "backlog": {
+      "active": 0,
+      "done": 0,
+      "rejected": 0,
+      "by_type": {
+        "idea": 0,
+        "find": 0,
+        "cr": 0,
+        "issue": 0,
+        "debt": 0
+      },
+      "by_level": {
+        "trivial": 0,
+        "small": 0,
+        "major": 0
+      },
+      "by_priority": {
+        "p0": 0,
+        "p1": 0,
+        "p2": 0,
+        "p3": 0
+      }
+    },
+    "updated_at": "2026-07-08",
+    "product": {
+      "scenarios": {
+        "total": 1,
+        "ids": [
+          "SCN-001"
+        ]
+      },
+      "requirements": {
+        "total": 1,
+        "implemented": 0,
+        "ids": [
+          "REQ-001"
+        ],
+        "implemented_ids": []
+      }
+    }
+  }
 }
