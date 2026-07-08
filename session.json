@@ -110,9 +110,9 @@
   },
   "implementation": {
     "requirements": {
-      "total": 1,
+      "total": 3,
       "implemented": 0,
-      "pending": 1,
+      "pending": 3,
       "completed_ids": []
     },
     "waves": {
