@@ -3,10 +3,10 @@
   "vulcan_src": "C:\\Users\\julyi\\Documents\\workspace-antigravity\\vulcan-anvil-ex",
   "vulcan_version": "0.4.9",
   "profile": "product",
-  "current_gate": "gate1",
+  "current_gate": "gate2",
   "gate_status": {
     "phase0": "done",
-    "gate1": "pending",
+    "gate1": "done",
     "gate2": "pending",
     "gate3": "pending",
     "impl": "pending",
@@ -16,7 +16,8 @@
   "feature": "AI 음악 크리에이터 파이프라인 MVP",
   "started": "2026-07-08",
   "completed": [
-    "Phase 0 Discovery - "
+    "Phase 0 Discovery - ",
+    "Gate 1 요구사항 - AI 음악 크리에이터 파이프라인 MVP"
   ],
   "pending": [],
   "blocked": [],
@@ -106,13 +107,17 @@
     "phase0": {
       "approved_at": "2026-07-08T22:45:23",
       "approval_evidence": "User approved Phase 0 Brief and roadmap"
+    },
+    "gate1": {
+      "approved_at": "2026-07-08T23:19:34",
+      "approval_evidence": "User approved requirements with dual-audio, local FFmpeg, and Docker/AI hybrid sync roadmap"
     }
   },
   "implementation": {
     "requirements": {
-      "total": 3,
+      "total": 1,
       "implemented": 0,
-      "pending": 3,
+      "pending": 1,
       "completed_ids": []
     },
     "waves": {
