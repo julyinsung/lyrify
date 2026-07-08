@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.local
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+*.sqlite
+*.sqlite3
+playwright-report/
+test-results/
+dashboard/.next/
+dashboard/node_modules/
+docs/ref-docs/
+.vulcan/release/

@@ -1,0 +1,131 @@
+{
+  "version": "0.4.9",
+  "delivery_profile": "product",
+  "profile_rules": {
+    "gate_approval": "major-gates-and-release",
+    "required_artifacts": "architecture-api-db-security-release-core",
+    "traceability_level": "core-requirement-api-db-security-regression",
+    "program_contract_level": "public-api-service-dto",
+    "security_standard_level": "owasp-asvs-top10-api-top10-cwe",
+    "data_standard_level": "project-glossary-field-domain-security-classification",
+    "qa_evidence_level": "release-regression-major-ui-api",
+    "independent_review_level": "release-candidate-or-large-change",
+    "run_preflight_strictness": "scope-contract-blocking-other-warning",
+    "release_control": "release-note-backlog-pr"
+  },
+  "runtime": {
+    "primary": "antigravity-cli",
+    "gemini_long_context_mode": true,
+    "available_runners": [
+      {
+        "name": "codex-cli",
+        "model": "gpt-5.5",
+        "effort": "high",
+        "sandbox": "workspace-write",
+        "version": "codex-cli 0.130.0"
+      },
+      {
+        "name": "claude-cli",
+        "model": "claude-opus-4-7",
+        "effort": "high",
+        "version": "2.1.114 (Claude Code)"
+      },
+      {
+        "name": "antigravity-cli",
+        "model": "gemini-3.5-flash",
+        "effort": "high",
+        "sandbox": "workspace-write",
+        "version": "1.1.0"
+      }
+    ],
+    "model_policy": {
+      "codex-cli": {
+        "enabled": true,
+        "fallback": {
+          "model": "gpt-5.5",
+          "effort": "high"
+        },
+        "roles": {
+          "review": {
+            "model": "gpt-5.5",
+            "effort": "high",
+            "description": "독립 검수, 설계/QA 정합성 검토"
+          },
+          "critical_judgment": {
+            "model": "gpt-5.5",
+            "effort": "high",
+            "description": "Gate 승인 후보, FIND/CR 분류, 릴리즈 판단 후보"
+          },
+          "build": {
+            "model": "gpt-5.5",
+            "effort": "high",
+            "description": "일반 구현 worker"
+          },
+          "build-backend": {
+            "model": "gpt-5.5",
+            "effort": "high",
+            "description": "Backend/API/DB 구현 worker"
+          },
+          "build-frontend": {
+            "model": "gpt-5.5",
+            "effort": "high",
+            "description": "Frontend/UI 구현 worker"
+          },
+          "qa-execution": {
+            "model": "gpt-5.4",
+            "effort": "medium",
+            "description": "QA 명령 실행, 로그 수집, 결과 정리"
+          },
+          "qa-fix-loop": {
+            "model": "gpt-5.5",
+            "effort": "high",
+            "description": "승인된 FIND 범위 안의 QA 수정 worker"
+          },
+          "run-draft": {
+            "model": "gpt-5.4-mini",
+            "effort": "medium",
+            "description": "Run 초안, trace-context 후보, 문서 정리"
+          },
+          "evidence-summary": {
+            "model": "gpt-5.4-mini",
+            "effort": "low",
+            "description": "로그/증적 index, 단순 요약"
+          }
+        }
+      }
+    }
+  },
+  "workflow": {
+    "branch_mode": "audit",
+    "main_branch": "main",
+    "integration_branch": "dev",
+    "impl_uses_integration_branch": true,
+    "qa_worktree_enabled": false,
+    "qa_stage_mode": "staged",
+    "release_merge_to": "main",
+    "enforce_branch_guard": true
+  },
+  "review": {
+    "independent_enabled": true,
+    "independent_sandbox": "workspace-write",
+    "independent_exec_timeout_seconds": 1800,
+    "independent_triggers": [
+      "gate2",
+      "gate4"
+    ],
+    "independent_worktree": true,
+    "independent_readonly": true
+  },
+  "execution": {
+    "independent_enabled": true,
+    "default_worktree": true,
+    "default_timeout_seconds": 2400,
+    "hard_timeout_seconds": 5400,
+    "extension_seconds": 600,
+    "max_extensions": 3,
+    "progress_grace_seconds": 300,
+    "progress_probe_seconds": 300,
+    "no_progress_timeout_seconds": 900,
+    "min_runtime_seconds": 120
+  }
+}

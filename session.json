@@ -1,0 +1,21 @@
+{
+  "project": "lyrify",
+  "vulcan_src": "C:\\Users\\julyi\\Documents\\workspace-antigravity\\vulcan-anvil-ex",
+  "vulcan_version": "0.4.9",
+  "profile": "product",
+  "current_gate": "phase0",
+  "gate_status": {
+    "phase0": "pending",
+    "gate1": "pending",
+    "gate2": "pending",
+    "gate3": "pending",
+    "impl": "pending",
+    "gate4": "pending",
+    "gate5": "pending"
+  },
+  "feature": "",
+  "started": "2026-07-08",
+  "completed": [],
+  "pending": [],
+  "blocked": []
+}

@@ -1,0 +1,30 @@
+// Physical ERD DBML
+// 목적: 실제 테이블, 컬럼, 타입, PK/FK, 인덱스를 DB명세서와 일치하게 정의한다.
+// 주의: DBMS별 DDL과 다르면 DB명세서 또는 DDL을 함께 갱신한다.
+
+Project physical_erd {
+  database_type: 'PostgreSQL / MySQL / Oracle / SQLite / Other'
+  Note: '''
+  물리 ERD 원본입니다.
+  - 테이블명, 컬럼명, 데이터 타입, PK/FK, 인덱스는 DB명세서와 일치해야 합니다.
+  - 개인정보/인증정보/민감정보 컬럼은 SEC-ID를 note에 남깁니다.
+  '''
+}
+
+Table table_001 {
+  id bigint [pk, increment, note: 'DB-001 / TERM-']
+  name varchar(100) [not null, note: 'TERM-']
+  created_at timestamp [not null]
+
+  indexes {
+    (name) [name: 'idx_table_001_name']
+  }
+
+  Note: '''
+  DB-ID: DB-001
+  관련 REQ/FUNC/PGM:
+  관련 SEC:
+  '''
+}
+
+// Ref: child_table.parent_id > table_001.id
