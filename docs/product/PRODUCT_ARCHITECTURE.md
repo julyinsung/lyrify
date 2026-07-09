@@ -54,7 +54,23 @@ flowchart TD
 | Deployment Target | 로컬 크리에이터 PC (단일 사용자 로컬 웹 애플리케이션 환경) |
 | Observability | Node.js 로컬 콘솔 로그 및 FFmpeg 인코딩 stderr 진행 상황 파이프 출력 로그 |
 
-## 4. Quality Attributes
+## 4. Security Design Baseline
+
+Product profile의 기본 보안 기준은 `docs/core/PRODUCT_PROFILE_BASELINE.md`와 `docs/core/SECURITY_BASELINE.md`를 따른다.
+제품 릴리즈에 영향을 주는 보안 결정을 이 표에서 명시한다.
+
+| Security Area | 결정/정책 | 적용 위치 | 검증/증적 |
+| --- | --- | --- | --- |
+| Authentication | 로컬 단일 사용자 환경이므로 별도의 웹 기반 로그인 인증은 생략함. | 해당없음 (로컬 웹앱) | 해당없음 |
+| Authorization | 로컬 호스트 루프백 포트 바인딩으로 로컬 사용자 권한에 의존함. | `server.js` (Express 포트 바인딩) | SEC-REG-001 |
+| Input Validation | 감시 디렉토리 및 파일명 매핑 시 경로 트래버스 취약점 차단 검증. | `CMP-001 (Parser)`, `API-002` | SEC-REG-001 |
+| Data Protection | Google GCP API Key는 비공개 저장 및 소스 커밋 저장소에서 영구 배제. | `.env` 또는 `config.json` 로컬 설정 | SEC-REG-001 |
+| Error And Logging | 비디오 인코딩 및 파일 스캔 실패 시 스택 정보의 화면 노출 제한. | Express 예외 필터 및 로그 파일 모듈 | SEC-REG-001 |
+| Web/API Risk | 로컬 루프백(`127.0.0.1`) 포트 격리 바인딩 및 CORS 차단으로 외부 인젝션 원천 차단. | `server.js` (Express 설정) | SEC-REG-001 |
+| Secrets And Config | API Key 등의 보안 토큰은 `.gitignore`에 등록하여 GitHub 유출 방지. | `.gitignore`, `.env` | SEC-REG-001 |
+| Dependency Risk | FFmpeg 바이너리 유효성 검사 및 정적 패키지 락파일 잠금으로 신뢰성 확보. | `package-lock.json`, `CMP-004` | SEC-REG-001 |
+
+## 5. Quality Attributes
 
 | 품질속성 | 기준 | 검증 방법 |
 | --- | --- | --- |
@@ -62,7 +78,7 @@ flowchart TD
 | Security | 1. 구글 GCP API Key 등 비공개 자격증명은 로컬 `.env` 파일에만 보관하고 소스 저장소 커밋에서 제외.<br>2. 로컬 경로 트래버스 취약점 방지를 위해 대상 폴더 외부 경로 접근 차단. | docs/core/SECURITY_BASELINE.md 기반 정적 코드 분석 |
 | Maintainability | 비디오 렌더링(FFmpeg)과 AI 분석(STT/Docker) 관련 모듈을 인터페이스 경계로 분리하여 로컬 AI 엔진 변경 시 유연하게 교체 가능하게 설계. | 컴포넌트 경계 인터페이스 검토 |
 
-## 5. Architecture Gaps
+## 6. Architecture Gaps
 
 | Gap ID | 내용 | 영향 | 후속 판단 |
 | --- | --- | --- | --- |

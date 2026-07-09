@@ -51,14 +51,24 @@ related_documents:
 | UI-002 | 트랙 상세 정보 및 싱크 에디터 모달 | Success / Syncing / GeneratingImage | SCN-001, SCN-002, SCN-003, SCN-004 | 수동/자동 검증 |
 | UI-003 | FFmpeg 인코딩 상태 패널 (프로그레스 바) | Loading (인코딩 중) / Success / Error (부재 또는 실패) | SCN-004 | 자동/인코더 검증 |
 
-## 5. Security And Data Baseline
+## 5. Security Contracts
+
+Product profile의 보안 계약은 `docs/core/PRODUCT_PROFILE_BASELINE.md`, `docs/core/SECURITY_BASELINE.md`, `docs/core/REFERENCE_STANDARDS.md`를 기준으로 작성한다.
+KISA/SR 매핑은 선택 참고이지만, OWASP/CWE 기반의 제품 보안 판단은 비워두지 않는다.
+
+| SEC ID | 보안 계약 | 적용 대상 | 기준/참조 | 관련 Scenario | 검증 |
+| --- | --- | --- | --- | --- | --- |
+| SEC-001 | Google API Key 노출 방지 (소스코드 및 원격 저장소 하드코딩 영구 배제) | DATA-002, API-004 | OWASP Top 10 A02:2021, CWE-798 | SCN-003 | SEC-REG-001 |
+| SEC-002 | 경로 트래버설 취약점 방지 (로컬 파일 매핑 시 감시 경로 외부 탈출 금지) | API-002, API-005 | OWASP ASVS V5, CWE-22 | SCN-001, SCN-002, SCN-004 | SEC-REG-001 |
+
+## 6. Security And Data Baseline
 
 | 항목 | 기준 | 적용 위치 | 검증 |
 | --- | --- | --- | --- |
 | Security | docs/core/PRODUCT_PROFILE_BASELINE.md, docs/core/SECURITY_BASELINE.md | GCP API Key 로컬 세팅 격리 (`.env`), 로컬 경로 검증 모듈 | REG-001 |
 | Data | docs/core/DATA_STANDARD_RULES.md | database.json 스키마 표준 정의 | REG-001 |
 
-## 6. Contract Gaps
+## 7. Contract Gaps
 
 | Gap ID | 내용 | 영향 | 후속 판단 |
 | --- | --- | --- | --- |

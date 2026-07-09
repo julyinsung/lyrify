@@ -3006,14 +3006,24 @@ def parse_product_trace_rows(project_dir="."):
         if len(cells) < 8 or not re.fullmatch(r"SCN-\d{3}", cells[0]):
             continue
         req_ids = sorted(set(re.findall(r"\bREQ-\d{3}\b", cells[1])))
+        if len(cells) >= 9:
+            implementation_cell = cells[5]
+            regression_cell = cells[6]
+            release_evidence_cell = cells[7]
+            status_cell = cells[8]
+        else:
+            implementation_cell = cells[4]
+            regression_cell = cells[5]
+            release_evidence_cell = cells[6]
+            status_cell = cells[7]
         rows.append(
             {
                 "scenario": cells[0],
                 "requirements": req_ids,
-                "implementation": cells[4],
-                "regression": cells[5],
-                "release_evidence": cells[6],
-                "status": cells[7],
+                "implementation": implementation_cell,
+                "regression": regression_cell,
+                "release_evidence": release_evidence_cell,
+                "status": status_cell,
             }
         )
     return rows
@@ -4823,6 +4833,14 @@ def collect_product_profile_findings(project_dir=".", gate=None):
             for label in ("Runtime", "Data Store"):
                 if table_value_is_tbd(architecture_content, label):
                     issues.append(f"docs/product/PRODUCT_ARCHITECTURE.md의 {label}가 TBD입니다.")
+            if "Security Design Baseline" not in architecture_content:
+                warnings.append("docs/product/PRODUCT_ARCHITECTURE.md에 Product 보안 설계 기준 섹션이 없습니다.")
+            elif re.search(
+                r"(?m)^\|\s*(?:Authentication|Authorization|Input Validation|Data Protection|Error And Logging|Web/API Risk|Secrets And Config|Dependency Risk)\s*\|[^|]*\|\s*(?:TBD|미정|확정필요)\b",
+                architecture_content,
+                re.IGNORECASE,
+            ):
+                issues.append("docs/product/PRODUCT_ARCHITECTURE.md의 Security Design Baseline 적용 위치가 아직 TBD입니다.")
         if mostly_placeholder_row(architecture_content, r"CMP-\d{3}") or mostly_placeholder_row(architecture_content, r"GAP-\d{3}"):
             warnings.append("docs/product/PRODUCT_ARCHITECTURE.md에 placeholder 중심의 Component/Gap 행이 남아 있습니다.")
 
@@ -4836,6 +4854,10 @@ def collect_product_profile_findings(project_dir=".", gate=None):
         if gate in ("gate2", "gate3", "impl", "gate4", "gate5", "completed"):
             if mostly_placeholder_row(contracts_content, r"API-\d{3}") and mostly_placeholder_row(contracts_content, r"(?:DATA|DB)-\d{3}") and mostly_placeholder_row(contracts_content, r"(?:UI|SCR)-\d{3}"):
                 issues.append("docs/product/PRODUCT_CONTRACTS.md의 API/Data/UI 계약 행이 모두 placeholder입니다.")
+            if not re.search(r"\bSEC-\d{3}\b", contracts_content):
+                issues.append("docs/product/PRODUCT_CONTRACTS.md에 SEC-ID 기반 보안 계약이 없습니다.")
+            elif mostly_placeholder_row(contracts_content, r"SEC-\d{3}"):
+                issues.append("docs/product/PRODUCT_CONTRACTS.md의 Security Contract가 placeholder입니다.")
         if mostly_placeholder_row(contracts_content, r"GAP-\d{3}"):
             warnings.append("docs/product/PRODUCT_CONTRACTS.md에 placeholder 중심의 Contract Gap 행이 남아 있습니다.")
 
@@ -4844,6 +4866,8 @@ def collect_product_profile_findings(project_dir=".", gate=None):
         if gate in ("gate3", "impl", "gate4", "gate5", "completed"):
             if mostly_placeholder_row(trace_content, r"SCN-\d{3}"):
                 issues.append("docs/product/PRODUCT_TRACEABILITY.md의 Scenario Trace가 placeholder입니다.")
+            if not re.search(r"\bSEC-\d{3}\b", trace_content):
+                warnings.append("docs/product/PRODUCT_TRACEABILITY.md에 Scenario와 SEC-ID 연결이 없습니다.")
             if re.search(r"\|\s*SCN-\d{3}\s*\|[^\n]*\|\s*Planned\s*\|", trace_content, re.IGNORECASE) and gate in ("gate4", "gate5", "completed"):
                 warnings.append("docs/product/PRODUCT_TRACEABILITY.md에 Gate 4 이후에도 Planned 추적 상태가 남아 있습니다.")
 
@@ -4851,6 +4875,11 @@ def collect_product_profile_findings(project_dir=".", gate=None):
     if "docs/product/REGRESSION_AND_RELEASE_REPORT.md" in required and release_content:
         if gate in ("gate3", "impl", "gate4", "gate5", "completed") and mostly_placeholder_row(release_content, r"REG-\d{3}"):
             issues.append("docs/product/REGRESSION_AND_RELEASE_REPORT.md의 Regression Plan이 placeholder입니다.")
+        if gate in ("gate3", "impl", "gate4", "gate5", "completed"):
+            if not re.search(r"\bSEC-REG-\d{3}\b", release_content):
+                issues.append("docs/product/REGRESSION_AND_RELEASE_REPORT.md에 Product 보안 smoke 항목(SEC-REG)이 없습니다.")
+            elif mostly_placeholder_row(release_content, r"SEC-REG-\d{3}"):
+                issues.append("docs/product/REGRESSION_AND_RELEASE_REPORT.md의 Security Smoke Plan이 placeholder입니다.")
         if gate in ("gate4", "gate5", "completed") and re.search(
             r"\|\s*REG-\d{3}\s*\|\s*(?:TBD|Not\s+run\s+yet|Gate\s*4\s*예정|Gate\s*4\s*planned|예정)[^|]*\|\s*(?:Planned|TBD|Not\s+Run)\b",
             release_content,
