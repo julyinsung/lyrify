@@ -26,6 +26,7 @@ related_documents:
 | ADR-001 | 로컬 무균성 및 자동화 트레이드오프를 위한 Docker 및 Web Audio/LRCLIB 하이브리드 가사 싱크 아키텍처 채택 | Accepted | 2026-07-08 | CMP-007, API-008, SCN-004 |
 | ADR-002 | 상업적 저작권 보호 및 고품질 생성을 위한 Suno AI 유료 음원 파이프라인 채택 | Accepted | 2026-08-27 | CMP-003, API-004, DATA-001, SCN-003 |
 | ADR-003 | 2단계 AI 품질 스크리닝(오디오 파형 결함 검사 + LLM 가사 완성도 평가) 기법 채택 | Accepted | 2026-08-27 | CMP-002, API-003, DATA-001, SCN-002 |
+| ADR-004 | ACE-Step 음악 생성 자동 트리거를 위한 로컬 REST API 및 CLI 하이브리드 연동 방식 채택 | Accepted | 2026-08-27 | CMP-001, API-001, SCN-001 |
 
 ## 2. ADR 작성 기준
 
@@ -86,4 +87,16 @@ related_documents:
 | Alternatives | 1. 완전 수동 청음 (기각 - 시간 낭비 및 피로도 심함).<br>2. 무거운 오디오 딥러닝 모델 단독 사용 (기각 - 로컬 PC 사양 부담). |
 | Consequences | - 장점: 크리에이터가 상위 TOP 3 후보만 청음하고 즉시 결정할 수 있어 작업 시간 90% 이상 단축.<br>- 비용: 가사 분석 및 오디오 파형 유효성 검사 로직 개발 필요. |
 | Related Scenario / Contract | SCN-002, CMP-002, API-003, DATA-001 |
+| Status | Accepted |
+
+### ADR-004: ACE-Step 음악 생성 자동 트리거를 위한 로컬 REST API 및 CLI 하이브리드 연동 방식 채택
+
+| 항목 | 내용 |
+| --- | --- |
+| ADR ID | ADR-004 |
+| Context | AI 디렉터가 기획한 10종의 음악 스타일 레시피를 ACE-Step 엔진에게 자동으로 전달하여 초안 음원을 일괄 생성하도록 지시하는 입력 인터페이스가 필요함. |
+| Decision | ACE-Step의 내장 REST API 서버(`http://127.0.0.1:8001`) 호출을 1순위 표준으로 채택하고, API 서버 미기동 시 `cli.py` 명령어 백그라운드 자식 프로세스 실행을 폴백으로 지원하는 하이브리드 트리거 방식을 채택함. |
+| Alternatives | 1. 파일 시스템 단순 텍스트 주입 후 수동 생성 유도 (기각 - 완전 자동화 미흡).<br>2. ACE-Step 소스코드 직접 통합 (기각 - ACE-Step 내부 의존성과의 결합도 증가 및 업데이트 충돌 위험). |
+| Consequences | - 장점: Lyrify 백엔드가 ACE-Step과 느슨하게 결합(Loosely Coupled)되어 독립성을 유지하면서도, 원클릭 10곡 자동 생성 트리거를 원활하게 수행 가능.<br>- 비용: ACE API 응답 타임아웃 및 CLI 에러 핸들링 로직 구현 필요. |
+| Related Scenario / Contract | SCN-001, CMP-001, API-001 |
 | Status | Accepted |
