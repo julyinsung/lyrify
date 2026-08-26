@@ -43,7 +43,7 @@ related_documents:
 | DATA/DB ID | 이름 | 주요 필드 | 보안 분류 | 관련 API/Scenario | 상세 문서 / 설명 |
 | --- | --- | --- | --- | --- | --- |
 | DATA-001 | database.json | `id`, `title`, `bpm`, `genre`, `lyricsRaw`, `aiScore`, `aiReview`, `audioPathAceStep`, `audioPathSuno`, `coverImageUrl`, `timeline`, `releaseKit` | 일반 | API-001 ~ API-008 | 로컬 트랙 메타데이터 DB |
-| DATA-002 | config.json | `zenionRootDirectory` (`C:\Users\julyi\Documents\ZENION-MUSIC`), `aceWatchDirectory`, `googleApiKey` | 인증정보 | API-001, API-004, API-005, API-006 | 앱 환경설정 파일 (GCP Key 및 폴더 경로 포함) |
+| DATA-002 | config.json | `zenionRootDirectory` (`/data/ZENION-MUSIC`), `aceWatchDirectory` (`/data/ACE-Step-1.5`), `googleApiKey` | 인증정보 | API-001, API-004, API-005, API-006 | Docker 볼륨 마운트 및 앱 환경설정 파일 (GCP Key 포함) |
 
 ## 4. UI Contracts
 

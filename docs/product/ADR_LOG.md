@@ -27,6 +27,7 @@ related_documents:
 | ADR-002 | 상업적 저작권 보호 및 고품질 생성을 위한 Suno AI 유료 음원 파이프라인 채택 | Accepted | 2026-08-27 | CMP-003, API-004, DATA-001, SCN-003 |
 | ADR-003 | 2단계 AI 품질 스크리닝(오디오 파형 결함 검사 + LLM 가사 완성도 평가) 기법 채택 | Accepted | 2026-08-27 | CMP-002, API-003, DATA-001, SCN-002 |
 | ADR-004 | ACE-Step 음악 생성 자동 트리거를 위한 로컬 REST API 및 CLI 하이브리드 연동 방식 채택 | Accepted | 2026-08-27 | CMP-001, API-001, SCN-001 |
+| ADR-005 | Linux 기반 Docker Compose 표준 배포 및 볼륨 마운트 아키텍처 채택 | Accepted | 2026-08-27 | CMP-005, API-006, DATA-002, SCN-004 |
 
 ## 2. ADR 작성 기준
 
@@ -99,4 +100,16 @@ related_documents:
 | Alternatives | 1. 파일 시스템 단순 텍스트 주입 후 수동 생성 유도 (기각 - 완전 자동화 미흡).<br>2. ACE-Step 소스코드 직접 통합 (기각 - ACE-Step 내부 의존성과의 결합도 증가 및 업데이트 충돌 위험). |
 | Consequences | - 장점: Lyrify 백엔드가 ACE-Step과 느슨하게 결합(Loosely Coupled)되어 독립성을 유지하면서도, 원클릭 10곡 자동 생성 트리거를 원활하게 수행 가능.<br>- 비용: ACE API 응답 타임아웃 및 CLI 에러 핸들링 로직 구현 필요. |
 | Related Scenario / Contract | SCN-001, CMP-001, API-001 |
+| Status | Accepted |
+
+### ADR-005: Linux 기반 Docker Compose 표준 배포 및 볼륨 마운트 아키텍처 채택
+
+| 항목 | 내용 |
+| --- | --- |
+| ADR ID | ADR-005 |
+| Context | Windows 네이티브 환경에서 FFmpeg 구동 시 한글 자막 폰트 경로 이스케이프 오류, 자막 깨짐, 바이너리 PATH 설정 복잡성 문제가 빈번하게 발생함. 또한 로컬 저장소(`ZENION-MUSIC`, `ACE-Step-1.5`)와 안정적으로 실시간 연동하면서 일관된 16:9/9:16 비디오 렌더링 품질을 보장할 표준 배포 아키텍처가 필요함. |
+| Decision | Debian 12 Bookworm 기반의 Linux 컨테이너(`node:20-bookworm-slim`)에 FFmpeg 및 `fonts-noto-cjk`(한글 폰트)를 일체화 패키징하고, Docker Compose(`docker-compose.yml`)를 통해 호스트의 `ZENION-MUSIC` 및 `ACE-Step-1.5` 디렉토리를 컨테이너 내부(`/data/...`)로 볼륨 마운트하는 Docker Compose 배포를 제품의 1순위 표준으로 확정함. |
+| Alternatives | 1. Windows 네이티브 FFmpeg 바이너리 직접 설치 및 PATH 수동 등록 (기각 - 한글 폰트 깨짐 및 OS 종속적 오류 위험).<br>2. 외부 클라우드 인코딩 위임 (기각 - 대용량 미디어 업로드/다운로드 지연 및 API 비용 발생). |
+| Consequences | - 장점: 한글 가사 자막 렌더링 무결성 확보, FFmpeg 무설치 제로 컨피그, 일관된 고품질 비디오 렌더링 보장.<br>- 비용: 사용자 PC에 Docker Desktop 구동 필요 (원클릭 `docker-compose.yml` 및 로컬 폴백 스크립트 함께 제공). |
+| Related Scenario / Contract | SCN-004, CMP-005, API-006, DATA-002 |
 | Status | Accepted |

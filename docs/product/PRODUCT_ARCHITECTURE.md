@@ -53,10 +53,13 @@ flowchart TD
 
 | 항목 | 기준 |
 | --- | --- |
-| Runtime | Node.js v18+ (Backend), Modern Web Browser (Frontend, React/Vite 빌드 결과물 구동) |
+| OS & Container Base | **Linux (Debian 12 Bookworm 기반, `node:20-bookworm-slim`)** |
+| Language & Runtime | **Node.js v20.x LTS (Backend/Express), React 18.x + Vite 5.x (Frontend)** |
+| Media Processing Engine | **Linux 네이티브 FFmpeg v6.x+ (컨테이너 내 내장) + `fonts-noto-cjk` (한글 자막 폰트) + `libass` / `fontconfig`** |
 | Data Store | 로컬 JSON 기반 경량 파일형 데이터베이스 (`database.json`) & `ZENION-MUSIC` 파일 시스템 |
-| External Integration | 1. **ACE-Step-1.5 엔진 연동**: 로컬 REST API 서버 (`http://127.0.0.1:8001`) 및 백그라운드 CLI (`cli.py`) 하이브리드 트리거<br>2. **Docker 데몬**: Gentle/Whisper 로컬 API 서버 (`http://localhost:8765`) - 선택 사항<br>3. **Google Cloud Platform API**: Imagen / Speech-to-Text - 선택 사항 |
-| Deployment Target | 로컬 크리에이터 PC (단일 사용자 로컬 웹 애플리케이션 환경) |
+| Docker Volume Mounts (마운트 포인트) | 1. **ZENION 저장소**: Host `C:\Users\julyi\Documents\ZENION-MUSIC` ↔ Container `/data/ZENION-MUSIC`<br>2. **ACE 초안 저장소**: Host `C:\Users\julyi\Documents\ACE-Step-1.5` ↔ Container `/data/ACE-Step-1.5`<br>3. **DB 및 설정**: Host `./data` ↔ Container `/app/data`<br>4. **환경 변수**: Host `.env` ↔ Container `/app/.env` |
+| External Integration | 1. **ACE-Step-1.5 엔진 연동**: 로컬 REST API (`http://host.docker.internal:8001`) 및 백그라운드 CLI (`cli.py`) 하이브리드 트리거<br>2. **Docker 데몬 (선택)**: Gentle/Whisper 로컬 API (`http://localhost:8765`)<br>3. **Google Cloud Platform API**: Imagen / Speech-to-Text (선택 사항) |
+| Deployment & Port | **Docker Compose 배포 (`docker compose up -d`)**, 웹 대시보드 포트: `5173:5173` (또는 `3000:3000`) |
 | Observability | Node.js 로컬 콘솔 로그 및 FFmpeg 인코딩 stderr 진행 상황 파이프 출력 로그 |
 
 ## 4. Security Design Baseline
