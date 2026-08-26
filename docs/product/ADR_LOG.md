@@ -28,6 +28,7 @@ related_documents:
 | ADR-003 | 2단계 AI 품질 스크리닝(오디오 파형 결함 검사 + LLM 가사 완성도 평가) 기법 채택 | Accepted | 2026-08-27 | CMP-002, API-003, DATA-001, SCN-002 |
 | ADR-004 | ACE-Step 음악 생성 자동 트리거를 위한 로컬 REST API 및 CLI 하이브리드 연동 방식 채택 | Accepted | 2026-08-27 | CMP-001, API-001, SCN-001 |
 | ADR-005 | Linux 기반 Docker Compose 표준 배포 및 볼륨 마운트 아키텍처 채택 | Accepted | 2026-08-27 | CMP-005, API-006, DATA-002, SCN-004 |
+| ADR-006 | AI 음악 디렉터 기획 엔진을 위한 Google Gemini SDK Structured Outputs 및 멀티 LLM 어댑터 아키텍처 채택 | Accepted | 2026-08-27 | CMP-001, API-001, DATA-002, SCN-001 |
 
 ## 2. ADR 작성 기준
 
@@ -112,4 +113,16 @@ related_documents:
 | Alternatives | 1. Windows 네이티브 FFmpeg 바이너리 직접 설치 및 PATH 수동 등록 (기각 - 한글 폰트 깨짐 및 OS 종속적 오류 위험).<br>2. 외부 클라우드 인코딩 위임 (기각 - 대용량 미디어 업로드/다운로드 지연 및 API 비용 발생). |
 | Consequences | - 장점: 한글 가사 자막 렌더링 무결성 확보, FFmpeg 무설치 제로 컨피그, 일관된 고품질 비디오 렌더링 보장.<br>- 비용: 사용자 PC에 Docker Desktop 구동 필요 (원클릭 `docker-compose.yml` 및 로컬 폴백 스크립트 함께 제공). |
 | Related Scenario / Contract | SCN-004, CMP-005, API-006, DATA-002 |
+| Status | Accepted |
+
+### ADR-006: AI 음악 디렉터 기획 엔진을 위한 Google Gemini SDK Structured Outputs 및 멀티 LLM 어댑터 아키텍처 채택
+
+| 항목 | 내용 |
+| --- | --- |
+| ADR ID | ADR-006 |
+| Context | 사용자가 감성 키워드를 입력했을 때 10종의 세부 음악 장르, 악기 구성, BPM, 가사 초안([Verse]/[Chorus])을 안정적인 JSON 데이터로 생성하여 대시보드 카드 UI로 즉시 렌더링해야 함. |
+| Decision | Google Gemini 공식 SDK(`@google/genai`)의 Structured Outputs(JSON Schema)를 1순위 기본 기획 엔진으로 채택하고, 환경설정(`.env`)에 따라 OpenAI GPT-4o 및 로컬 Ollama 모델로 쉽게 전환할 수 있는 멀티 LLM Provider 어댑터 패턴을 채택함. |
+| Alternatives | 1. Antigravity CLI / 세션 프로세스 직접 종속 (기각 - 도커 컨테이너 내부 세션 인증 토큰 전달 복잡성).<br>2. 비구조화 마크다운 텍스트 파싱 (기각 - JSON 파싱 에러 발생 위험). |
+| Consequences | - 장점: 10종 레시피의 100% 무결한 JSON 파싱 보장, Docker 컨테이너 완벽 격리 독립 실행, 무료 티어 활용 가능, 자유로운 모델 교체 유연성.<br>- 비용: Gemini SDK 패키지 의존성 관리 및 JSON Schema 정의 필요. |
+| Related Scenario / Contract | SCN-001, CMP-001, API-001, DATA-002 |
 | Status | Accepted |

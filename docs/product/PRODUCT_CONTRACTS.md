@@ -29,7 +29,7 @@ related_documents:
 
 | API ID | Method | Path / Entry | Request | Response | 관련 Scenario | 상세 문서 / 비고 |
 | --- | --- | --- | --- | --- | --- | --- |
-| API-001 | POST | `/api/director/generate-styles` | `JSON` (`{ keyword: "string", count?: 10 }`) | `JSON` (`{ success: true, styles: [{ id, genre, bpm, instruments, lyricTheme, promptText }] }`) | SCN-001 | AI 디렉터 10종 스타일 레시피 기획 |
+| API-001 | POST | `/api/director/generate-styles` | `JSON` (`{ keyword: "string", count?: 10, provider?: "gemini" \| "openai" \| "ollama" }`) | `JSON` (`{ success: true, styles: [{ id, title, genre, bpm, instruments, lyricTheme, lyrics: { verse1, chorus, verse2 }, promptText }] }`) | SCN-001 | AI 디렉터 10종 스타일 및 가사 레시피 기획 |
 | API-002 | GET | `/api/tracks` | None | `JSON` (`{ tracks: [{ id, title, aiScore, aiReview, ranking, draftAudio, sunoAudio, coverImage, releaseKit }] }`) | SCN-002 | 트랙 목록 및 AI 랭킹 조회 |
 | API-003 | POST | `/api/tracks/:id/evaluate` | `JSON` (`{ audioPath?: "string", lyrics?: "string" }`) | `JSON` (`{ success: true, aiScore: number, aiReview: string, techCheck: { clipping: boolean, silence: boolean } }`) | SCN-002 | 초안 오디오/가사 AI 품질 1차 채점 |
 | API-004 | POST | `/api/tracks/:id/map-suno` | `JSON` (`{ sunoAudioPath: "string", targetFolder?: "string" }`) | `JSON` (`{ success: true, zenionTrackPath: "string", mappedFiles: object }`) | SCN-003 | Suno 음원 매핑 및 `ZENION-MUSIC` 폴더 구조화 |
@@ -43,7 +43,7 @@ related_documents:
 | DATA/DB ID | 이름 | 주요 필드 | 보안 분류 | 관련 API/Scenario | 상세 문서 / 설명 |
 | --- | --- | --- | --- | --- | --- |
 | DATA-001 | database.json | `id`, `title`, `bpm`, `genre`, `lyricsRaw`, `aiScore`, `aiReview`, `audioPathAceStep`, `audioPathSuno`, `coverImageUrl`, `timeline`, `releaseKit` | 일반 | API-001 ~ API-008 | 로컬 트랙 메타데이터 DB |
-| DATA-002 | config.json | `zenionRootDirectory` (`/data/ZENION-MUSIC`), `aceWatchDirectory` (`/data/ACE-Step-1.5`), `googleApiKey` | 인증정보 | API-001, API-004, API-005, API-006 | Docker 볼륨 마운트 및 앱 환경설정 파일 (GCP Key 포함) |
+| DATA-002 | config.json / .env | `zenionRootDirectory` (`/data/ZENION-MUSIC`), `aceWatchDirectory` (`/data/ACE-Step-1.5`), `GEMINI_API_KEY`, `OPENAI_API_KEY`, `LLM_PROVIDER` | 인증정보 | API-001, API-004, API-005, API-006 | Docker 볼륨 마운트 및 LLM API Key 환경설정 |
 
 ## 4. UI Contracts
 
