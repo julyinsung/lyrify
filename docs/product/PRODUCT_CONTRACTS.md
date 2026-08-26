@@ -47,12 +47,12 @@ related_documents:
 
 ## 4. UI Contracts
 
-| UI/SCR ID | 화면/상호작용 | 주요 상태 | 관련 Scenario | 검증 |
+| UI/SCR ID | 화면/상호작용 | 주요 상태 및 컴포넌트 | 관련 Scenario | 검증 |
 | --- | --- | --- | --- | --- |
-| UI-001 | AI 디렉터 스타일 기획 뷰 | Empty (키워드 입력) / Generating (10종 생성 중) / Success | SCN-001 | UI 기능 검증 |
-| UI-002 | 대시보드 AI 랭킹 그리드 뷰 | Loading / Success (AI 점수 순 정렬 & 🌟 TOP 추천 뱃지) | SCN-002 | Playwright / 육안 검증 |
-| UI-003 | 트랙 상세 & 듀얼 오디오 플레이어 & 릴리즈 키트 모달 | PlayingAce / PlayingSuno / CopiedReleaseKit | SCN-003, SCN-005 | 수동/자동 검증 |
-| UI-004 | 16:9 / 9:16 비디오 인코딩 제어 및 진행률 패널 | Idle / Encoding (Progress %) / Success / Error | SCN-004 | 인코더 검증 |
+| UI-001 | 메인 대시보드 (AI Screening & Vault) | Empty / Loading / Success (100점 만점 AI 품질 뱃지, TOP 추천 태그, 파형 미니 플레이어, ACE vs Suno 토글) | SCN-002 | Playwright / 육안 검증 |
+| UI-002 | AI 디렉터 기획 스위트 | Empty (키워드 입력) / Generating (10종 생성) / Ready (10종 스타일 레시피 카드 프리뷰 & ACE 원클릭 트리거) | SCN-001 | UI 기능 검증 |
+| UI-003 | 트랙 상세 & 비디오 스튜디오 | 듀얼 파형 A/B 청음, 가사 타임라인 싱크([Verse]/[Chorus]), AI 커버 썸네일, 16:9/9:16 비디오 원클릭 인코딩 | SCN-003, SCN-004 | 수동/자동 검증 |
+| UI-004 | SNS 원클릭 릴리즈 키트 허브 | YouTube/Instagram/TikTok 탭별 제목, 설명문, 해시태그, 타임스탬프 원클릭 복사 & ZENION 로컬 폴더 열기 | SCN-005 | 클립보드 복사 검증 |
 
 ## 5. Security Contracts
 
