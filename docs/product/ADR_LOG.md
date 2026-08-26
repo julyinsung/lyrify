@@ -13,6 +13,21 @@ owner_role: Product Architect
 author: Agent
 reviewer: User
 approver: User
+# ADR Log
+
+---
+document_id: PROD-ADR
+title: ADR Log
+title_ko: 제품 아키텍처 의사결정 기록
+project: lyrify
+profile: product
+gate_scope: gate2-gate5
+status: Draft
+version: v0.1
+owner_role: Product Architect
+author: Agent
+reviewer: User
+approver: User
 created_at: 2026-07-08
 updated_at: 2026-07-08
 related_documents:
@@ -24,6 +39,7 @@ related_documents:
 | ADR ID | 제목 | 상태 | 결정일 | 영향 범위 |
 | --- | --- | --- | --- | --- |
 | ADR-001 | 로컬 무균성 및 자동화 트레이드오프를 위한 Docker 및 Web Audio/LRCLIB 하이브리드 가사 싱크 아키텍처 채택 | Accepted | 2026-07-08 | CMP-006, API-006, SCN-004 |
+| ADR-002 | 상업적 저작권 보호 및 고품질 생성을 위한 Suno AI 유료 음원 파이프라인 채택 | Accepted | 2026-08-27 | CMP-002, API-002, DATA-001, SCN-001, SCN-002 |
 
 ## 2. ADR 작성 기준
 
@@ -60,4 +76,16 @@ related_documents:
 | Alternatives | 1. 로컬 Python/PyTorch 환경 강제 설치 (기각 - 일반 사용자 환경 오염 및 설치 진입 장벽).<br>2. Google GCP Speech-to-Text API 강제 적용 (기각 - 결제 카드 등록 및 유료 사용 거부감, 인터넷 필수 조건 제약). |
 | Consequences | - 장점: 로컬 PC의 독립성과 무균성을 보존하며, 사양 및 환경에 맞춤화된 최적의 사용자 경험 제공.<br>- 비용: 백엔드에서 Docker 존재 여부를 검사하고 여러 동기화 흐름을 유연하게 처리하기 위한 분기 개발 공수 발생. |
 | Related Scenario / Contract | SCN-004, CMP-006, API-006 |
+| Status | Accepted |
+
+### ADR-002: 상업적 저작권 보호 및 고품질 생성을 위한 Suno AI 유료 음원 파이프라인 채택
+
+| 항목 | 내용 |
+| --- | --- |
+| ADR ID | ADR-002 |
+| Context | 초기 실험용 AI 오디오 모델(예: 구글 릴리아 등)은 상업적 이용 및 소셜 배포 시 저작권 분쟁 및 라이선스 위배 위험이 존재함. 크리에이터가 유튜브 등에 안전하게 수익화/배포하기 위해서는 상업적 권리가 보장되는 상용 AI 음원 서비스가 필요함. |
+| Decision | 유료 구독을 통해 상업적 이용 권리가 확보되는 Suno AI를 최종 완성 음원 생성 도구로 공식 채택하고, ACE-Step-1.5의 초안 레시피(가사/스타일)와 Suno AI 음원을 1:1 매핑하여 관리하는 듀얼 파이프라인 구조를 제품의 표준으로 확정함. |
+| Alternatives | 1. 오픈소스/실험용 AI 모델 사용 (기각 - 상업적 저작권 불확실성 및 배포 리스크).<br>2. 수동 작곡 음원만 지원 (기각 - AI 크리에이터 자동화 파이프라인 비전에 부합하지 않음). |
+| Consequences | - 장점: 크리에이터의 유튜브/소셜 배포 시 저작권 안전성 확보 및 고품질 보컬/음악 결과물 제공.<br>- 비용: 외부 웹에서 생성된 음원을 로컬 감시 디렉토리로 다운로드/임포트하는 매핑 UI 지원 필요. |
+| Related Scenario / Contract | SCN-001, SCN-002, CMP-002, API-002, DATA-001 |
 | Status | Accepted |

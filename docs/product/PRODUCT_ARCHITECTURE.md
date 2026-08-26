@@ -38,7 +38,7 @@ flowchart TD
 | Component ID | 이름 | 책임 | 주요 계약 | 관련 Scenario |
 | --- | --- | --- | --- | --- |
 | CMP-001 | File Watcher & Parser | `music_recipes.md` 파일 변경 감지 및 곡별 메타데이터/가사 파싱 | 로컬 파일 감시 및 파서 알고리즘 | SCN-001 |
-| CMP-002 | Audio Mapping Manager | 로컬에 보관된 ACE-Step 초안 및 릴리아 최종 MP3 파일을 매핑 및 저장 | API-002, database.json 갱신 | SCN-002 |
+| CMP-002 | Audio Mapping Manager | 로컬에 보관된 ACE-Step 초안 및 Suno AI 최종 MP3 파일을 매핑 및 저장 | API-002, database.json 갱신 | SCN-002 |
 | CMP-003 | Thumbnail Generator | Google Imagen API 연동 또는 로컬 템플릿(Canvas/SVG)을 사용한 썸네일 커버 합성 | API-004, 로컬 파일 쓰기 | SCN-003 |
 | CMP-004 | Video Encoder (FFmpeg) | FFmpeg를 호출하여 음원 + 다중 슬라이드 이미지 + 자막을 합성하여 MP4로 인코딩 | API-005, 로컬 FFmpeg 제어 | SCN-004 |
 | CMP-005 | Sync Editor | 브라우저 UI에서 가사 파트별 타임라인 시작 시점(초)을 수동 기입/미세 조정 | API-003, 프론트엔드 UI | SCN-004 |
