@@ -8,28 +8,13 @@ project: lyrify
 profile: product
 gate_scope: gate2-gate5
 status: Draft
-version: v0.1
-owner_role: Product Architect
-author: Agent
-reviewer: User
-approver: User
-# ADR Log
-
----
-document_id: PROD-ADR
-title: ADR Log
-title_ko: 제품 아키텍처 의사결정 기록
-project: lyrify
-profile: product
-gate_scope: gate2-gate5
-status: Draft
-version: v0.1
+version: v0.3
 owner_role: Product Architect
 author: Agent
 reviewer: User
 approver: User
 created_at: 2026-07-08
-updated_at: 2026-07-08
+updated_at: 2026-08-27
 related_documents:
   - docs/product/PRODUCT_ARCHITECTURE.md
 ---
@@ -38,8 +23,9 @@ related_documents:
 
 | ADR ID | 제목 | 상태 | 결정일 | 영향 범위 |
 | --- | --- | --- | --- | --- |
-| ADR-001 | 로컬 무균성 및 자동화 트레이드오프를 위한 Docker 및 Web Audio/LRCLIB 하이브리드 가사 싱크 아키텍처 채택 | Accepted | 2026-07-08 | CMP-006, API-006, SCN-004 |
-| ADR-002 | 상업적 저작권 보호 및 고품질 생성을 위한 Suno AI 유료 음원 파이프라인 채택 | Accepted | 2026-08-27 | CMP-002, API-002, DATA-001, SCN-001, SCN-002 |
+| ADR-001 | 로컬 무균성 및 자동화 트레이드오프를 위한 Docker 및 Web Audio/LRCLIB 하이브리드 가사 싱크 아키텍처 채택 | Accepted | 2026-07-08 | CMP-007, API-008, SCN-004 |
+| ADR-002 | 상업적 저작권 보호 및 고품질 생성을 위한 Suno AI 유료 음원 파이프라인 채택 | Accepted | 2026-08-27 | CMP-003, API-004, DATA-001, SCN-003 |
+| ADR-003 | 2단계 AI 품질 스크리닝(오디오 파형 결함 검사 + LLM 가사 완성도 평가) 기법 채택 | Accepted | 2026-08-27 | CMP-002, API-003, DATA-001, SCN-002 |
 
 ## 2. ADR 작성 기준
 
@@ -87,5 +73,17 @@ related_documents:
 | Decision | 유료 구독을 통해 상업적 이용 권리가 확보되는 Suno AI를 최종 완성 음원 생성 도구로 공식 채택하고, ACE-Step-1.5의 초안 레시피(가사/스타일)와 Suno AI 음원을 1:1 매핑하여 관리하는 듀얼 파이프라인 구조를 제품의 표준으로 확정함. |
 | Alternatives | 1. 오픈소스/실험용 AI 모델 사용 (기각 - 상업적 저작권 불확실성 및 배포 리스크).<br>2. 수동 작곡 음원만 지원 (기각 - AI 크리에이터 자동화 파이프라인 비전에 부합하지 않음). |
 | Consequences | - 장점: 크리에이터의 유튜브/소셜 배포 시 저작권 안전성 확보 및 고품질 보컬/음악 결과물 제공.<br>- 비용: 외부 웹에서 생성된 음원을 로컬 감시 디렉토리로 다운로드/임포트하는 매핑 UI 지원 필요. |
-| Related Scenario / Contract | SCN-001, SCN-002, CMP-002, API-002, DATA-001 |
+| Related Scenario / Contract | SCN-003, CMP-003, API-004, DATA-001 |
+| Status | Accepted |
+
+### ADR-003: 2단계 AI 품질 스크리닝(오디오 파형 결함 검사 + LLM 가사 완성도 평가) 기법 채택
+
+| 항목 | 내용 |
+| --- | --- |
+| ADR ID | ADR-003 |
+| Context | 10개 이상의 초안을 크리에이터가 일일이 전부 청음하고 비교하는 것은 피로도가 심함. 기계적 오디오 결함과 음악적/가사적 매력도를 사전 채점하여 추천해줄 필요성 대두. |
+| Decision | 1단계로 Web Audio/Node 파형 분석을 통해 무음/클리핑/볼륨 레벨을 기술 검사하고, 2단계로 LLM을 통해 가사 운율/구성 및 스타일 매력도를 종합 평가하여 100점 만점 스코어 및 랭킹을 대시보드에 제공함. |
+| Alternatives | 1. 완전 수동 청음 (기각 - 시간 낭비 및 피로도 심함).<br>2. 무거운 오디오 딥러닝 모델 단독 사용 (기각 - 로컬 PC 사양 부담). |
+| Consequences | - 장점: 크리에이터가 상위 TOP 3 후보만 청음하고 즉시 결정할 수 있어 작업 시간 90% 이상 단축.<br>- 비용: 가사 분석 및 오디오 파형 유효성 검사 로직 개발 필요. |
+| Related Scenario / Contract | SCN-002, CMP-002, API-003, DATA-001 |
 | Status | Accepted |

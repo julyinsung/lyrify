@@ -8,13 +8,13 @@ project: lyrify
 profile: product
 gate_scope: gate2-impl
 status: Draft
-version: v0.2
+version: v0.3
 owner_role: Technical Architect
 author: Agent
 reviewer: User
 approver: User
 created_at: 2026-07-08
-updated_at: 2026-07-08
+updated_at: 2026-08-27
 related_documents:
   - docs/product/PRODUCT_BRIEF.md
   - docs/product/PRODUCT_ARCHITECTURE.md
@@ -29,27 +29,30 @@ related_documents:
 
 | API ID | Method | Path / Entry | Request | Response | 관련 Scenario | 상세 문서 / 비고 |
 | --- | --- | --- | --- | --- | --- | --- |
-| API-001 | GET | `/api/tracks` | None | `JSON` (파싱된 트랙 레시피 리스트, 매핑 경로, 싱크 타임라인 등) | SCN-001 | 트랙 목록 조회 |
-| API-002 | POST | `/api/tracks/:id/map` | `JSON` (`{ type: "ace-step" \| "suno", filePath: "string" }`) | `JSON` (`{ success: true, mappedFiles: { aceStep: string, suno: string } }`) | SCN-002 | 음원 수동/자동 매핑 저장 |
-| API-003 | POST | `/api/tracks/:id/sync` | `JSON` (`{ timeline: [{ part: "string", startSecond: number }] }`) | `JSON` (`{ success: true, updatedTimeline: [...] }`) | SCN-004 | 파트별 타임라인 싱크 저장 |
-| API-004 | POST | `/api/tracks/:id/generate-image` | `JSON` (`{ useApi: boolean, textPrompt?: string }`) | `JSON` (`{ success: true, imageUrl: string }`) | SCN-003 | Google API 또는 로컬 템플릿 커버 생성 |
-| API-005 | POST | `/api/tracks/:id/export-video` | `JSON` (`{ targetAudio: "ace-step" \| "suno" }`) | `JSON` (`{ success: true, videoUrl: string, jobId: string }`) | SCN-004 | FFmpeg 비디오 렌더링 요청 |
-| API-006 | POST | `/api/tracks/:id/auto-align` | `JSON` (`{ engine: "docker-gentle" \| "google-stt" }`) | `JSON` (`{ success: true, autoTimeline: [...] }`) | SCN-004 | AI 기반 가사 타임라인 자동 정렬 |
+| API-001 | POST | `/api/director/generate-styles` | `JSON` (`{ keyword: "string", count?: 10 }`) | `JSON` (`{ success: true, styles: [{ id, genre, bpm, instruments, lyricTheme, promptText }] }`) | SCN-001 | AI 디렉터 10종 스타일 레시피 기획 |
+| API-002 | GET | `/api/tracks` | None | `JSON` (`{ tracks: [{ id, title, aiScore, aiReview, ranking, draftAudio, sunoAudio, coverImage, releaseKit }] }`) | SCN-002 | 트랙 목록 및 AI 랭킹 조회 |
+| API-003 | POST | `/api/tracks/:id/evaluate` | `JSON` (`{ audioPath?: "string", lyrics?: "string" }`) | `JSON` (`{ success: true, aiScore: number, aiReview: string, techCheck: { clipping: boolean, silence: boolean } }`) | SCN-002 | 초안 오디오/가사 AI 품질 1차 채점 |
+| API-004 | POST | `/api/tracks/:id/map-suno` | `JSON` (`{ sunoAudioPath: "string", targetFolder?: "string" }`) | `JSON` (`{ success: true, zenionTrackPath: "string", mappedFiles: object }`) | SCN-003 | Suno 음원 매핑 및 `ZENION-MUSIC` 폴더 구조화 |
+| API-005 | POST | `/api/tracks/:id/generate-image` | `JSON` (`{ useApi: boolean, customPrompt?: "string" }`) | `JSON` (`{ success: true, imageUrl: "string" }`) | SCN-004 | AI 썸네일 또는 로컬 템플릿 커버 생성 |
+| API-006 | POST | `/api/tracks/:id/export-video` | `JSON` (`{ format: "youtube_16x9" \| "shorts_9x16" \| "all", audioType: "suno" \| "ace" }`) | `JSON` (`{ success: true, jobId: "string", videoUrls: object }`) | SCN-004 | 16:9 유튜브 및 9:16 숏폼 비디오 렌더링 |
+| API-007 | GET | `/api/tracks/:id/release-kit` | None | `JSON` (`{ youtube: { title, description, tags, timestampLyrics }, instagram: { caption, hashtags }, tiktok: { caption, hashtags } }`) | SCN-005 | SNS 플랫폼별 릴리즈 키트 조회 |
+| API-008 | POST | `/api/tracks/:id/sync` | `JSON` (`{ timeline: [{ part: "string", startSecond: number }] }`) | `JSON` (`{ success: true, updatedTimeline: array }`) | SCN-004 | 가사 타임라인 싱크 저장 |
 
 ## 3. Data Contracts
 
 | DATA/DB ID | 이름 | 주요 필드 | 보안 분류 | 관련 API/Scenario | 상세 문서 / 설명 |
 | --- | --- | --- | --- | --- | --- |
-| DATA-001 | database.json | `id`, `title`, `bpm`, `keyscale`, `lyricsRaw`, `parts` (문단 배열), `audioPathAceStep`, `audioPathSuno`, `coverImageUrl`, `timeline` | 일반 | API-001, API-002, API-003 | 로컬 트랙 메타데이터 DB |
-| DATA-002 | config.json | `watchDirectory` (감시 경로), `exportDirectory` (수출 경로), `googleApiKey` (선택적 구글 API Key) | 인증정보 | API-004, API-005, API-006 | 애플리케이션 로컬 환경 설정 파일 (GCP Key 포함) |
+| DATA-001 | database.json | `id`, `title`, `bpm`, `genre`, `lyricsRaw`, `aiScore`, `aiReview`, `audioPathAceStep`, `audioPathSuno`, `coverImageUrl`, `timeline`, `releaseKit` | 일반 | API-001 ~ API-008 | 로컬 트랙 메타데이터 DB |
+| DATA-002 | config.json | `zenionRootDirectory` (`C:\Users\julyi\Documents\ZENION-MUSIC`), `aceWatchDirectory`, `googleApiKey` | 인증정보 | API-001, API-004, API-005, API-006 | 앱 환경설정 파일 (GCP Key 및 폴더 경로 포함) |
 
 ## 4. UI Contracts
 
 | UI/SCR ID | 화면/상호작용 | 주요 상태 | 관련 Scenario | 검증 |
 | --- | --- | --- | --- | --- |
-| UI-001 | 대시보드 카드 뉴스형 그리드 | Empty / Loading / Success | SCN-001 | 자동/육안 검증 |
-| UI-002 | 트랙 상세 정보 및 싱크 에디터 모달 | Success / Syncing / GeneratingImage | SCN-001, SCN-002, SCN-003, SCN-004 | 수동/자동 검증 |
-| UI-003 | FFmpeg 인코딩 상태 패널 (프로그레스 바) | Loading (인코딩 중) / Success / Error (부재 또는 실패) | SCN-004 | 자동/인코더 검증 |
+| UI-001 | AI 디렉터 스타일 기획 뷰 | Empty (키워드 입력) / Generating (10종 생성 중) / Success | SCN-001 | UI 기능 검증 |
+| UI-002 | 대시보드 AI 랭킹 그리드 뷰 | Loading / Success (AI 점수 순 정렬 & 🌟 TOP 추천 뱃지) | SCN-002 | Playwright / 육안 검증 |
+| UI-003 | 트랙 상세 & 듀얼 오디오 플레이어 & 릴리즈 키트 모달 | PlayingAce / PlayingSuno / CopiedReleaseKit | SCN-003, SCN-005 | 수동/자동 검증 |
+| UI-004 | 16:9 / 9:16 비디오 인코딩 제어 및 진행률 패널 | Idle / Encoding (Progress %) / Success / Error | SCN-004 | 인코더 검증 |
 
 ## 5. Security Contracts
 
@@ -58,8 +61,8 @@ KISA/SR 매핑은 선택 참고이지만, OWASP/CWE 기반의 제품 보안 판�
 
 | SEC ID | 보안 계약 | 적용 대상 | 기준/참조 | 관련 Scenario | 검증 |
 | --- | --- | --- | --- | --- | --- |
-| SEC-001 | Google API Key 노출 방지 (소스코드 및 원격 저장소 하드코딩 영구 배제) | DATA-002, API-004 | OWASP Top 10 A02:2021, CWE-798 | SCN-003 | SEC-REG-001 |
-| SEC-002 | 경로 트래버설 취약점 방지 (로컬 파일 매핑 시 감시 경로 외부 탈출 금지) | API-002, API-005 | OWASP ASVS V5, CWE-22 | SCN-001, SCN-002, SCN-004 | SEC-REG-001 |
+| SEC-001 | Google API Key 노출 방지 (소스코드 및 원격 저장소 하드코딩 영구 배제) | DATA-002, API-005 | OWASP Top 10 A02:2021, CWE-798 | SCN-004 | SEC-REG-001 |
+| SEC-002 | 경로 트래버설 취약점 방지 (`ZENION-MUSIC` 및 작업 디렉토리 외부 탈출 금지) | API-004, API-006 | OWASP ASVS V5, CWE-22 | SCN-001 ~ SCN-005 | SEC-REG-001 |
 
 ## 6. Security And Data Baseline
 
