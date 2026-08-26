@@ -20,29 +20,45 @@ related_documents:
   - docs/product/ADR_LOG.md
 ---
 
-## 1. Architecture Overview
+## 1. Architecture Overview (Hexagonal Architecture - Ports & Adapters)
 
 ```mermaid
 flowchart TD
-  User["사용자 (브라우저 UI / 크리에이터)"] <--> FE["Frontend (React / Vite)"]
-  FE <--> BE["Backend Server (Node.js / Express)"]
-  BE <--> Director["AI Music Director (10종 스타일 기획)"]
-  BE <--> Judge["AI Quality Screening (오디오/가사 채점)"]
-  BE <--> FS["File System (music_recipes.md & ACE 초안)"]
-  BE <--> ZenionVault["ZENION-MUSIC 로컬 저장소 (곡별 폴더 자산 정리)"]
-  BE <--> DB["JSON Database (database.json)"]
-  BE <--> FF["FFmpeg Engine (16:9 유튜브 & 9:16 숏폼 인코더)"]
-  BE <--> ReleaseKit["SNS Release Kit Hub (제목/설명/해시태그)"]
-  BE <--> Docker["Docker Engine (Gentle / Whisper 컨테이너)"]
-  BE <--> GCloud["Google Cloud API (Imagen / STT)"]
+  subgraph Driving_Adapters ["1. 입력 레이어 (Driving Adapters)"]
+    User["사용자 (브라우저 UI / 크리에이터)"] <--> FE["Frontend (React 18 / Vite 5)"]
+    FE <--> ExpressRouter["Express REST API Controllers"]
+  end
+
+  subgraph Core_Services ["2. 코어 비즈니스 서비스 레이어 (Pure Domain)"]
+    DirectorSvc["DirectorService<br>(가변 스타일 레시피 & 가사 기획)"]
+    JudgeSvc["QualityJudgeService<br>(오디오 파형/가사 100점 채점)"]
+    VaultSvc["VaultStorageService<br>(ZENION-MUSIC 자산 구조화)"]
+    RenderSvc["VideoRenderService<br>(16:9 & 9:16 비디오 렌더링)"]
+    ReleaseSvc["ReleaseKitService<br>(SNS 배포 키트 생성)"]
+  end
+
+  subgraph Driven_Adapters ["3. 외부 연동 어댑터 레이어 (Driven Adapters)"]
+    LLMAdapter["LLM Provider Adapter (Gemini / OpenAI / Ollama)"]
+    ACEAdapter["ACE-Step Engine Adapter (REST API :8001 / CLI)"]
+    FFmpegAdapter["Linux FFmpeg Media Adapter (fonts-noto-cjk)"]
+    StorageAdapter["ZENION Vault Storage Adapter (File System / Chokidar)"]
+    DBAdapter["Database Repository Adapter (database.json)"]
+  end
+
+  ExpressRouter --> DirectorSvc & JudgeSvc & VaultSvc & RenderSvc & ReleaseSvc
+  DirectorSvc --> LLMAdapter & ACEAdapter
+  JudgeSvc --> FFmpegAdapter
+  VaultSvc --> StorageAdapter & DBAdapter
+  RenderSvc --> FFmpegAdapter & StorageAdapter
+  ReleaseSvc --> StorageAdapter
 ```
 
 ## 2. Components
 
-| Component ID | 이름 | 책임 | 주요 계약 | 관련 Scenario |
+| Component ID | 이름 | 책임 및 구현 레이어 | 주요 계약 | 관련 Scenario |
 | --- | --- | --- | --- | --- |
-| CMP-001 | AI Music Director | Google Gemini SDK(`@google/genai`) 기반 Structured Outputs(JSON)로 10종 스타일/가사 레시피 기획 및 ACE-Step REST API/CLI 자동 트리거 (멀티 LLM 어댑터 지원) | API-001 | SCN-001 |
-| CMP-002 | Quality Screening & Evaluator | ACE 초안의 오디오 파형(클리핑/무음) 및 가사 구조를 100점 만점으로 자동 채점 및 랭킹 정렬 | API-003 | SCN-002 |
+| CMP-001 | AI Music Director (`DirectorService`) | 가변 곡 수(1~20곡) 및 3대 기획 모드(`explore`, `single`, `album`) 지원, Gemini SDK Structured Outputs(JSON) 기반 스타일/가사 기획 및 ACE REST API/CLI 트리거 | API-001 | SCN-001 |
+| CMP-002 | Quality Screening & Evaluator (`QualityJudgeService`) | ACE 초안의 오디오 파형(클리핑/무음) 및 가사 구조를 100점 만점으로 자동 채점 및 랭킹 정렬 | API-003 | SCN-002 |
 | CMP-003 | File Watcher & ZENION Storage Manager | `music_recipes.md` 감시 및 `ZENION-MUSIC` 폴더 내 곡별 자산(음원, 가사, 커버, 메타데이터) 자동 구조화 관리 | API-002, API-004 | SCN-002, SCN-003 |
 | CMP-004 | Thumbnail & Visual Generator | Google Imagen API 연동 또는 로컬 그라데이션 템플릿 기반 썸네일 커버 합성 | API-005 | SCN-004 |
 | CMP-005 | Multi-Format Video Encoder | 로컬 FFmpeg를 제어하여 유튜브 롱폼(16:9) 및 인스타/틱톡 숏폼(9:16) 가사 비디오 렌더링 | API-006 | SCN-004 |

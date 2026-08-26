@@ -29,7 +29,7 @@ related_documents:
 
 | API ID | Method | Path / Entry | Request | Response | 관련 Scenario | 상세 문서 / 비고 |
 | --- | --- | --- | --- | --- | --- | --- |
-| API-001 | POST | `/api/director/generate-styles` | `JSON` (`{ keyword: "string", count?: 10, provider?: "gemini" \| "openai" \| "ollama" }`) | `JSON` (`{ success: true, styles: [{ id, title, genre, bpm, instruments, lyricTheme, lyrics: { verse1, chorus, verse2 }, promptText }] }`) | SCN-001 | AI 디렉터 10종 스타일 및 가사 레시피 기획 |
+| API-001 | POST | `/api/director/generate-styles` | `JSON` (`{ keyword: "string", count?: number, mode?: "explore" \| "single" \| "album", provider?: "gemini" \| "openai" \| "ollama" }`) | `JSON` (`{ success: true, styles: [{ id, title, genre, bpm, instruments, lyricTheme, lyrics: { verse1, chorus, verse2 }, promptText }] }`) | SCN-001 | AI 디렉터 가변 스타일(1~20곡) 및 가사 레시피 기획 |
 | API-002 | GET | `/api/tracks` | None | `JSON` (`{ tracks: [{ id, title, aiScore, aiReview, ranking, draftAudio, sunoAudio, coverImage, releaseKit }] }`) | SCN-002 | 트랙 목록 및 AI 랭킹 조회 |
 | API-003 | POST | `/api/tracks/:id/evaluate` | `JSON` (`{ audioPath?: "string", lyrics?: "string" }`) | `JSON` (`{ success: true, aiScore: number, aiReview: string, techCheck: { clipping: boolean, silence: boolean } }`) | SCN-002 | 초안 오디오/가사 AI 품질 1차 채점 |
 | API-004 | POST | `/api/tracks/:id/map-suno` | `JSON` (`{ sunoAudioPath: "string", targetFolder?: "string" }`) | `JSON` (`{ success: true, zenionTrackPath: "string", mappedFiles: object }`) | SCN-003 | Suno 음원 매핑 및 `ZENION-MUSIC` 폴더 구조화 |

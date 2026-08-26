@@ -29,6 +29,7 @@ related_documents:
 | ADR-004 | ACE-Step 음악 생성 자동 트리거를 위한 로컬 REST API 및 CLI 하이브리드 연동 방식 채택 | Accepted | 2026-08-27 | CMP-001, API-001, SCN-001 |
 | ADR-005 | Linux 기반 Docker Compose 표준 배포 및 볼륨 마운트 아키텍처 채택 | Accepted | 2026-08-27 | CMP-005, API-006, DATA-002, SCN-004 |
 | ADR-006 | AI 음악 디렉터 기획 엔진을 위한 Google Gemini SDK Structured Outputs 및 멀티 LLM 어댑터 아키텍처 채택 | Accepted | 2026-08-27 | CMP-001, API-001, DATA-002, SCN-001 |
+| ADR-007 | 헥사고날(Ports & Adapters) 모듈 아키텍처 및 DirectorService 가변 기획 모드 채택 | Accepted | 2026-08-27 | 전체 컴포넌트, API-001, SCN-001 |
 
 ## 2. ADR 작성 기준
 
@@ -125,4 +126,16 @@ related_documents:
 | Alternatives | 1. Antigravity CLI / 세션 프로세스 직접 종속 (기각 - 도커 컨테이너 내부 세션 인증 토큰 전달 복잡성).<br>2. 비구조화 마크다운 텍스트 파싱 (기각 - JSON 파싱 에러 발생 위험). |
 | Consequences | - 장점: 10종 레시피의 100% 무결한 JSON 파싱 보장, Docker 컨테이너 완벽 격리 독립 실행, 무료 티어 활용 가능, 자유로운 모델 교체 유연성.<br>- 비용: Gemini SDK 패키지 의존성 관리 및 JSON Schema 정의 필요. |
 | Related Scenario / Contract | SCN-001, CMP-001, API-001, DATA-002 |
+| Status | Accepted |
+
+### ADR-007: 헥사고날(Ports & Adapters) 모듈 아키텍처 및 DirectorService 가변 기획 모드 채택
+
+| 항목 | 내용 |
+| --- | --- |
+| ADR ID | ADR-007 |
+| Context | 시스템 구현 시 외부 AI 엔진(Gemini, OpenAI, Ollama), ACE-Step, FFmpeg 및 저장소가 지속적으로 확장/변경될 수 있음. 또한 음악 기획 기능이 10종 고정에 머무르지 않고 단일 곡 변주, EP 앨범, 다중 탐색 등 다양한 창작 유즈케이스에 맞추어 유연하게 작동해야 함. |
+| Decision | 1. 중심 비즈니스 로직(Core Services & Domain)과 외부 연동(Driven/Driving Adapters)을 인터페이스로 엄격히 분리하는 헥사고날(Ports & Adapters) 아키텍처를 채택함.<br>2. `DirectorService`를 Core Service로 두고, 요청 파라미터(`count: 1~20`, `mode: "explore" \| "single" \| "album"`)에 따라 유연하게 작동하는 가변 기획 인터페이스를 표준으로 확정함. |
+| Alternatives | 1. 레거시 계층형(Layered) 구조 (기각 - 외부 API 및 파일 시스템과의 강결합으로 테스트 및 교체 어려움).<br>2. 10종 생성 하드코딩 (기각 - 단일 곡 작업이나 앨범 기획 시 창작 유연성 훼손). |
+| Consequences | - 장점: 외부 AI/미디어 도구 변경 시 코어 로직 보존, 100% Mock 기반 고속 단위 테스트 가능, 다양한 기획 모드 지원으로 크리에이터 작업성 극대화.<br>- 비용: 인터페이스 정의 및 어댑터 매핑 보일러플레이트 작성 필요. |
+| Related Scenario / Contract | SCN-001 ~ SCN-005, 전체 CMP, API-001 |
 | Status | Accepted |
