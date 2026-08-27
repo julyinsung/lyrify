@@ -124,6 +124,13 @@ export class VaultStorageService {
       fs.writeFileSync(files.releaseKit, markdown, 'utf8');
     }
 
+    // Persist track entity to database.json
+    try {
+      this.vaultRepository.saveTrack(track);
+    } catch (dbErr) {
+      console.warn('[VaultStorageService saveTrack Warning]', dbErr.message);
+    }
+
     return {
       success: true,
       trackId: track.id,

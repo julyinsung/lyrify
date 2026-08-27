@@ -280,28 +280,52 @@
           container.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-muted);">등록된 트랙이 없습니다. 좌측에서 AI 스타일 기획을 실행해 보세요!</div>`;
           return;
         }
-        container.innerHTML = tracks.map(t => `
+
+        // Sort by score descending
+        const sorted = [...tracks].sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+
+        container.innerHTML = sorted.map((t, idx) => {
+          let lyricsDisplay = t.lyricsRaw || t.lyricsText;
+          if (!lyricsDisplay && t.lyrics) {
+            if (typeof t.lyrics === 'string') {
+              lyricsDisplay = t.lyrics;
+            } else if (typeof t.lyrics === 'object') {
+              lyricsDisplay = Object.entries(t.lyrics)
+                .map(([k, v]) => `[${k.toUpperCase()}]\n${v}`)
+                .join('\n\n');
+            }
+          }
+          if (!lyricsDisplay) lyricsDisplay = '가사 정보 없음';
+
+          const rankBadge = idx === 0 ? '🏆 TOP 1 PICK' : (idx === 1 ? '🥈 TOP 2' : (idx === 2 ? '🥉 TOP 3' : '🎵 TRACK'));
+          const badgeClass = idx === 0 ? 'badge-warning' : (idx < 3 ? 'badge-primary' : 'badge-secondary');
+          const grade = t.aiScore >= 90 ? 'S' : (t.aiScore >= 80 ? 'A' : (t.aiScore >= 70 ? 'B' : 'C'));
+
+          return `
           <div class="track-card">
             <div class="track-header">
               <div>
-                <span class="badge ${t.aiRank <= 3 ? 'badge-warning' : 'badge-primary'}">${t.aiBadge || 'TRACK'}</span>
+                <span class="badge ${badgeClass}">${rankBadge}</span>
                 <span class="track-title" style="margin-left: 8px;">${t.title}</span>
               </div>
-              <div class="score-box">${t.aiScore || 85}<span style="font-size: 12px; color: var(--text-muted);">점 (${t.aiGrade || 'A'})</span></div>
+              <div class="score-box">${t.aiScore || 85}<span style="font-size: 12px; color: var(--text-muted);">점 (${grade}급)</span></div>
             </div>
             <div class="tags">
               <span class="tag">장르: ${t.genre || 'City Pop'}</span>
               <span class="tag">BPM: ${t.bpm || 118}</span>
               <span class="tag">상태: ${t.status || 'draft'}</span>
+              ${t.aiReview ? `<span class="tag" style="color: #60a5fa;">💡 ${t.aiReview}</span>` : ''}
             </div>
-            <div class="lyrics-box">${t.lyricsText || (t.lyrics ? [t.lyrics.verse1, t.lyrics.chorus].filter(Boolean).join('\\n\\n') : '가사 정보 없음')}</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">📝 기획 가사 (Verse / Chorus)</div>
+            <div class="lyrics-box">${lyricsDisplay}</div>
             <div class="btn-group">
               <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'youtube_16x9')">🎬 16:9 비디오</button>
               <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'shorts_9x16')">📱 9:16 숏폼</button>
               <button class="btn btn-secondary" onclick="openReleaseModal('${t.id}')">🚀 SNS 릴리즈 키트</button>
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       }
 
       async function generateStyles() {

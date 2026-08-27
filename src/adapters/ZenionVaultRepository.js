@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 
 /**
@@ -238,6 +238,16 @@ export class ZenionVaultRepository {
 
     this._atomicWriteFileSync(this.dbFilePath, JSON.stringify({ tracks }, null, 2));
     return trackData;
+  }
+
+  /**
+   * Alias for save() to support saveTrack
+   * @param {Object} trackData 
+   * @returns {Object}
+   */
+  saveTrack(trackData) {
+    const json = (trackData && typeof trackData.toJSON === 'function') ? trackData.toJSON() : trackData;
+    return this.save(json);
   }
 
   /**

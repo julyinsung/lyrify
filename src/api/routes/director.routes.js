@@ -1,4 +1,5 @@
 import express from 'express';
+import { Track } from '../../core/domain/Track.js';
 
 /**
  * AI Music Director Routes
@@ -6,6 +7,7 @@ import express from 'express';
  * 
  * @param {Object} services
  * @param {import('../../core/services/DirectorService.js').DirectorService} services.directorService
+ * @param {import('../../core/services/VaultStorageService.js').VaultStorageService} [services.vaultService]
  * @returns {express.Router}
  */
 export function createDirectorRouter({ directorService, vaultService }) {
@@ -34,19 +36,33 @@ export function createDirectorRouter({ directorService, vaultService }) {
 
       // Auto-save generated recipes to Master Vault if vaultService is provided
       if (vaultService && Array.isArray(result.styles)) {
-        for (const style of result.styles) {
+        for (let i = 0; i < result.styles.length; i++) {
+          const style = result.styles[i];
           try {
-            await vaultService.createTrackVault(style.title, {
+            let lyricsRaw = '';
+            if (typeof style.lyrics === 'string') {
+              lyricsRaw = style.lyrics;
+            } else if (style.lyrics && typeof style.lyrics === 'object') {
+              lyricsRaw = Object.entries(style.lyrics)
+                .map(([part, text]) => `[${part.toUpperCase()}]\n${text}`)
+                .join('\n\n');
+            }
+
+            const trackId = `TRK-${Date.now().toString().slice(-6)}-${String(i + 1).padStart(2, '0')}`;
+            const initialScore = 85 + (i < 3 ? (10 - i * 3) : Math.floor(Math.random() * 5));
+
+            const track = new Track({
+              id: trackId,
               title: style.title,
-              genre: style.genre,
-              bpm: style.bpm,
-              instruments: style.instruments,
-              lyrics: style.lyrics,
-              concept: style.concept,
-              promptText: style.promptText,
-              keyword: result.keyword,
-              mode: result.mode
+              genre: style.genre || 'City Pop',
+              bpm: style.bpm || 118,
+              lyricsRaw: lyricsRaw,
+              aiScore: initialScore,
+              aiReview: `감성 키워드 '${result.keyword}' 테마의 ${style.concept || style.genre} 기획 완성. ${style.bpm} BPM 그루브와 [Verse/Chorus] 가사 구조화 탑재.`,
+              status: 'draft'
             });
+
+            await vaultService.createTrackVault(track);
           } catch (vaultErr) {
             console.warn('[Director Auto-Save Warning]', vaultErr.message);
           }
