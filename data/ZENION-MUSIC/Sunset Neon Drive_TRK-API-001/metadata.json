@@ -1,0 +1,30 @@
+{
+  "id": "TRK-API-001",
+  "title": "Sunset Neon Drive",
+  "bpm": 116,
+  "genre": "City Pop",
+  "lyricsRaw": "",
+  "aiScore": 0,
+  "aiReview": "",
+  "techCheck": {
+    "clipping": false,
+    "silence": false
+  },
+  "audioPathAceStep": "",
+  "audioPathSuno": "",
+  "coverImageUrl": "C:\\Users\\julyi\\.gemini\\antigravity\\brain\\c8dfbc5d-4688-451a-87c5-fb5db96cb3dd\\.system_generated\\worktrees\\subagent-Video-Studio-Builder-build-worker-6319e5f2\\data\\ZENION-MUSIC\\Sunset Neon Drive_TRK-API-001\\03_visuals\\cover.png",
+  "timeline": [
+    {
+      "part": "Intro",
+      "startSecond": 0
+    },
+    {
+      "part": "Chorus",
+      "startSecond": 30
+    }
+  ],
+  "releaseKit": null,
+  "status": "released",
+  "createdAt": "2026-08-27T14:37:08.474Z",
+  "updatedAt": "2026-08-27T14:37:08.519Z"
+}
