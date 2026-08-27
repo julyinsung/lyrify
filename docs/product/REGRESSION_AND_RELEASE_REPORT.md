@@ -53,8 +53,9 @@ related_documents:
 
 | 항목 | 내용 |
 | --- | --- |
-| 릴리즈 후보 | Yes (Release 1 MVP 완료 후 판정 예정) |
-| 포함 범위 | Release 1 (MVP: ZENION 자산 자동 구조화, 듀얼 오디오 플레이어, 16:9/9:16 비디오 렌더러, SNS 릴리즈 키트) |
-| 제외 범위 | 유튜브/틱톡 직접 API 자동 업로드, Suno 웹 자동 크롤러 (Release 2/3 후보) |
-| 남은 리스크 | 고해상도 비디오 렌더링 시 로컬 CPU/GPU 사양에 따른 인코딩 소요 시간 차이 |
-| 다음 릴리즈 후보 | Release 2: AI 음악 디렉터(가변 스타일 기획) + AI 1차 퀄리티 스크리닝(100점 채점) 고도화 |
+| 릴리즈 판정 | **Go (배포 승인 - Ready for Release)** |
+| 릴리즈 버전 | `v0.1.0` (ZENION Music Studio MVP) |
+| 포함 범위 | 1. 헥사고날 아키텍처 코어 서비스 및 Linux Debian 12 + FFmpeg + Noto Sans CJK Docker 환경<br>2. `ZENION-MUSIC` 완결 패키지 폴더 자동 생성, Suno 음원 매핑(02_final_audio/), 실제 파일시스템 syncVault 스캐너<br>3. Linux FFmpeg 기반 16:9 유튜브 롱폼 & 9:16 인스타/틱톡 숏폼 비디오 렌더러, 한글 폰트 자막, 가사 타임라인 싱크<br>4. Gemini SDK Structured Outputs 가변 스타일(1~20곡) & 3대 모드 기획, AI 1차 퀄리티 100점 채점/TOP 3 랭킹, SNS 릴리즈 키트 허브 |
+| 제외 범위 | 유튜브/틱톡 API 직접 자동 업로드, Suno 웹 자동 크롤러 (v0.2.0/v0.3.0 백로그 관리) |
+| 품질 보증 | 회귀 및 보안 smoke 테스트 29/29 (100%) Pass, 잔여 결함 0건, Docker 컨테이너 실가동 검증 완료 |
+| 배포 대상 | `dev` 브랜치 -> `main` 브랜치 병합 및 Docker Compose 배포 (`docker compose up -d`) |
