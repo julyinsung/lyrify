@@ -1,0 +1,29 @@
+﻿version: '3.8'
+
+services:
+  lyrify-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lyrify-studio
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "5173:5173"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - ZENION_ROOT_DIR=/data/ZENION-MUSIC
+      - ACE_WATCH_DIR=/data/ACE-Step-1.5
+      - DATA_DIR=/app/data
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - ACE_API_URL=${ACE_API_URL:-http://host.docker.internal:8001}
+    volumes:
+      - ${ZENION_DIR:-/data/ZENION-MUSIC}:/data/ZENION-MUSIC
+      - ${ACE_DIR:-/data/ACE-Step-1.5}:/data/ACE-Step-1.5
+      - ./data:/app/data
+      - .env:/app/.env:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
