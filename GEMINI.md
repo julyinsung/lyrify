@@ -29,6 +29,7 @@
 5. 로컬 실행 환경이 의심되면 **`python vulcan.py doctor`**를 실행한다. 예: 새 프로젝트/upgrade 직후 첫 worker 전, QA-000 전, npm/Playwright/runner/Dashboard 실패, `environment_blocked` 또는 `Not Run` 보고.
 6. 현재 작업에 맞는 repo-local skill 또는 Core 문서만 선별하여 추가로 읽는다.
 7. profile이 `poc`이면 공식 작업 문서는 기본적으로 `docs/poc/POC_REQUIREMENTS.md`, `docs/poc/POC_SYSTEM_DESIGN.md`, `docs/poc/POC_TEST_REPORT.md` 3종이다. Audit 산출물 파일이 없다는 이유로 임의 생성하거나 작성하지 않는다.
+8. profile이 `product`이면 Gate 2 이후 `docs/core/PRODUCT_PROFILE_BASELINE.md`, `docs/core/SECURITY_BASELINE.md`, `docs/core/DATA_STANDARD_RULES.md`를 기준으로 `docs/product/PRODUCT_ARCHITECTURE.md`, `PRODUCT_CONTRACTS.md`, `PRODUCT_TRACEABILITY.md`, `REGRESSION_AND_RELEASE_REPORT.md`를 갱신한다.
 
 현재 프로젝트의 사실 근거는 반드시 `session.json`, 현재 산출물, 현재 Run, `docs/core/`, 그리고 사용자의 최신 지시에서만 확인한다.
 
@@ -39,6 +40,7 @@
 - **지연 및 누수 방지**: 현재 Gate보다 앞서 구현/테스트/승인/릴리즈를 진행하지 않는다.
 - **상태의 임의 변경 금지**: `gate:` 텍스트 수정만으로는 Gate가 완료되지 않는다. 상태 갱신은 `vulcan.py` 내의 `gate-start`, `session` 또는 `release-pr` 등의 실제 CLI 명령을 실행해 반영한다.
 - **Profile Overlay 준수**: `profile`은 Core 규칙을 대체하지 않지만 산출물 범위, 검사 엄격도, 증적 수준을 조정한다. 특히 PoC에서는 `docs/poc/` 3종과 `status --check` 결과를 우선 기준으로 삼는다.
+- **Product 보안 기준선 노출**: Product는 OWASP ASVS, OWASP Top 10, OWASP API Security Top 10, CWE를 기본 보안 기준으로 삼는다. `PRODUCT_ARCHITECTURE.md`의 `Security Design Baseline`, `PRODUCT_CONTRACTS.md`의 `SEC-ID`, `PRODUCT_TRACEABILITY.md`의 `SEC` 연결, `REGRESSION_AND_RELEASE_REPORT.md`의 `SEC-REG`를 비워두지 않는다. KISA/SR 또는 고객 기준 매핑은 Audit 전환 또는 명시 요구가 있을 때 보강한다.
 - **환경 진단 분리**: `doctor`는 Gate 전환 판정 도구가 아니라 로컬 실행 환경 진단 도구다. `doctor`의 `fail`/`warn`은 제품 결함으로 바로 확정하지 않고, 환경 차단이면 `environment_blocked` 또는 `ISSUE` 후보로 분리한다.
 - **환경 Runway 선행 가능**: Phase 0~Gate 3 동안 Agy `Workspace: branch` 또는 subagent로 구현 환경을 병렬 준비할 수 있다. 이 작업은 폴더, 의존성, lockfile, lint/build/test 스크립트, hello/health smoke까지만 허용하며, 업무 요구사항 구현, 테스트 Pass 확정, 추적표 Implemented/Verified 변경, Gate/session 변경은 금지한다.
 - **Orchestrator의 역할 한정**: 구현 단계에서 오케스트레이터는 직접 대량의 코드를 작성하지 않는다. 실제 구현은 `build` 페르소나의 **Native Worker (subagent/thread/native branch agent)**에게 위임하는 것을 원칙으로 한다.

@@ -56,9 +56,12 @@
 | worker/subagent/thread 위임 | `docs/core/AGENT_RUN_PROTOCOL.md`, `docs/core/AGENT_PERSONAS.md` |
 | 요구사항/추적성 | `docs/core/TRACEABILITY_RULES.md`, 요구사항정의서, 추적표 |
 | 설계 | `docs/core/ORCHESTRATOR_PROTOCOL.md`, Gate 2 산출물 |
+| Product 보안/데이터 기준 | `docs/core/PRODUCT_PROFILE_BASELINE.md`, `docs/core/SECURITY_BASELINE.md`, `docs/core/DATA_STANDARD_RULES.md` |
 | 기술스택/표준 | `docs/core/TECH_STACK_BASELINES.md`, 개발표준정의서 |
 | 변경/백로그/리팩토링 | `docs/core/CHANGE_CONTROL_PROCESS.md`, `docs/core/REFACTORING_PROCESS.md` |
 | Codex model/effort | `docs/core/CODEX_MODEL_POLICY.md`, `docs/core/INDEPENDENT_EXECUTION_PROCESS.md` |
+
+`profile: product`의 Gate 2 이후 산출물에서는 `PRODUCT_ARCHITECTURE.md`의 `Security Design Baseline`, `PRODUCT_CONTRACTS.md`의 `SEC-ID`, `PRODUCT_TRACEABILITY.md`의 `SEC` 연결, `REGRESSION_AND_RELEASE_REPORT.md`의 `SEC-REG`를 확인한다. Product 보안은 OWASP ASVS/Top 10/API Top 10/CWE 기준을 기본으로 하며, KISA/SR 또는 고객 기준 매핑은 Audit 전환 또는 명시 요구가 있을 때 보강한다.
 
 ## 5. Codex Skill과 Custom Agent
 
