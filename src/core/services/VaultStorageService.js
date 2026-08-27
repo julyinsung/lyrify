@@ -472,18 +472,30 @@ export class VaultStorageService {
   /**
    * Delete track from database and optionally remove vault folder files
    * @param {string} trackId 
-   * @param {boolean} [deleteFiles=false] 
+   * @param {boolean} [deleteFiles=true] 
    * @returns {boolean}
    */
-  deleteTrack(trackId, deleteFiles = false) {
+  deleteTrack(trackId, deleteFiles = true) {
     const track = this.getTrack(trackId);
-    if (!track) return false;
 
     if (deleteFiles) {
       try {
-        const folderPath = this.vaultRepository.getTrackFolderPath(`${track.title}_${track.id}`);
-        if (fs.existsSync(folderPath)) {
-          fs.rmSync(folderPath, { recursive: true, force: true });
+        const rootDir = this.vaultRepository.zenionRootDir;
+        if (fs.existsSync(rootDir)) {
+          const entries = fs.readdirSync(rootDir, { withFileTypes: true });
+          for (const entry of entries) {
+            if (entry.isDirectory() && entry.name.includes(trackId)) {
+              const fullPath = path.join(rootDir, entry.name);
+              fs.rmSync(fullPath, { recursive: true, force: true });
+            }
+          }
+        }
+        if (track) {
+          const sanitized = track.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+          const folderPath = path.join(rootDir, `${sanitized}_${track.id}`);
+          if (fs.existsSync(folderPath)) {
+            fs.rmSync(folderPath, { recursive: true, force: true });
+          }
         }
       } catch (err) {
         console.warn(`[VaultStorageService] Error deleting folder for track ${trackId}:`, err.message);
@@ -494,10 +506,33 @@ export class VaultStorageService {
   }
 
   /**
-   * Clear all tracks from database.json
+   * Clear all tracks from database.json and delete generated track folders in ZENION-MUSIC
+   * @param {Object} [options]
+   * @param {boolean} [options.deleteFolders=true]
    * @returns {boolean}
    */
-  clearAllTracks() {
+  clearAllTracks(options = { deleteFolders: true }) {
+    if (options.deleteFolders !== false) {
+      try {
+        const rootDir = this.vaultRepository.zenionRootDir;
+        const preserved = ['BACKUP', '게시된음악', '게시예정음악'];
+        if (fs.existsSync(rootDir)) {
+          const entries = fs.readdirSync(rootDir, { withFileTypes: true });
+          for (const entry of entries) {
+            if (entry.isDirectory()) {
+              const isPreserved = preserved.some(p => entry.name.startsWith(p));
+              if (!isPreserved && (entry.name.includes('TRK-') || entry.name.includes('#'))) {
+                const targetPath = path.join(rootDir, entry.name);
+                fs.rmSync(targetPath, { recursive: true, force: true });
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[VaultStorageService] Error deleting track folders during clearAll:', err.message);
+      }
+    }
+
     return this.vaultRepository.clearAll();
   }
 
