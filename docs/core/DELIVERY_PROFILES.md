@@ -223,6 +223,36 @@ docs/product/REGRESSION_AND_RELEASE_REPORT.md
 
 이 문서들은 Gate별 제출 폴더가 아니라 제품 운영 문서 세트다.
 각 문서의 `gate_scope`와 본문 섹션이 Gate 1~5 역할에 대응한다.
+대시보드에서는 기존 경로 호환성을 유지하면서 다음 Product 산출물 구조로 보여준다.
+
+```text
+docs/product/
+  00-overview/
+    PRODUCT_BRIEF.md
+  01-architecture/
+    PRODUCT_ARCHITECTURE.md
+    ADR_LOG.md
+    diagrams/
+  02-contracts/
+    PRODUCT_CONTRACTS.md
+    api/
+    data/erd/logical/
+    data/erd/physical/
+    ui/design/
+    ui/publishing/
+    security/
+    build-deploy/
+  03-traceability/
+    PRODUCT_TRACEABILITY.md
+  04-regression-release/
+    REGRESSION_AND_RELEASE_REPORT.md
+    evidence/ui/
+    evidence/logs/
+    evidence/reports/
+```
+
+현재 파일은 호환성을 위해 `docs/product/*.md` 루트에 생성하지만,
+UI design, UI publishing, ERD, build/deploy, release evidence가 별도 산출물로 생기면 위 하위 경로를 우선 사용한다.
 `profile-gap`은 Product 문서 세트의 존재 여부와 현재 Gate의 핵심 내용 보완 필요 여부를 분리해 보여준다.
 예를 들어 `PRODUCT_BRIEF.md`의 목표, 주요 사용자, 성공 기준이 `TBD`이면 Phase 0 완료 전 `status --check`에서 차단된다.
 Product Profile에서는 Gate 시작 시 Orchestrator Plan Run을 자동 생성하지 않는다.

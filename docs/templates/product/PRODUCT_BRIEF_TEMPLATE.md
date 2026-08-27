@@ -13,8 +13,8 @@ owner_role: Product Owner
 author: Agent
 reviewer: User
 approver: User
-created_at: 2026-07-08
-updated_at: 2026-07-08
+created_at: 2026-07-10
+updated_at: 2026-07-10
 ---
 
 ## 1. Product Goal

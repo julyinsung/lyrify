@@ -13,8 +13,8 @@ owner_role: Product Architect
 author: Agent
 reviewer: User
 approver: User
-created_at: 2026-07-08
-updated_at: 2026-07-08
+created_at: 2026-07-10
+updated_at: 2026-07-10
 related_documents:
   - docs/product/PRODUCT_ARCHITECTURE.md
 ---
@@ -23,7 +23,7 @@ related_documents:
 
 | ADR ID | 제목 | 상태 | 결정일 | 영향 범위 |
 | --- | --- | --- | --- | --- |
-| ADR-NONE | 현재 기록된 ADR 없음 | N/A | 2026-07-08 | 제품 아키텍처 의사결정이 생기면 ADR-001부터 추가 |
+| ADR-NONE | 현재 기록된 ADR 없음 | N/A | 2026-07-10 | 제품 아키텍처 의사결정이 생기면 ADR-001부터 추가 |
 
 ## 2. ADR 작성 기준
 

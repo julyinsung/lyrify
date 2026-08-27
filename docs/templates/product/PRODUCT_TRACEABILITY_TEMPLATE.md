@@ -13,8 +13,8 @@ owner_role: Orchestrator
 author: Agent
 reviewer: User
 approver: User
-created_at: 2026-07-08
-updated_at: 2026-07-08
+created_at: 2026-07-10
+updated_at: 2026-07-10
 related_documents:
   - docs/product/PRODUCT_BRIEF.md
   - docs/product/PRODUCT_CONTRACTS.md
@@ -28,9 +28,9 @@ Product 추적은 감리용 전체 추적표가 아니라 릴리즈 판단을 �
 
 ## 2. Scenario Trace
 
-| Scenario ID | 관련 REQ | 시나리오 | Contract | Implementation | Regression | Release Evidence | 상태 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| SCN-001 | REQ-001 | TBD | API-001, DATA-001, UI-001 | TBD | REG-001 | EV-001 | Planned |
+| Scenario ID | 관련 REQ | 시나리오 | Product Contract | Security | Implementation | Regression | Release Evidence | 상태 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| SCN-001 | REQ-001 | TBD | API-001, DATA-001, UI-001 | SEC-001 | TBD | REG-001, SEC-REG-001 | EV-001 | Planned |
 
 ## 3. Open Trace Gaps
 
