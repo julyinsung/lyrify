@@ -227,7 +227,12 @@
       <div class="panel">
         <div class="panel-title" style="justify-content: space-between;">
           <span>🎧 AI Screening Room & Master Vault Tracks</span>
-          <span class="badge badge-primary" id="track-count">0 Tracks</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-secondary" onclick="clearAllTracks()" style="width: auto; padding: 4px 10px; font-size: 12px; background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4);">
+              🗑️ 전체 비우기
+            </button>
+            <span class="badge badge-primary" id="track-count">0 Tracks</span>
+          </div>
         </div>
         <div id="tracks-list">
           <div style="text-align: center; padding: 40px; color: var(--text-muted);">
@@ -304,14 +309,17 @@
           const hasAudio = Boolean(t.audioPathSuno || t.audioPathAceStep || (t.assetsStatus && (t.assetsStatus.hasFinalAudio || t.assetsStatus.hasDraft)));
 
           return `
-          <div class="track-card">
+          <div class="track-card" id="card-${t.id}">
             <div class="track-header">
               <div>
                 <span class="badge ${badgeClass}">${rankBadge}</span>
                 <span class="track-title" style="margin-left: 8px;">${t.title}</span>
                 ${hasAudio ? '<span class="badge badge-success" style="margin-left: 6px;">🎧 실제 음원 탑재됨</span>' : '<span class="badge badge-secondary" style="margin-left: 6px;">⏳ 초안 대기 중</span>'}
               </div>
-              <div class="score-box">${t.aiScore || 85}<span style="font-size: 12px; color: var(--text-muted);">점 (${grade}급)</span></div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="score-box">${t.aiScore || 85}<span style="font-size: 12px; color: var(--text-muted);">점 (${grade}급)</span></div>
+                <button class="btn btn-secondary" onclick="deleteTrack('${t.id}', '${t.title}')" style="width: auto; padding: 2px 8px; font-size: 12px; color: #f87171; border-color: rgba(239, 68, 68, 0.3);" title="트랙 삭제">🗑️</button>
+              </div>
             </div>
             <div class="tags">
               <span class="tag">장르: ${t.genre || 'City Pop'}</span>
@@ -376,6 +384,43 @@
           alert('📋 ACE-Step 1.5 전용 프롬프트 & 가사가 클립보드에 복사되었습니다!\nACE-Step CLI 또는 WebUI에 붙여넣어 실행하세요.');
         } catch (e) {
           alert('복사 오류: ' + e.message);
+        }
+      }
+
+      async function deleteTrack(trackId, title) {
+        if (!confirm(`정말로 트랙 '${title || trackId}'을(를) 삭제하시겠습니까?`)) {
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/tracks/${trackId}?deleteFiles=true`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            fetchTracks();
+          } else {
+            alert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
+          }
+        } catch (e) {
+          alert('삭제 오류: ' + e.message);
+        }
+      }
+
+      async function clearAllTracks() {
+        if (!confirm('⚠️ 정말로 등록된 모든 트랙과 레시피를 비우시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/tracks/clear`, { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            alert('🧹 모든 트랙이 성공적으로 초기화되었습니다.');
+            fetchTracks();
+          } else {
+            alert('초기화 실패: ' + (data.error || '알 수 없는 오류'));
+          }
+        } catch (e) {
+          alert('초기화 오류: ' + e.message);
         }
       }
 

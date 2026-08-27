@@ -470,6 +470,38 @@ export class VaultStorageService {
   }
 
   /**
+   * Delete track from database and optionally remove vault folder files
+   * @param {string} trackId 
+   * @param {boolean} [deleteFiles=false] 
+   * @returns {boolean}
+   */
+  deleteTrack(trackId, deleteFiles = false) {
+    const track = this.getTrack(trackId);
+    if (!track) return false;
+
+    if (deleteFiles) {
+      try {
+        const folderPath = this.vaultRepository.getTrackFolderPath(`${track.title}_${track.id}`);
+        if (fs.existsSync(folderPath)) {
+          fs.rmSync(folderPath, { recursive: true, force: true });
+        }
+      } catch (err) {
+        console.warn(`[VaultStorageService] Error deleting folder for track ${trackId}:`, err.message);
+      }
+    }
+
+    return this.vaultRepository.delete(trackId);
+  }
+
+  /**
+   * Clear all tracks from database.json
+   * @returns {boolean}
+   */
+  clearAllTracks() {
+    return this.vaultRepository.clearAll();
+  }
+
+  /**
    * Enrich track JSON with assetsStatus and ranking (API-002)
    * @param {Track} track 
    * @param {number} [ranking] 

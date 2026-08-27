@@ -212,6 +212,30 @@ export function createTracksRouter({ vaultService, judgeService }) {
     }
   });
 
+  // DELETE /api/tracks/:id - Delete single track
+  router.delete('/:id', (req, res, next) => {
+    try {
+      const { deleteFiles = true } = req.query || {};
+      const success = vaultService.deleteTrack(req.params.id, deleteFiles === 'true' || deleteFiles === true);
+      if (!success) {
+        return res.status(404).json({ success: false, error: 'Track not found' });
+      }
+      return res.json({ success: true, message: `Track ${req.params.id} deleted successfully.` });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // POST /api/tracks/clear - Clear all tracks
+  router.post('/clear', (req, res, next) => {
+    try {
+      vaultService.clearAllTracks();
+      return res.json({ success: true, message: 'All tracks cleared successfully.' });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   return router;
 }
 

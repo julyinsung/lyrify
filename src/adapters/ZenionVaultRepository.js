@@ -310,6 +310,30 @@ export class ZenionVaultRepository {
   }
 
   /**
+   * Delete a track by ID (Synchronous)
+   * @param {string} id 
+   * @returns {boolean}
+   */
+  delete(id) {
+    const tracks = this.loadAll();
+    const filtered = tracks.filter((t) => t.id !== id);
+    if (filtered.length !== tracks.length) {
+      this._atomicWriteFileSync(this.dbFilePath, JSON.stringify({ tracks: filtered }, null, 2));
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Clear all tracks from database.json
+   * @returns {boolean}
+   */
+  clearAll() {
+    this._atomicWriteFileSync(this.dbFilePath, JSON.stringify({ tracks: [] }, null, 2));
+    return true;
+  }
+
+  /**
    * Delete a track by ID (Asynchronous with Mutex)
    * @param {string} id 
    * @returns {Promise<boolean>}
