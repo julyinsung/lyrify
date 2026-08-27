@@ -40,7 +40,7 @@
         "completed_ids": []
       },
       "waves": {
-        "total": 2,
+        "total": 3,
         "completed": 0,
         "current": "",
         "items": [
@@ -126,6 +126,38 @@
               "SCN-002",
               "SCN-003",
               "SCN-004",
+              "SCN-005",
+              "SEC-001",
+              "SEC-002"
+            ]
+          },
+          {
+            "id": "BW-002",
+            "status": "Planned",
+            "run": "",
+            "related_ids": [
+              "AC-002-01",
+              "AC-002-02",
+              "AC-003-03",
+              "API-001",
+              "API-002",
+              "API-003",
+              "API-004",
+              "API-006",
+              "API-007",
+              "API-008",
+              "DATA-001",
+              "DATA-002",
+              "FUNC-002",
+              "FUNC-005",
+              "REG-002",
+              "REG-003",
+              "REQ-002",
+              "REQ-003",
+              "SCN-001",
+              "SCN-002",
+              "SCN-003",
+              "SCN-005",
               "SEC-001",
               "SEC-002"
             ]
@@ -148,8 +180,8 @@
       "review": 0,
       "release": 0,
       "backlog": 0,
-      "runs": 1,
-      "total": 1
+      "runs": 2,
+      "total": 2
     },
     "backlog": {
       "active": 0,
@@ -224,7 +256,7 @@
       "completed_ids": []
     },
     "waves": {
-      "total": 2,
+      "total": 3,
       "completed": 0,
       "current": "",
       "items": [
@@ -310,6 +342,38 @@
             "SCN-002",
             "SCN-003",
             "SCN-004",
+            "SCN-005",
+            "SEC-001",
+            "SEC-002"
+          ]
+        },
+        {
+          "id": "BW-002",
+          "status": "Planned",
+          "run": "",
+          "related_ids": [
+            "AC-002-01",
+            "AC-002-02",
+            "AC-003-03",
+            "API-001",
+            "API-002",
+            "API-003",
+            "API-004",
+            "API-006",
+            "API-007",
+            "API-008",
+            "DATA-001",
+            "DATA-002",
+            "FUNC-002",
+            "FUNC-005",
+            "REG-002",
+            "REG-003",
+            "REQ-002",
+            "REQ-003",
+            "SCN-001",
+            "SCN-002",
+            "SCN-003",
+            "SCN-005",
             "SEC-001",
             "SEC-002"
           ]

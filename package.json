@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "node tests/smoke.test.js"
+    "test": "node tests/smoke.test.js && node tests/vault.test.js",
+    "test:smoke": "node tests/smoke.test.js",
+    "test:vault": "node tests/vault.test.js"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
