@@ -66,6 +66,11 @@ export function createApp() {
   });
   const releaseService = new ReleaseKitService({ vaultService });
 
+  // Web Studio UI Route
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'index.html'));
+  });
+
   // Healthcheck endpoints
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'lyrify', timestamp: new Date().toISOString() });
@@ -84,7 +89,7 @@ export function createApp() {
   });
 
   // API Routes
-  app.use('/api/director', createDirectorRouter({ directorService }));
+  app.use('/api/director', createDirectorRouter({ directorService, vaultService }));
   app.use('/api/tracks', createTracksRouter({ vaultService, judgeService }));
   app.use('/api/tracks', createVideoRouter({ renderService }));
   app.use('/api/tracks', createReleaseRouter({ releaseService }));

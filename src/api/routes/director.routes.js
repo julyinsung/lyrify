@@ -8,7 +8,7 @@ import express from 'express';
  * @param {import('../../core/services/DirectorService.js').DirectorService} services.directorService
  * @returns {express.Router}
  */
-export function createDirectorRouter({ directorService }) {
+export function createDirectorRouter({ directorService, vaultService }) {
   const router = express.Router();
 
   // GET /api/director/modes - List available planning modes (explore, single, album)
@@ -31,6 +31,28 @@ export function createDirectorRouter({ directorService }) {
         mode,
         provider
       });
+
+      // Auto-save generated recipes to Master Vault if vaultService is provided
+      if (vaultService && Array.isArray(result.styles)) {
+        for (const style of result.styles) {
+          try {
+            await vaultService.createTrackVault(style.title, {
+              title: style.title,
+              genre: style.genre,
+              bpm: style.bpm,
+              instruments: style.instruments,
+              lyrics: style.lyrics,
+              concept: style.concept,
+              promptText: style.promptText,
+              keyword: result.keyword,
+              mode: result.mode
+            });
+          } catch (vaultErr) {
+            console.warn('[Director Auto-Save Warning]', vaultErr.message);
+          }
+        }
+      }
+
       return res.json(result);
     } catch (err) {
       next(err);

@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { Track } from '../domain/Track.js';
 
@@ -440,7 +440,7 @@ export class VaultStorageService {
    * @returns {Object}
    */
   enrichTrack(track, ranking) {
-    const json = track.toJSON();
+    const json = (track && typeof track.toJSON === 'function') ? track.toJSON() : { ...track };
     return {
       ...json,
       assetsStatus: this.getTrackAssetStatus(track),
