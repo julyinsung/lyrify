@@ -1,4 +1,4 @@
-﻿# Run 002: Build Wave BW-001 ZENION Storage Master Vault Engine
+# Run 002: Build Wave BW-001 ZENION Storage Master Vault Engine
 
 ---
 document_id: RUN-002
@@ -7,7 +7,7 @@ title_ko: BW-001 ZENION 저장소 마스터 볼트 엔진 구축 및 자산 동�
 project: lyrify
 profile: product
 gate_scope: impl
-status: Completed
+status: Verified
 version: v0.1
 owner_role: Build Worker
 author: Build Worker (Vault Storage Builder)
@@ -27,6 +27,7 @@ related_documents:
 
 ```yaml
 run_id: RUN-002
+bw_id: BW-001
 persona: build
 skill: build-wave
 run_type: BuildWave
@@ -109,6 +110,7 @@ verification:
     - "npm test"
     - "node tests/vault.test.js"
     - "node tests/smoke.test.js"
+status: Completed
 ```
 
 ---
@@ -117,6 +119,7 @@ verification:
 
 ```yaml
 run_id: RUN-002
+bw_id: BW-001
 status: Completed
 adapter: gemini
 completed_at: "2026-08-27T23:25:50+09:00"

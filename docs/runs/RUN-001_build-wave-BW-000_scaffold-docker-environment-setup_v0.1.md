@@ -7,7 +7,7 @@ title_ko: BW-000 스캐폴드 및 Docker 실행 환경 구축
 project: lyrify
 profile: product
 gate_scope: impl
-status: Completed
+status: Verified
 version: v0.1
 owner_role: Build Worker
 author: Build Worker (Scaffold - Environment Builder)
@@ -27,6 +27,7 @@ related_documents:
 
 ```yaml
 run_id: RUN-001
+bw_id: BW-000
 persona: build
 skill: implementation-scaffold
 run_type: ImplementationScaffold
@@ -139,6 +140,7 @@ verification:
   commands:
     - "npm test"
     - "node tests/smoke.test.js"
+status: Completed
 ```
 
 ---
@@ -147,6 +149,7 @@ verification:
 
 ```yaml
 run_id: RUN-001
+bw_id: BW-000
 status: Completed
 adapter: gemini
 completed_at: "2026-08-27T23:14:00+09:00"

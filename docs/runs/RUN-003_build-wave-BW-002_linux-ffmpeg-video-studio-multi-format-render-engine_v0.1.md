@@ -1,4 +1,4 @@
-﻿# Run 003: Build Wave BW-002 Linux FFmpeg Video Studio & Multi-Format Render Engine
+# Run 003: Build Wave BW-002 Linux FFmpeg Video Studio & Multi-Format Render Engine
 
 ---
 document_id: RUN-003
@@ -7,7 +7,7 @@ title_ko: BW-002 Linux FFmpeg 비디오 스튜디오 및 멀티 포맷(16:9/9:16
 project: lyrify
 profile: product
 gate_scope: impl
-status: Completed
+status: Verified
 version: v0.1
 owner_role: Build Worker
 author: Build Worker (Video Studio Builder)
@@ -28,6 +28,7 @@ related_documents:
 
 ```yaml
 run_id: RUN-003
+bw_id: BW-002
 persona: build
 skill: build-wave
 run_type: BuildWave
@@ -111,6 +112,7 @@ verification:
     - "node tests/video.test.js"
     - "node tests/vault.test.js"
     - "node tests/smoke.test.js"
+status: Completed
 ```
 
 ---
@@ -119,6 +121,7 @@ verification:
 
 ```yaml
 run_id: RUN-003
+bw_id: BW-002
 status: Completed
 adapter: gemini
 completed_at: "2026-08-27T23:36:35+09:00"

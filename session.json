@@ -27,27 +27,31 @@
     "requirements": {
       "groups": 5,
       "total": 3,
-      "implemented": 0,
-      "pending": 3,
+      "implemented": 3,
+      "pending": 0,
       "ac_defined": 3,
       "ac_missing": 0
     },
     "implementation": {
       "requirements": {
         "total": 3,
-        "implemented": 0,
-        "pending": 3,
-        "completed_ids": []
+        "implemented": 3,
+        "pending": 0,
+        "completed_ids": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-003"
+        ]
       },
       "waves": {
         "total": 4,
-        "completed": 0,
+        "completed": 4,
         "current": "",
         "items": [
           {
             "id": "BW-000",
-            "status": "Planned",
-            "run": "",
+            "status": "Completed",
+            "run": "docs\\runs\\RUN-001_build-wave-BW-000_scaffold-docker-environment-setup_v0.1.md",
             "related_ids": [
               "AC-001-01",
               "AC-001-02",
@@ -89,8 +93,8 @@
           },
           {
             "id": "BW-001",
-            "status": "Planned",
-            "run": "",
+            "status": "Completed",
+            "run": "docs\\runs\\RUN-002_build-wave-BW-001_zenion-storage-master-vault-engine_v0.1.md",
             "related_ids": [
               "AC-001-01",
               "AC-001-02",
@@ -133,8 +137,8 @@
           },
           {
             "id": "BW-002",
-            "status": "Planned",
-            "run": "",
+            "status": "Completed",
+            "run": "docs\\runs\\RUN-003_build-wave-BW-002_linux-ffmpeg-video-studio-multi-format-render-engine_v0.1.md",
             "related_ids": [
               "AC-002-01",
               "AC-002-02",
@@ -171,13 +175,14 @@
           },
           {
             "id": "BW-003",
-            "status": "Planned",
-            "run": "",
+            "status": "Completed",
+            "run": "docs\\runs\\RUN-004_build-wave-BW-003_ai-director-screening-sns-release-hub-engine_v0.1.md",
             "related_ids": [
               "AC-003-01",
               "AC-003-02",
               "AC-003-03",
               "API-001",
+              "API-002",
               "API-003",
               "API-004",
               "API-005",
@@ -188,16 +193,25 @@
               "DATA-002",
               "FUNC-003",
               "FUNC-004",
+              "REG-001",
               "REG-002",
+              "REG-003",
               "REG-004",
+              "REG-005",
+              "REQ-001",
               "REQ-002",
               "REQ-003",
               "SCN-001",
               "SCN-002",
+              "SCN-003",
               "SCN-004",
               "SCN-005",
               "SEC-001",
-              "SEC-002"
+              "SEC-002",
+              "UI-001",
+              "UI-002",
+              "UI-003",
+              "UI-004"
             ]
           }
         ]
@@ -218,8 +232,8 @@
       "review": 0,
       "release": 0,
       "backlog": 0,
-      "runs": 3,
-      "total": 3
+      "runs": 4,
+      "total": 4
     },
     "backlog": {
       "active": 0,
@@ -258,13 +272,17 @@
       },
       "requirements": {
         "total": 3,
-        "implemented": 0,
+        "implemented": 3,
         "ids": [
           "REQ-001",
           "REQ-002",
           "REQ-003"
         ],
-        "implemented_ids": []
+        "implemented_ids": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-003"
+        ]
       }
     }
   },
@@ -289,19 +307,23 @@
   "implementation": {
     "requirements": {
       "total": 3,
-      "implemented": 0,
-      "pending": 3,
-      "completed_ids": []
+      "implemented": 3,
+      "pending": 0,
+      "completed_ids": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-003"
+      ]
     },
     "waves": {
       "total": 4,
-      "completed": 0,
+      "completed": 4,
       "current": "",
       "items": [
         {
           "id": "BW-000",
-          "status": "Planned",
-          "run": "",
+          "status": "Completed",
+          "run": "docs\\runs\\RUN-001_build-wave-BW-000_scaffold-docker-environment-setup_v0.1.md",
           "related_ids": [
             "AC-001-01",
             "AC-001-02",
@@ -343,8 +365,8 @@
         },
         {
           "id": "BW-001",
-          "status": "Planned",
-          "run": "",
+          "status": "Completed",
+          "run": "docs\\runs\\RUN-002_build-wave-BW-001_zenion-storage-master-vault-engine_v0.1.md",
           "related_ids": [
             "AC-001-01",
             "AC-001-02",
@@ -387,8 +409,8 @@
         },
         {
           "id": "BW-002",
-          "status": "Planned",
-          "run": "",
+          "status": "Completed",
+          "run": "docs\\runs\\RUN-003_build-wave-BW-002_linux-ffmpeg-video-studio-multi-format-render-engine_v0.1.md",
           "related_ids": [
             "AC-002-01",
             "AC-002-02",
@@ -425,13 +447,14 @@
         },
         {
           "id": "BW-003",
-          "status": "Planned",
-          "run": "",
+          "status": "Completed",
+          "run": "docs\\runs\\RUN-004_build-wave-BW-003_ai-director-screening-sns-release-hub-engine_v0.1.md",
           "related_ids": [
             "AC-003-01",
             "AC-003-02",
             "AC-003-03",
             "API-001",
+            "API-002",
             "API-003",
             "API-004",
             "API-005",
@@ -442,16 +465,25 @@
             "DATA-002",
             "FUNC-003",
             "FUNC-004",
+            "REG-001",
             "REG-002",
+            "REG-003",
             "REG-004",
+            "REG-005",
+            "REQ-001",
             "REQ-002",
             "REQ-003",
             "SCN-001",
             "SCN-002",
+            "SCN-003",
             "SCN-004",
             "SCN-005",
             "SEC-001",
-            "SEC-002"
+            "SEC-002",
+            "UI-001",
+            "UI-002",
+            "UI-003",
+            "UI-004"
           ]
         }
       ]

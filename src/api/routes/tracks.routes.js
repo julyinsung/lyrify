@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 
 /**
  * Tracks Routes
@@ -12,11 +12,12 @@
 export function createTracksRouter({ vaultService, judgeService }) {
   const router = express.Router();
 
-  // GET /api/tracks (API-002) - List all tracks with assets status and AI ranking
+  // GET /api/tracks (API-002, SCN-002) - List all tracks with assets status and AI ranking
   router.get('/', (req, res, next) => {
     try {
       const rawTracks = vaultService.listTracks();
-      const tracks = rawTracks.map((t, idx) => vaultService.enrichTrack(t, idx + 1));
+      const rankedTracks = judgeService ? judgeService.rankTracks(rawTracks) : rawTracks;
+      const tracks = rankedTracks.map((t, idx) => vaultService.enrichTrack(t, t.ranking || idx + 1));
       return res.json({ success: true, count: tracks.length, tracks });
     } catch (err) {
       next(err);
@@ -47,7 +48,7 @@ export function createTracksRouter({ vaultService, judgeService }) {
     }
   });
 
-  // POST /api/tracks/:id/evaluate (API-003) - AI Quality Screening
+  // POST /api/tracks/:id/evaluate (API-003, SCN-002) - AI Quality Screening
   router.post('/:id/evaluate', async (req, res, next) => {
     try {
       const { audioPath, lyrics } = req.body || {};
@@ -115,3 +116,5 @@ export function createTracksRouter({ vaultService, judgeService }) {
 
   return router;
 }
+
+export default createTracksRouter;
