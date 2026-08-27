@@ -232,6 +232,35 @@ export class VaultStorageService {
   }
 
   /**
+   * Attach ACE-Step 1.5 draft audio to track (01_draft/draft.mp3)
+   * @param {string} trackId 
+   * @param {string} sourceAudioPath 
+   * @returns {Promise<{success: boolean, track: Object, destPath: string}>}
+   */
+  async attachAceDraft(trackId, sourceAudioPath) {
+    const track = this.getTrack(trackId);
+    if (!track) throw new Error(`Track with ID ${trackId} not found.`);
+
+    const vault = this.createTrackVault(track);
+    const ext = path.extname(sourceAudioPath) || '.mp3';
+    const destPath = path.join(vault.folders.draft, `draft${ext}`);
+
+    if (fs.existsSync(sourceAudioPath)) {
+      fs.copyFileSync(sourceAudioPath, destPath);
+    }
+
+    track.audioPathAceStep = destPath;
+    track.status = 'draft_ready';
+    this.saveTrack(track);
+
+    return {
+      success: true,
+      track: track.toJSON(),
+      destPath
+    };
+  }
+
+  /**
    * Export SNS release kit markdown to release_kit.md in track master vault folder (API-007, SCN-005)
    * 
    * @param {string} trackId 

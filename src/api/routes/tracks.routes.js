@@ -83,6 +83,75 @@ export function createTracksRouter({ vaultService, judgeService }) {
     }
   });
 
+  // POST /api/tracks/:id/attach-ace - Attach ACE-Step draft audio file
+  router.post('/:id/attach-ace', async (req, res, next) => {
+    try {
+      const { aceAudioPath, autoEvaluate = true } = req.body || {};
+      if (!aceAudioPath) {
+        return res.status(400).json({ success: false, error: 'aceAudioPath is required' });
+      }
+
+      const result = await vaultService.attachAceDraft(req.params.id, aceAudioPath);
+      
+      let evaluation = null;
+      if (autoEvaluate && judgeService) {
+        const track = vaultService.getTrack(req.params.id);
+        evaluation = await judgeService.evaluateTrack(req.params.id, {
+          audioPath: result.destPath,
+          lyrics: track ? track.lyricsRaw : ''
+        });
+      }
+
+      return res.json({ ...result, evaluation });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // POST /api/tracks/:id/auto-ace - Auto discover and attach audio from ACE-Step output folder
+  router.post('/:id/auto-ace', async (req, res, next) => {
+    try {
+      const aceDirs = [
+        '/data/ACE-Step-1.5/output/clean_outputs',
+        '/data/ACE-Step-1.5/output/extended_outputs',
+        '/data/ACE-Step-1.5/final_selected_tracks',
+        'C:/Users/julyi/Documents/ACE-Step-1.5/output/clean_outputs',
+        'C:/Users/julyi/Documents/ACE-Step-1.5/output/extended_outputs',
+        'C:/Users/julyi/Documents/ACE-Step-1.5/final_selected_tracks'
+      ];
+
+      let foundAudioPath = null;
+      for (const dir of aceDirs) {
+        if (fs.existsSync(dir)) {
+          const files = fs.readdirSync(dir).filter(f => f.endsWith('.mp3') || f.endsWith('.wav'));
+          if (files.length > 0) {
+            // Pick a file or match by index
+            foundAudioPath = path.join(dir, files[Math.floor(Math.random() * files.length)]);
+            break;
+          }
+        }
+      }
+
+      if (!foundAudioPath) {
+        return res.status(404).json({ success: false, error: 'No generated audio files found in ACE-Step output folders.' });
+      }
+
+      const result = await vaultService.attachAceDraft(req.params.id, foundAudioPath);
+      let evaluation = null;
+      if (judgeService) {
+        const track = vaultService.getTrack(req.params.id);
+        evaluation = await judgeService.evaluateTrack(req.params.id, {
+          audioPath: result.destPath,
+          lyrics: track ? track.lyricsRaw : ''
+        });
+      }
+
+      return res.json({ ...result, evaluation, sourceAudio: foundAudioPath });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   // POST /api/tracks/:id/export-kit - Export release_kit.md to track master vault
   router.post('/:id/export-kit', (req, res, next) => {
     try {
