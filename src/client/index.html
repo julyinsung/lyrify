@@ -1,20 +1,389 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZENION Music Studio - All-in-one AI Music Creator Pipeline</title>
+    <title>ZENION Music Studio (@zenion.studio)</title>
     <style>
+      :root {
+        --bg-dark: #0a0e17;
+        --card-bg: #131b2e;
+        --card-border: #1f2d4d;
+        --primary: #3b82f6;
+        --accent: #8b5cf6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --text: #f3f4f6;
+        --text-muted: #9ca3af;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Noto Sans KR', sans-serif;
-        background-color: #0d1117;
-        color: #c9d1d9;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text);
+        line-height: 1.5;
+        padding: 24px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--card-border);
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #60a5fa, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .badge-success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+      .badge-primary { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+      .badge-warning { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+      
+      .grid {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 24px;
+      }
+      .panel {
+        background-color: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .panel-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+      input, select, textarea {
+        width: 100%;
+        background-color: #0f172a;
+        border: 1px solid var(--card-border);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      .btn {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: opacity 0.2s;
+      }
+      .btn:hover { opacity: 0.9; }
+      .btn-secondary {
+        background: #1e293b;
+        color: var(--text);
+        border: 1px solid var(--card-border);
+      }
+      .track-card {
+        background-color: #0f172a;
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .track-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .track-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .score-box {
+        font-size: 20px;
+        font-weight: 700;
+        color: #34d399;
+      }
+      .tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .tag {
+        background-color: #1e293b;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+      .btn-group {
+        display: flex;
+        gap: 8px;
+      }
+      .lyrics-box {
+        background-color: #080c14;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #cbd5e1;
+        white-space: pre-line;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.8);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal-content {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        max-width: 600px;
+        width: 100%;
+        padding: 24px;
+        max-height: 90vh;
+        overflow-y: auto;
       }
     </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div class="header">
+      <div>
+        <div class="logo">ZENION Music Studio</div>
+        <div style="font-size: 12px; color: var(--text-muted);">@zenion.studio 올인원 AI 음악 크리에이터 파이프라인 (v0.1.0 MVP)</div>
+      </div>
+      <div>
+        <span class="badge badge-success" id="server-status">● Live (Docker Engine)</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left Panel: AI Director Suite -->
+      <div class="panel">
+        <div class="panel-title">✨ AI 음악 디렉터 (기획 엔진)</div>
+        <div class="form-group">
+          <label>감성 키워드 / 테마</label>
+          <input type="text" id="director-keyword" value="비 오는 날 네온사인 시티팝" placeholder="예: 여름 드라이브 칠합, 몽환적인 R&B" />
+        </div>
+        <div class="form-group">
+          <label>기획 모드</label>
+          <select id="director-mode">
+            <option value="explore">다중 스타일 탐색 (Explore Mode)</option>
+            <option value="single">단일 곡 미세 변주 (Single Track Focus)</option>
+            <option value="album">컨셉 앨범 / EP (Album Curation)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>생성할 곡 수 (가변: 1~20곡)</label>
+          <input type="number" id="director-count" value="3" min="1" max="20" />
+        </div>
+        <button class="btn" id="btn-generate-styles" onclick="generateStyles()">🚀 AI 스타일 & 가사 레시피 기획</button>
+        
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--card-border);">
+          <div class="panel-title">📁 ZENION 마스터 볼트</div>
+          <button class="btn btn-secondary" onclick="scanVault()" style="margin-bottom: 8px;">🔄 저장소 재스캔 (syncVault)</button>
+          <div style="font-size: 11px; color: var(--text-muted);">
+            마운트: <code>/data/ZENION-MUSIC</code><br>
+            초안 감시: <code>/data/ACE-Step-1.5</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Screening Room & Studio -->
+      <div class="panel">
+        <div class="panel-title" style="justify-content: space-between;">
+          <span>🎧 AI Screening Room & Master Vault Tracks</span>
+          <span class="badge badge-primary" id="track-count">0 Tracks</span>
+        </div>
+        <div id="tracks-list">
+          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            트랙 목록을 불러오는 중입니다...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Release Kit Modal -->
+    <div class="modal" id="release-modal">
+      <div class="modal-content">
+        <div class="track-header" style="margin-bottom: 16px;">
+          <div class="track-title" id="modal-title">SNS 릴리즈 키트</div>
+          <button class="btn btn-secondary" onclick="closeModal()" style="width: auto; padding: 4px 12px;">✕</button>
+        </div>
+        <div class="form-group">
+          <label>YouTube 롱폼 (16:9) 설명문 & 타임스탬프</label>
+          <textarea id="modal-youtube" rows="6" readonly></textarea>
+        </div>
+        <div class="form-group">
+          <label>Instagram Reels 캡션 & 해시태그</label>
+          <textarea id="modal-instagram" rows="4" readonly></textarea>
+        </div>
+        <div class="form-group">
+          <label>TikTok 숏폼 캡션 & 해시태그</label>
+          <textarea id="modal-tiktok" rows="3" readonly></textarea>
+        </div>
+        <button class="btn" onclick="copyReleaseKit()">📋 원클릭 클립보드 전체 복사</button>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = '/api';
+
+      async function fetchTracks() {
+        try {
+          const res = await fetch(`${API_BASE}/tracks`);
+          const data = await res.json();
+          renderTracks(data.tracks || []);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function renderTracks(tracks) {
+        const container = document.getElementById('tracks-list');
+        document.getElementById('track-count').innerText = `${tracks.length} Tracks`;
+        if (tracks.length === 0) {
+          container.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-muted);">등록된 트랙이 없습니다. 좌측에서 AI 스타일 기획을 실행해 보세요!</div>`;
+          return;
+        }
+        container.innerHTML = tracks.map(t => `
+          <div class="track-card">
+            <div class="track-header">
+              <div>
+                <span class="badge ${t.aiRank <= 3 ? 'badge-warning' : 'badge-primary'}">${t.aiBadge || 'TRACK'}</span>
+                <span class="track-title" style="margin-left: 8px;">${t.title}</span>
+              </div>
+              <div class="score-box">${t.aiScore || 85}<span style="font-size: 12px; color: var(--text-muted);">점 (${t.aiGrade || 'A'})</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag">장르: ${t.genre || 'City Pop'}</span>
+              <span class="tag">BPM: ${t.bpm || 118}</span>
+              <span class="tag">상태: ${t.status || 'draft'}</span>
+            </div>
+            <div class="lyrics-box">${t.lyricsText || (t.lyrics ? [t.lyrics.verse1, t.lyrics.chorus].filter(Boolean).join('\\n\\n') : '가사 정보 없음')}</div>
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'youtube_16x9')">🎬 16:9 비디오</button>
+              <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'shorts_9x16')">📱 9:16 숏폼</button>
+              <button class="btn btn-secondary" onclick="openReleaseModal('${t.id}')">🚀 SNS 릴리즈 키트</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      async function generateStyles() {
+        const keyword = document.getElementById('director-keyword').value;
+        const mode = document.getElementById('director-mode').value;
+        const count = parseInt(document.getElementById('director-count').value, 10);
+        const btn = document.getElementById('btn-generate-styles');
+        btn.innerText = '⏳ AI 기획 생성 중...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(`${API_BASE}/director/generate-styles`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keyword, count, mode })
+          });
+          const data = await res.json();
+          alert(`🎉 ${data.styles.length}개의 스타일 레시피가 생성되었습니다!`);
+          fetchTracks();
+        } catch (e) {
+          alert('오류 발생: ' + e.message);
+        } finally {
+          btn.innerText = '🚀 AI 스타일 & 가사 레시피 기획';
+          btn.disabled = false;
+        }
+      }
+
+      async function scanVault() {
+        try {
+          const res = await fetch(`${API_BASE}/tracks/scan`, { method: 'POST' });
+          const data = await res.json();
+          alert(`저장소 스캔 완료: ${data.discoveredCount}개 트랙 동기화`);
+          fetchTracks();
+        } catch (e) {
+          alert('스캔 오류: ' + e.message);
+        }
+      }
+
+      async function exportVideo(trackId, format) {
+        try {
+          const res = await fetch(`${API_BASE}/tracks/${trackId}/export-video`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ format })
+          });
+          const data = await res.json();
+          alert(`비디오 렌더링 완료! 저장 경로: 04_videos/`);
+        } catch (e) {
+          alert('렌더링 오류: ' + e.message);
+        }
+      }
+
+      async function openReleaseModal(trackId) {
+        try {
+          const res = await fetch(`${API_BASE}/tracks/${trackId}/release-kit`);
+          const data = await res.json();
+          const kit = data.releaseKit || {};
+          document.getElementById('modal-youtube').value = `${kit.youtube?.title || ''}\\n\\n${kit.youtube?.description || ''}\\n\\nTags: ${(kit.youtube?.tags || []).join(', ')}`;
+          document.getElementById('modal-instagram').value = `${kit.instagram?.caption || ''}\\n\\n${(kit.instagram?.hashtags || []).join(' ')}`;
+          document.getElementById('modal-tiktok').value = `${kit.tiktok?.caption || ''} ${(kit.tiktok?.hashtags || []).join(' ')}`;
+          document.getElementById('release-modal').style.display = 'flex';
+        } catch (e) {
+          alert('릴리즈 키트 조회 오류: ' + e.message);
+        }
+      }
+
+      function closeModal() {
+        document.getElementById('release-modal').style.display = 'none';
+      }
+
+      function copyReleaseKit() {
+        const text = [
+          '=== YouTube ===\\n' + document.getElementById('modal-youtube').value,
+          '=== Instagram ===\\n' + document.getElementById('modal-instagram').value,
+          '=== TikTok ===\\n' + document.getElementById('modal-tiktok').value
+        ].join('\\n\\n');
+        navigator.clipboard.writeText(text);
+        alert('📋 전체 플랫폼 릴리즈 키트가 클립보드에 복사되었습니다!');
+      }
+
+      // Initial load
+      fetchTracks();
+    </script>
   </body>
 </html>

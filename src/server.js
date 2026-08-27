@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -38,6 +38,7 @@ export function createApp() {
   app.use(cors());
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  app.use(express.static(path.join(__dirname, 'client')));
 
   // Initialize Driven Adapters
   const geminiProvider = new GeminiProvider({
