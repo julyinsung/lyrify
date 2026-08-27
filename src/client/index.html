@@ -319,6 +319,9 @@
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">📝 기획 가사 (Verse / Chorus)</div>
             <div class="lyrics-box">${lyricsDisplay}</div>
             <div class="btn-group">
+              <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); flex: 1.2;" onclick="toggleMelodyPreview('${t.id}', '${t.genre || 'City Pop'}', ${t.bpm || 118}, '${t.title}')" id="play-btn-${t.id}">
+                🎵 멜로디 프리뷰 듣기
+              </button>
               <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'youtube_16x9')">🎬 16:9 비디오</button>
               <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'shorts_9x16')">📱 9:16 숏폼</button>
               <button class="btn btn-secondary" onclick="openReleaseModal('${t.id}')">🚀 SNS 릴리즈 키트</button>
@@ -326,6 +329,85 @@
           </div>
         `;
         }).join('');
+      }
+
+      // Web Audio Synth Preview Engine
+      let currentAudioCtx = null;
+      let activeTrackPlaying = null;
+
+      function toggleMelodyPreview(trackId, genre, bpm, title) {
+        if (activeTrackPlaying === trackId) {
+          stopMelodyPreview();
+          return;
+        }
+
+        stopMelodyPreview();
+        activeTrackPlaying = trackId;
+        const btn = document.getElementById(`play-btn-${trackId}`);
+        if (btn) btn.innerText = '⏹ 재생 정지';
+
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          currentAudioCtx = new AudioContext();
+          
+          // Notes for City Pop / Synthwave / Ballad (F# Minor 7 / B Minor 7 progression)
+          const notes = [
+            293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25, 739.99,
+            440.00, 369.99, 440.00, 587.33, 493.88, 440.00, 369.99, 293.66
+          ];
+          
+          const beatDuration = 60 / (bpm || 118);
+          const startTime = currentAudioCtx.currentTime + 0.1;
+
+          notes.forEach((freq, i) => {
+            const osc = currentAudioCtx.createOscillator();
+            const gain = currentAudioCtx.createGain();
+            const filter = currentAudioCtx.createBiquadFilter();
+
+            osc.type = genre.toLowerCase().includes('synth') ? 'sawtooth' : 'triangle';
+            osc.frequency.setValueAtTime(freq, startTime + i * (beatDuration / 2));
+
+            // Soft filter for warm analog vibe
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1600, startTime + i * (beatDuration / 2));
+
+            // Attack / Decay envelope
+            gain.gain.setValueAtTime(0.01, startTime + i * (beatDuration / 2));
+            gain.gain.exponentialRampToValueAtTime(0.25, startTime + i * (beatDuration / 2) + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + i * (beatDuration / 2) + (beatDuration * 0.45));
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(currentAudioCtx.destination);
+
+            osc.start(startTime + i * (beatDuration / 2));
+            osc.stop(startTime + i * (beatDuration / 2) + (beatDuration * 0.5));
+          });
+
+          // Auto stop when loop finishes
+          const totalDuration = notes.length * (beatDuration / 2);
+          setTimeout(() => {
+            if (activeTrackPlaying === trackId) {
+              stopMelodyPreview();
+            }
+          }, (totalDuration + 0.5) * 1000);
+
+        } catch (err) {
+          console.error('[Audio Preview Error]', err);
+          stopMelodyPreview();
+        }
+      }
+
+      function stopMelodyPreview() {
+        if (currentAudioCtx) {
+          try { currentAudioCtx.close(); } catch (e) {}
+          currentAudioCtx = null;
+        }
+        if (activeTrackPlaying) {
+          const btn = document.getElementById(`play-btn-${activeTrackPlaying}`);
+          if (btn) btn.innerText = '🎵 멜로디 프리뷰 듣기';
+          activeTrackPlaying = null;
+        }
       }
 
       async function generateStyles() {

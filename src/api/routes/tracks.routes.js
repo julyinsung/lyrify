@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Tracks Routes
@@ -109,6 +111,33 @@ export function createTracksRouter({ vaultService, judgeService }) {
       vaultService.saveTrack(track);
 
       return res.json({ success: true, updatedTimeline: track.timeline });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // GET /api/tracks/:id/audio - Stream draft or final audio
+  router.get('/:id/audio', (req, res, next) => {
+    try {
+      const track = vaultService.getTrack(req.params.id);
+      if (!track) {
+        return res.status(404).json({ success: false, error: 'Track not found' });
+      }
+
+      const audioPath = track.audioPathSuno || track.audioPathAceStep;
+      if (audioPath && fs.existsSync(audioPath)) {
+        return res.sendFile(path.resolve(audioPath));
+      }
+
+      // Check draft/final folder in vault
+      const folderPath = vaultService.vaultRepository.getTrackFolderPath(`${track.title}_${track.id}`);
+      const draftPath = path.join(folderPath, '01_draft', 'draft.wav');
+      const finalPath = path.join(folderPath, '02_final_audio', 'final.mp3');
+
+      if (fs.existsSync(finalPath)) return res.sendFile(finalPath);
+      if (fs.existsSync(draftPath)) return res.sendFile(draftPath);
+
+      return res.status(404).json({ success: false, error: 'Audio file not yet generated or mapped' });
     } catch (err) {
       next(err);
     }
