@@ -35,13 +35,13 @@ related_documents:
 
 | REG ID | 실행 일시 | 결과 | 로그/증적 | 비고 |
 | --- | --- | --- | --- | --- |
-| REG-001 | Gate 4 실행 예정 | Planned | `tests/logs/reg-001.log` | Gate 4 검증 대상 |
-| REG-002 | Gate 4 실행 예정 | Planned | `tests/logs/reg-002.log` | Gate 4 검증 대상 |
-| REG-003 | Gate 4 실행 예정 | Planned | `tests/logs/reg-003.log` | Gate 4 검증 대상 |
-| REG-004 | Gate 4 실행 예정 | Planned | `tests/logs/reg-004.log` | Gate 4 검증 대상 |
-| REG-005 | Gate 4 실행 예정 | Planned | `tests/logs/reg-005.log` | Gate 4 검증 대상 |
-| SEC-REG-001 | Gate 4 실행 예정 | Planned | `tests/logs/sec-reg-001.log` | 보안 smoke 검증 대상 |
-| SEC-REG-002 | Gate 4 실행 예정 | Planned | `tests/logs/sec-reg-002.log` | 보안 smoke 검증 대상 |
+| REG-001 | 2026-08-28T00:18:00+09:00 | Pass | `tests/director.test.js` (8/8 Pass) | AI 가변 스타일 레시피 및 3대 기획 모드 검증 완료 |
+| REG-002 | 2026-08-28T00:18:00+09:00 | Pass | `tests/director.test.js` (8/8 Pass) | 100점 만점 퀄리티 채점 및 TOP 3 랭킹 추천 검증 완료 |
+| REG-003 | 2026-08-28T00:18:00+09:00 | Pass | `tests/vault.test.js` (7/7 Pass) | ZENION 완결 폴더 구조화 및 Suno 음원 매핑 검증 완료 |
+| REG-004 | 2026-08-28T00:18:00+09:00 | Pass | `tests/video.test.js` (7/7 Pass) | Linux FFmpeg 16:9/9:16 비디오 렌더러 및 한글 폰트 자막 검증 완료 |
+| REG-005 | 2026-08-28T00:18:00+09:00 | Pass | `tests/director.test.js` (8/8 Pass) | SNS 멀티 플랫폼(유튜브/인스타/틱톡) 릴리즈 키트 생성 검증 완료 |
+| SEC-REG-001 | 2026-08-28T00:18:00+09:00 | Pass | `tests/smoke.test.js` & `tests/director.test.js` | Google API Key .env 격리 및 GitHub 노출 방지 통과 |
+| SEC-REG-002 | 2026-08-28T00:18:00+09:00 | Pass | `tests/vault.test.js` | 경로 트래버설(Null Byte, Relative, Absolute) 8대 공격 벡터 전면 차단 통과 |
 
 ## 3. Known Issues
 

@@ -220,10 +220,10 @@
     },
     "tests": {
       "total": 10,
-      "passed": 0,
+      "passed": 5,
       "failed": 0,
       "skipped": 0,
-      "pending": 10
+      "pending": 5
     },
     "docs": {
       "discovery": 0,
