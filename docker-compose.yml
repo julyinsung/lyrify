@@ -1,4 +1,4 @@
-﻿version: '3.8'
+version: '3.8'
 
 services:
   lyrify-app:
@@ -21,9 +21,9 @@ services:
       - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
       - ACE_API_URL=${ACE_API_URL:-http://host.docker.internal:8001}
     volumes:
-      - ${ZENION_DIR:-/data/ZENION-MUSIC}:/data/ZENION-MUSIC
-      - ${ACE_DIR:-/data/ACE-Step-1.5}:/data/ACE-Step-1.5
+      - ${ZENION_DIR:-C:/Users/julyi/Documents/ZENION-MUSIC}:/data/ZENION-MUSIC
+      - ${ACE_DIR:-C:/Users/julyi/Documents/ACE-Step-1.5}:/data/ACE-Step-1.5
       - ./data:/app/data
-      - .env:/app/.env:ro
+      - ./.env:/app/.env:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
