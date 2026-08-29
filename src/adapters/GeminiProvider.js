@@ -36,6 +36,22 @@ export class GeminiProvider {
   }
 
   /**
+   * Dynamically update API Key and Model
+   * @param {string} apiKey
+   * @param {string} [model]
+   */
+  updateApiKey(apiKey, model = 'gemini-3.7-flash') {
+    this.apiKey = (apiKey || '').trim();
+    if (model) this.model = model.trim();
+    if (this.isConfigured()) {
+      this.client = new GoogleGenAI({ apiKey: this.apiKey });
+    } else {
+      this.client = null;
+    }
+    return { success: true, isConfigured: this.isConfigured(), model: this.model };
+  }
+
+  /**
    * Check if Gemini API is configured with a valid key
    * @returns {boolean}
    */
