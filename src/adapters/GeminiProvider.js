@@ -65,6 +65,66 @@ export class GeminiProvider {
   }
 
   /**
+   * Direct Google Gemini REST API Call with automatic fallback models
+   * @param {string} prompt
+   * @param {Object} [options]
+   * @returns {Promise<string>}
+   */
+  async _callGeminiApiDirect(prompt, options = {}) {
+    if (!this.isConfigured()) {
+      throw new Error('Gemini API Key is not configured');
+    }
+
+    const candidateModels = [
+      this.model || 'gemini-2.0-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+      'gemini-1.5-pro'
+    ];
+
+    let lastError = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        console.log(`[GeminiProvider] Calling Google Gemini API (model: ${modelName})...`);
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`;
+        
+        const bodyPayload = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: options.temperature || 0.7,
+            responseMimeType: options.jsonMode ? 'application/json' : 'text/plain'
+          }
+        };
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyPayload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error ? data.error.message : `HTTP ${res.status}`);
+        }
+
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+          const text = data.candidates[0].content.parts[0].text;
+          console.log(`[GeminiProvider] ✅ Gemini API response received successfully from ${modelName}!`);
+          return text;
+        } else {
+          throw new Error('Invalid response structure from Gemini API');
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`[GeminiProvider] Attempt with model ${modelName} failed (${err.message}). Trying fallback model...`);
+      }
+    }
+
+    throw lastError || new Error('All candidate Gemini models failed');
+  }
+
+  /**
    * Generate variable style recipes and lyrics (API-001, SCN-001)
    * 
    * @param {Object} params
@@ -738,8 +798,8 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
   async tuneWithCoProducer({ trackTitle, currentLyrics, currentStyle, userInstruction, currentSections = [] }) {
     const inst = String(userInstruction || '').trim();
 
-    // 1. If Gemini API is configured, use online Google Gemini LLM
-    if (this.client && this.isConfigured()) {
+    // 1. If Gemini API is configured, use online Google Gemini API
+    if (this.isConfigured()) {
       try {
         const prompt = `You are an elite Executive Music Producer & Master Lyricist.
 Track Title: "${trackTitle}"
@@ -754,35 +814,25 @@ Task:
 1. Update the lyrics according to the director's instructions (e.g. modify words, remove/add lines or sections, change metaphors, refine vocal cues).
 2. Update the Suno Style Prompt if musical arrangement or instrumentation changes were requested.
 3. Write a concise, professional agent response in Korean and list specific tuning notes.
-4. Output structured JSON matching the schema.`;
+4. Output valid JSON in this exact structure:
+{
+  "agentResponse": "디렉터님께 드리는 프로듀서 코멘트 (한국어)",
+  "tuningNotes": ["변경 사항 1", "변경 사항 2"],
+  "tunedLyrics": "수정된 전체 가사 (인라인 대괄호 태그 포함)",
+  "tunedStyle": "수정된 Suno 3단 스타일 프롬프트",
+  "suggestedBranchName": "take_02_sax_solo"
+}`;
 
-        const responseSchema = {
-          type: Type.OBJECT,
-          properties: {
-            agentResponse: { type: Type.STRING, description: 'Producer response to director in Korean' },
-            tuningNotes: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'List of specific changes made' },
-            tunedLyrics: { type: Type.STRING, description: 'Complete updated lyrics with inline tags' },
-            tunedStyle: { type: Type.STRING, description: 'Updated Suno 3-bracket style prompt' },
-            suggestedBranchName: { type: Type.STRING, description: 'Branch name like take_02_sax_solo' }
-          },
-          required: ['agentResponse', 'tuningNotes', 'tunedLyrics', 'tunedStyle', 'suggestedBranchName']
-        };
+        const rawJsonText = await this._callGeminiApiDirect(prompt, { jsonMode: true, temperature: 0.7 });
 
-        const response = await this.client.models.generateContent({
-          model: this.model,
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema,
-            temperature: 0.7
-          }
-        });
+        if (rawJsonText) {
+          // Clean potential markdown code fences
+          const cleaned = rawJsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleaned);
 
-        if (response && response.text) {
-          const parsed = JSON.parse(response.text);
-          const sectionChunks = parsed.tunedLyrics.split('\n\n').filter(Boolean);
+          const sectionChunks = (parsed.tunedLyrics || '').split('\n\n').filter(Boolean);
           const updatedSections = sectionChunks.map(chunk => {
-            const lines = chunk.split('\n');
+            const lines = chunk.split('\n').filter(Boolean);
             const tag = lines[0] || '';
             const partMatch = tag.match(/\[([a-zA-Z0-9\s]+)/);
             const part = partMatch ? partMatch[1].trim() : 'Section';
@@ -797,11 +847,11 @@ Task:
           });
 
           return {
-            agentResponse: parsed.agentResponse,
-            tuningNotes: parsed.tuningNotes,
-            tunedLyrics: parsed.tunedLyrics,
-            tunedStyle: parsed.tunedStyle,
-            sections: updatedSections,
+            agentResponse: parsed.agentResponse || '디렉터님의 지시사항을 완벽히 반영하여 편곡과 가사를 튜닝했습니다!',
+            tuningNotes: parsed.tuningNotes || ['가사 및 편곡 튜닝 완료'],
+            tunedLyrics: parsed.tunedLyrics || currentLyrics,
+            tunedStyle: parsed.tunedStyle || currentStyle,
+            sections: updatedSections.length > 0 ? updatedSections : null,
             suggestedBranchName: parsed.suggestedBranchName || `take_${Date.now().toString().slice(-4)}`
           };
         }
