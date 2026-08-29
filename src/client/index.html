@@ -270,7 +270,11 @@
       <div class="logo">
         🎵 ZENION Music Studio <span class="badge badge-primary">v0.2.0 Deep Production & Git-Flow</span>
       </div>
-      <div style="display: flex; gap: 8px;">
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <div id="ai-engine-badge" class="badge badge-success" style="cursor: pointer; font-size: 11px; padding: 6px 10px;" onclick="openAiKeyModal()">
+          ⚡ AI: Gemini 2.0 (연동됨)
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openAiKeyModal()">🔑 AI 엔진 설정</button>
         <button class="btn btn-secondary btn-sm" onclick="window.open('/docs/user/USER_MANUAL.md', '_blank')">📖 실전 매뉴얼</button>
         <button class="btn btn-secondary btn-sm" onclick="fetchTracks()">🔄 새로고침</button>
       </div>
@@ -413,6 +417,35 @@
           <button class="btn btn-secondary" onclick="closeEditorModal()">취소</button>
           <button class="btn btn-success" onclick="saveEditorModalChanges()">💾 변경사항 저장</button>
         </div>
+    <!-- AI Key Settings Modal -->
+    <div class="modal-overlay" id="ai-key-modal">
+      <div class="modal-content" style="max-width: 550px;">
+        <div class="modal-header">
+          <h3 style="font-size: 16px; font-weight: 700;">⚡ Google Gemini AI 엔진 설정</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeAiKeyModal()">✕ 닫기</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+            Google Gemini API 키를 등록하시면 최신 <strong>Gemini 2.0 Flash / Pro</strong> 모델의 고차원 추론 능력을 통해 복잡한 자연어 지시(가사 삭제, 은유적 변경, 운율 재구성 등)를 실시간으로 완벽하게 처리합니다.
+          </p>
+          <div class="form-group">
+            <label>Google Gemini API Key</label>
+            <input type="password" id="modal-gemini-key" placeholder="AIzaSy..." style="font-family: monospace;" />
+          </div>
+          <div class="form-group">
+            <label>추론 모델 (Model)</label>
+            <select id="modal-gemini-model">
+              <option value="gemini-2.0-flash" selected>Google Gemini 2.0 Flash (초고속・고지능 추천)</option>
+              <option value="gemini-1.5-pro">Google Gemini 1.5 Pro (초장문 심층 추론)</option>
+              <option value="gemini-1.5-flash">Google Gemini 1.5 Flash</option>
+            </select>
+          </div>
+          <div id="ai-modal-status-text" style="font-size: 11px; padding: 8px; border-radius: 4px; background: #0f172a; margin-top: 8px;"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeAiKeyModal()">취소</button>
+          <button class="btn btn-primary" onclick="saveAiKey()">💾 API 키 저장 및 엔진 활성화</button>
+        </div>
       </div>
     </div>
 
@@ -420,6 +453,61 @@
       let currentBlueprint = null;
       let currentTrackId = null;
       let activeMainTab = 'deep';
+
+      function openAiKeyModal() {
+        document.getElementById('ai-key-modal').style.display = 'flex';
+        checkAiStatus();
+      }
+
+      function closeAiKeyModal() {
+        document.getElementById('ai-key-modal').style.display = 'none';
+      }
+
+      async function checkAiStatus() {
+        try {
+          const res = await fetch('/api/director/ai-status');
+          const data = await res.json();
+          const badge = document.getElementById('ai-engine-badge');
+          const statusText = document.getElementById('ai-modal-status-text');
+          
+          if (data.isConfigured) {
+            badge.className = 'badge badge-success';
+            badge.innerText = `⚡ AI: ${data.model}`;
+            if (statusText) statusText.innerHTML = `✅ <strong>${data.model}</strong> 온라인 엔진이 활성화되어 있습니다.`;
+          } else {
+            badge.className = 'badge badge-warning';
+            badge.innerText = `⚠️ AI 키 미등록 (스마트 오프라인)`;
+            if (statusText) statusText.innerHTML = `⚠️ API 키가 등록되지 않았습니다. 키를 등록하시면 Google Gemini 최신 모델의 강력한 추론 능력이 활성화됩니다.`;
+          }
+        } catch (e) {}
+      }
+
+      async function saveAiKey() {
+        const key = document.getElementById('modal-gemini-key').value.trim();
+        const model = document.getElementById('modal-gemini-model').value;
+        if (!key) {
+          alert('API 키를 입력해 주세요.');
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/director/ai-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apiKey: key, model })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast('🎉 Google Gemini AI 엔진이 활성화되었습니다!');
+            closeAiKeyModal();
+            checkAiStatus();
+          } else {
+            alert('키 등록 실패: ' + data.error);
+          }
+        } catch (err) {
+          alert('키 등록 중 오류: ' + err.message);
+        }
+      }
 
       function switchMainTab(tab) {
         activeMainTab = tab;
@@ -838,6 +926,7 @@
 
       // Initial Load
       fetchTracks();
+      checkAiStatus();
       // Auto-generate default preview
       generateDeepProduction();
     </script>

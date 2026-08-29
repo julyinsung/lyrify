@@ -112,6 +112,43 @@ export function createDirectorRouter({ directorService, vaultService }) {
     }
   });
 
+  // GET /api/director/ai-status - Check current Gemini AI model configuration
+  router.get('/ai-status', (req, res) => {
+    const isConfigured = directorService.geminiProvider.isConfigured();
+    const model = directorService.geminiProvider.model || 'gemini-2.0-flash';
+    return res.json({
+      success: true,
+      isConfigured,
+      model,
+      statusMessage: isConfigured 
+        ? `⚡ Google Gemini 2.0 (${model}) 플래그십 AI 엔진 활성화됨` 
+        : '⚠️ Gemini API 키 미등록 (스마트 오프라인 추론 모드로 동작 중)'
+    });
+  });
+
+  // POST /api/director/ai-key - Dynamically register or update Gemini API Key
+  router.post('/ai-key', (req, res) => {
+    const { apiKey, model = 'gemini-2.0-flash' } = req.body || {};
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
+      return res.status(400).json({ success: false, error: '유효한 Google Gemini API 키를 입력해 주세요.' });
+    }
+
+    try {
+      directorService.geminiProvider.apiKey = apiKey.trim();
+      directorService.geminiProvider.model = model.trim();
+      directorService.geminiProvider.client = new (require('@google/genai').GoogleGenAI)({ apiKey: apiKey.trim() });
+
+      return res.json({
+        success: true,
+        message: `🎉 Google Gemini 2.0 (${model}) AI 엔진이 성공적으로 연동되었습니다!`,
+        isConfigured: true,
+        model
+      });
+    } catch (err) {
+      return res.status(500).json({ success: false, error: 'API 키 연동 실패: ' + err.message });
+    }
+  });
+
   return router;
 }
 

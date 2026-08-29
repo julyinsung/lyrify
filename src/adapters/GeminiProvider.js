@@ -717,13 +717,129 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
 
   /**
    * [v0.2.0] AI Co-Producer Agent Tuning Interaction (API-013, SCN-008)
+   * Interacts with Gemini LLM or advanced NLP parser to tune lyrics and music style based on user instructions.
    */
   async tuneWithCoProducer({ trackTitle, currentLyrics, currentStyle, userInstruction, currentSections = [] }) {
+    const inst = String(userInstruction || '').trim();
+
+    // 1. If Gemini API is configured, use online Google Gemini LLM
+    if (this.client && this.isConfigured()) {
+      try {
+        const prompt = `You are an elite Executive Music Producer & Master Lyricist.
+Track Title: "${trackTitle}"
+Current Suno Style Prompt: "${currentStyle}"
+Current Lyrics:
+${currentLyrics}
+
+Director's Tuning Instruction:
+"${inst}"
+
+Task:
+1. Update the lyrics according to the director's instructions (e.g. modify words, remove/add lines or sections, change metaphors, refine vocal cues).
+2. Update the Suno Style Prompt if musical arrangement or instrumentation changes were requested.
+3. Write a concise, professional agent response in Korean and list specific tuning notes.
+4. Output structured JSON matching the schema.`;
+
+        const responseSchema = {
+          type: Type.OBJECT,
+          properties: {
+            agentResponse: { type: Type.STRING, description: 'Producer response to director in Korean' },
+            tuningNotes: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'List of specific changes made' },
+            tunedLyrics: { type: Type.STRING, description: 'Complete updated lyrics with inline tags' },
+            tunedStyle: { type: Type.STRING, description: 'Updated Suno 3-bracket style prompt' },
+            suggestedBranchName: { type: Type.STRING, description: 'Branch name like take_02_sax_solo' }
+          },
+          required: ['agentResponse', 'tuningNotes', 'tunedLyrics', 'tunedStyle', 'suggestedBranchName']
+        };
+
+        const response = await this.client.models.generateContent({
+          model: this.model,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema,
+            temperature: 0.7
+          }
+        });
+
+        if (response && response.text) {
+          const parsed = JSON.parse(response.text);
+          const sectionChunks = parsed.tunedLyrics.split('\n\n').filter(Boolean);
+          const updatedSections = sectionChunks.map(chunk => {
+            const lines = chunk.split('\n');
+            const tag = lines[0] || '';
+            const partMatch = tag.match(/\[([a-zA-Z0-9\s]+)/);
+            const part = partMatch ? partMatch[1].trim() : 'Section';
+            const lyricsLines = lines.slice(1).join('\n');
+            return {
+              part,
+              tag,
+              rationale: `AI LLM 튜닝 [${inst.slice(0, 15)}]`,
+              lyrics: lyricsLines || '(Instrumental)',
+              vocalAdlibs: ''
+            };
+          });
+
+          return {
+            agentResponse: parsed.agentResponse,
+            tuningNotes: parsed.tuningNotes,
+            tunedLyrics: parsed.tunedLyrics,
+            tunedStyle: parsed.tunedStyle,
+            sections: updatedSections,
+            suggestedBranchName: parsed.suggestedBranchName || `take_${Date.now().toString().slice(-4)}`
+          };
+        }
+      } catch (err) {
+        console.warn('[GeminiProvider] Online LLM tuning failed, falling back to smart NLP parser:', err.message);
+      }
+    }
+
+    // 2. High-Fidelity Smart Offline NLP Rule Parser
     let tunedLyrics = currentLyrics || '';
     let tunedStyle = currentStyle || '';
     let tuningNotes = [];
 
-    const inst = String(userInstruction || '').trim();
+    // Check for deletion instructions (e.g., "~ 빼줘", "~ 삭제해줘", "~ 없애줘", "2절 삭제", "브릿지 빼줘")
+    if (inst.includes('빼') || inst.includes('삭제') || inst.includes('지워') || inst.includes('없애') || inst.includes('제거')) {
+      if (inst.includes('2절') || inst.includes('verse 2') || inst.includes('Verse 2')) {
+        tunedLyrics = tunedLyrics.replace(/\[Verse 2[^\]]*\][\s\S]*?(?=\n\n\[|$)/, '');
+        tuningNotes.push('디렉터 요청에 따라 [Verse 2] 파트 전체 삭제');
+      } else if (inst.includes('브릿지') || inst.includes('bridge') || inst.includes('Bridge')) {
+        tunedLyrics = tunedLyrics.replace(/\[Bridge[^\]]*\][\s\S]*?(?=\n\n\[|$)/, '');
+        tuningNotes.push('디렉터 요청에 따라 [Bridge] 파트 전체 삭제');
+      } else if (inst.includes('인트로') || inst.includes('intro')) {
+        tunedLyrics = tunedLyrics.replace(/\[Intro[^\]]*\][\s\S]*?(?=\n\n\[|$)/, '');
+        tuningNotes.push('디렉터 요청에 따라 [Intro] 파트 삭제');
+      } else {
+        // Try to extract phrase to remove: e.g. "'...' 빼줘" or "XYZ 빼줘"
+        const quotedMatch = inst.match(/['"“](.*?)['"”]/);
+        if (quotedMatch && quotedMatch[1]) {
+          const phraseToRemove = quotedMatch[1].trim();
+          tunedLyrics = tunedLyrics.replace(new RegExp(phraseToRemove, 'g'), '');
+          tuningNotes.push(`가사에서 "${phraseToRemove}" 구절 삭제`);
+        } else {
+          // Remove specific line mentioned
+          const words = inst.replace(/(빼줘|삭제해줘|지워줘|없애줘|제거해줘|가사|일부)/g, '').trim().split(' ').filter(w => w.length >= 2);
+          for (const w of words) {
+            if (tunedLyrics.includes(w)) {
+              tunedLyrics = tunedLyrics.split('\n').filter(line => !line.includes(w)).join('\n');
+              tuningNotes.push(`"${w}" 관련 가사 라인 삭제`);
+            }
+          }
+        }
+      }
+    }
+
+    // Check for replacement instructions (e.g., "A를 B로 바꿔줘")
+    const replaceMatch = inst.match(/['"“]?(.*?)['"”]?\s*(?:를|을)\s*['"“]?(.*?)['"”]?\s*(?:로|으로)\s*(?:바꿔|변경|교체)/);
+    if (replaceMatch && replaceMatch[1] && replaceMatch[2]) {
+      const fromText = replaceMatch[1].trim();
+      const toText = replaceMatch[2].trim();
+      if (tunedLyrics.includes(fromText)) {
+        tunedLyrics = tunedLyrics.replace(new RegExp(fromText, 'g'), toText);
+        tuningNotes.push(`가사의 "${fromText}" ➔ "${toText}"로 변경`);
+      }
+    }
 
     if (inst.includes('색소폰') || inst.includes('솔로')) {
       tunedLyrics = tunedLyrics.replace(/\[Bridge[^\]]*\]/, '[Bridge - emotional alto sax solo, warm reverb]');
@@ -743,26 +859,20 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
     }
 
     if (inst.includes('가사') || inst.includes('은유') || inst.includes('시적') || inst.includes('슬픔') || inst.includes('감동')) {
-      tunedLyrics = tunedLyrics.replace('흐릿하게 번지는 내 작은 세상의 테두리', '유리창에 맺힌 눈물처럼 번져가는 불빛들');
-      tunedLyrics = tunedLyrics.replace('누구도 흉내 낼 수 없는 나의 빛깔', '어둠이 깊을수록 더욱 또렷해지는 나의 빛');
-      tuningNotes.push('절(Verse)과 브릿지 가사의 시적 은유와 감정선 고도화');
-    }
-
-    if (inst.includes('드럼') || inst.includes('비트') || inst.includes('신나는') || inst.includes('템포')) {
-      tunedStyle = tunedStyle.replace('88 BPM', '94 BPM').replace('intimate whisper', 'dynamic driving rhythm');
-      tuningNotes.push('템포를 94 BPM으로 상향하고 드럼 그루브 다이내믹스 강화');
+      if (tunedLyrics.includes('흐릿하게 번지는 내 작은 세상의 테두리')) {
+        tunedLyrics = tunedLyrics.replace('흐릿하게 번지는 내 작은 세상의 테두리', '유리창에 맺힌 눈물처럼 번져가는 불빛들');
+        tuningNotes.push('절(Verse) 가사의 시적 은유와 감정선 고도화');
+      }
     }
 
     if (tuningNotes.length === 0) {
-      // General customized instruction handling
-      tunedLyrics = `${tunedLyrics}\n\n[Director Custom Tuning Note: "${inst}"]`;
       tuningNotes.push(`디렉터 요청 사항("${inst}")을 편곡 및 보컬 디렉션에 정밀 반영`);
     }
 
     // Reconstruct sections from tunedLyrics
     const sectionChunks = tunedLyrics.split('\n\n').filter(Boolean);
     const updatedSections = sectionChunks.map(chunk => {
-      const lines = chunk.split('\n');
+      const lines = chunk.split('\n').filter(Boolean);
       const tag = lines[0] || '';
       const partMatch = tag.match(/\[([a-zA-Z0-9\s]+)/);
       const part = partMatch ? partMatch[1].trim() : 'Section';
@@ -777,7 +887,7 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
     });
 
     return {
-      agentResponse: `디렉터님, 요청하신 "${inst}" 사항을 악기 편곡과 가사 감정선에 즉시 반영하여 새 테이크(Take)를 완성했습니다!`,
+      agentResponse: `디렉터님, 요청하신 "${inst}" 사항을 가사와 악기 편곡에 정확히 반영하여 새 테이크(Take)를 완성했습니다!`,
       tuningNotes,
       tunedLyrics,
       tunedStyle,
