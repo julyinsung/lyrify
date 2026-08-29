@@ -1014,8 +1014,111 @@
         });
       }
 
-      function loadTrackToStudio(trackId) {
-        alert('트랙 ID ' + trackId + ' 로드 완료');
+      async function loadTrackToStudio(trackId) {
+        try {
+          const res = await fetch(`/api/tracks/${trackId}`);
+          const data = await res.json();
+          if (!data.success || !data.track) {
+            alert('트랙 정보를 불러오지 못했습니다.');
+            return;
+          }
+
+          const track = data.track;
+          currentTrackId = track.id;
+
+          // Reconstruct sections from lyricsRaw
+          const lyrics = track.lyricsRaw || '';
+          let sections = [];
+          if (lyrics.includes('\n\n')) {
+            const chunks = lyrics.split('\n\n').filter(Boolean);
+            sections = chunks.map(chunk => {
+              const lines = chunk.split('\n').filter(Boolean);
+              const tag = lines[0] || '';
+              const partMatch = tag.match(/\[([a-zA-Z0-9\s]+)/);
+              const part = partMatch ? partMatch[1].trim() : 'Section';
+              const lyricsLines = lines.slice(1).join('\n');
+              return {
+                part,
+                tag,
+                rationale: `${part} 파트 편곡 및 가사`,
+                lyrics: lyricsLines || '(Instrumental)',
+                vocalAdlibs: ''
+              };
+            });
+          } else {
+            sections = [
+              { part: 'Verse 1', tag: '[Verse 1]', rationale: '메인 가사', lyrics: lyrics, vocalAdlibs: '' }
+            ];
+          }
+
+          currentBlueprint = {
+            title: track.title,
+            genre: track.genre,
+            bpm: track.bpm,
+            key: 'D Major',
+            rationale: {
+              aiAdvisory: track.aiReview || `${track.genre} 스타일 트랙`,
+              originalManifesto: track.lyricsRaw || track.title,
+              tempoRationale: `${track.bpm} BPM - 사운드 아키텍처`,
+              keyRationale: 'D Major - 화성 진행',
+              instrumentationRationale: [
+                `${track.genre} 메인 악기 레이어`,
+                'Suno AI 커스텀 프로덕션 사운드'
+              ],
+              vocalDirection: '감정선과 보컬 톤앤매너'
+            },
+            alternatives: [],
+            sections,
+            sunoStylePrompt: track.sunoStylePrompt || `[${track.genre}, ${track.bpm} BPM, emotional vocals]`,
+            fullLyrics: track.lyricsRaw || '',
+            negativePrompt: '[no autotune hiss, no distorted vocal, no muddy bass]',
+            sunoTips: {
+              extendGuide: '1차 생성 시 Verse 1 ~ Chorus(약 1분 20초)를 먼저 생성 후 마음에 들면 [Extend]로 완성하세요.',
+              inpaintGuide: '솔로 구간이나 브릿지가 어색할 때는 해당 타임스탬프에서 [Inpaint (Replace Section)]를 사용하세요.',
+              customModeGuide: 'Suno 웹의 Custom Mode를 켜고 Style of Music과 Lyrics를 각각 붙여넣으세요.'
+            }
+          };
+
+          // Update left column form inputs
+          document.getElementById('deep-story').value = track.title;
+          const genreSelect = document.getElementById('deep-genre');
+          if (genreSelect) {
+            let matched = false;
+            for (let opt of genreSelect.options) {
+              if (opt.value.toLowerCase() === (track.genre || '').toLowerCase()) {
+                genreSelect.value = opt.value;
+                matched = true;
+                break;
+              }
+            }
+            if (!matched) genreSelect.value = 'auto';
+          }
+          document.getElementById('deep-bpm').value = track.bpm || 0;
+
+          // Sync branches if present
+          currentTakes = [];
+          if (track.branches && Array.isArray(track.branches)) {
+            track.branches.forEach(b => {
+              currentTakes.push({
+                id: b.id,
+                name: b.branchName,
+                description: b.description || '브랜치 테이크',
+                lyrics: b.lyricsRaw || track.lyricsRaw,
+                style: b.sunoStylePrompt || track.sunoStylePrompt,
+                sections: null
+              });
+            });
+          }
+
+          renderBlueprint(currentBlueprint);
+          renderBranchList('master');
+
+          // Switch tab to deep production studio
+          switchMainTab('deep');
+          showToast(`🎛️ [${track.title}] 트랙이 스튜디오에 로드되었습니다!`);
+        } catch (err) {
+          alert('트랙 로드 중 오류 발생: ' + err.message);
+        }
       }
 
       // Initial Load
