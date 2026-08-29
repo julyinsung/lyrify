@@ -15,7 +15,7 @@ export function createAgentRouter({ vaultService, geminiProvider }) {
   // POST /api/agent/co-produce (API-013, SCN-008)
   router.post('/co-produce', async (req, res, next) => {
     try {
-      const { trackId, userInstruction, branchId = 'master', model } = req.body || {};
+      const { trackId, userInstruction, branchId = 'master', currentLyrics, currentStyle, model } = req.body || {};
       if (!userInstruction || typeof userInstruction !== 'string') {
         return res.status(400).json({ success: false, error: 'userInstruction is required' });
       }
@@ -25,10 +25,13 @@ export function createAgentRouter({ vaultService, geminiProvider }) {
         return res.status(404).json({ success: false, error: `Track ${trackId} not found` });
       }
 
+      const baseLyrics = currentLyrics || track.lyricsRaw;
+      const baseStyle = currentStyle || track.sunoStylePrompt;
+
       const tuningResult = await geminiProvider.tuneWithCoProducer({
         trackTitle: track.title,
-        currentLyrics: track.lyricsRaw,
-        currentStyle: track.sunoStylePrompt,
+        currentLyrics: baseLyrics,
+        currentStyle: baseStyle,
         userInstruction,
         model
       });

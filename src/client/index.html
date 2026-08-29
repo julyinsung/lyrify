@@ -816,7 +816,13 @@
           const res = await fetch('/api/agent/co-produce', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ trackId: currentTrackId, userInstruction: instruction, model: getSelectedModel() })
+            body: JSON.stringify({
+              trackId: currentTrackId,
+              userInstruction: instruction,
+              currentLyrics: currentBlueprint ? currentBlueprint.fullLyrics : '',
+              currentStyle: currentBlueprint ? currentBlueprint.sunoStylePrompt : '',
+              model: getSelectedModel()
+            })
           });
           const data = await res.json();
           if (data.success) {
