@@ -80,15 +80,12 @@ export class GeminiProvider {
     // Clean API Key to strictly ASCII
     const cleanApiKey = String(this.apiKey || '').trim().replace(/[^\x20-\x7E]/g, '');
 
-    const requestedModel = options.model || this.model;
+    const requestedModel = options.model || this.model || 'gemini-3.5-flash-lite';
     const candidateModels = [
       requestedModel,
-      'gemini-2.0-flash-lite-preview-02-05',
-      'gemini-2.0-flash-lite',
-      'gemini-1.5-flash-8b',
-      'gemini-2.5-flash',
-      'gemini-2.5-pro',
-      'gemini-1.5-flash-latest',
+      'gemini-3.5-flash-lite',
+      'gemini-3.6-flash',
+      'gemini-3.1-pro-preview',
       'gemini-3.7-flash'
     ].filter(Boolean);
 
