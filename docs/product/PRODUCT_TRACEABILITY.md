@@ -35,7 +35,10 @@ Product 추적은 감리용 전체 추적표가 아니라 릴리즈 판단을 �
 | SCN-003 | REQ-002 | Suno AI 음원 매핑 및 ZENION-MUSIC 자산 구조화 | API-004, DATA-001, DATA-002, UI-003 | SEC-002 | VaultStorageService, ZenionVaultRepository, MasterVault | REG-003, SEC-REG-002 | EV-003 | Verified |
 | SCN-004 | REQ-003 | AI 비주얼 합성 및 멀티 플랫폼 비디오 렌더링 | API-005, API-006, API-008, DATA-001, UI-003 | SEC-001, SEC-002 | VideoRenderService, FFmpegVideoEncoder, VideoStudio | REG-004, SEC-REG-001, SEC-REG-002 | EV-004 | Verified |
 | SCN-005 | REQ-003 | SNS 멀티 플랫폼 릴리즈 키트 생성 | API-007, DATA-001, UI-004 | SEC-002 | ReleaseKitService, ReleaseHub | REG-005, SEC-REG-002 | EV-005 | Verified |
+| **SCN-006** | **REQ-004** | **[v0.2] 1곡 심층 사운드 아키텍처 및 Rationale 타임라인** | **API-009, DATA-003, UI-005** | **SEC-002** | **DirectorService, TimelineStudio** | **REG-006** | **EV-006** | **Proposed** |
+| **SCN-007** | **REQ-005** | **[v0.2] Music Git-Flow 브랜칭 및 A/B Diff 비교** | **API-010, API-011, API-012, DATA-003, UI-006** | **SEC-002** | **VaultStorageService, SQLiteRepository, VersionTree** | **REG-007** | **EV-007** | **Proposed** |
+| **SCN-008** | **REQ-005** | **[v0.2] AI Co-Producer Agent 대화형 점진적 튜닝** | **API-013, DATA-003, UI-006** | **SEC-001, SEC-002** | **GeminiProvider, CoProducerAgent** | **REG-008** | **EV-008** | **Proposed** |
 
 ## 3. Open Trace Gaps
 
-*현재 식별된 추적성 Gap 없음*
+*현재 식별된 추적성 Gap 없음 (v0.2.0 마일스톤 제안 상태)*

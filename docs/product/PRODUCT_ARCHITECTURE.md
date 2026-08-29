@@ -64,6 +64,8 @@ flowchart TD
 | CMP-005 | Multi-Format Video Encoder | 로컬 FFmpeg를 제어하여 유튜브 롱폼(16:9) 및 인스타/틱톡 숏폼(9:16) 가사 비디오 렌더링 | API-006 | SCN-004 |
 | CMP-006 | Release Kit Generator | 유튜브, 인스타그램, 틱톡 업로드 맞춤 제목, 설명문, 해시태그, 타임스탬프 가사 원클릭 생성 | API-007 | SCN-005 |
 | CMP-007 | AI Sync Client | Docker Gentle API, Web Audio 또는 Google STT 연동 가사 타임라인 자동 정렬 | API-008 | SCN-004 |
+| **CMP-008** | **Rationale & Timeline Studio Engine** | [v0.2.0] 단일 곡 심층 사운드 아키텍처 기획, BPM/조성/악기 선택 이유 도출, [Intro~Outro] 파트별 편곡 지시어/가사 타임라인 관리 | API-009 | SCN-006 |
+| **CMP-009** | **Music Git-Flow & Hybrid SQLite Manager** | [v0.2.0] 마스터 원장(Master) 및 테이크 브랜치(Takes) 버전 관리, SQLite(`better-sqlite3`)와 마스터 볼트(`ZENION-MUSIC/master/`, `branches/`) 실시간 미러링, A/B Diff 비교, Master 승격(Merge) | API-010 ~ API-013 | SCN-007, SCN-008 |
 
 ## 3. Runtime And Deployment Assumptions
 
@@ -72,9 +74,9 @@ flowchart TD
 | OS & Container Base | **Linux (Debian 12 Bookworm 기반, `node:20-bookworm-slim`)** |
 | Language & Runtime | **Node.js v20.x LTS (Backend/Express), React 18.x + Vite 5.x (Frontend)** |
 | Media Processing Engine | **Linux 네이티브 FFmpeg v6.x+ (컨테이너 내 내장) + `fonts-noto-cjk` (한글 자막 폰트) + `libass` / `fontconfig`** |
-| Data Store | 로컬 JSON 기반 경량 파일형 데이터베이스 (`database.json`) & `ZENION-MUSIC` 파일 시스템 |
+| Data Store | **[v0.2.0] 하이브리드 스토리지**: 임베디드 SQLite (`better-sqlite3`, `data/zenion_studio.sqlite`) + `ZENION-MUSIC` 물리 파일 시스템 |
 | Docker Volume Mounts (마운트 포인트) | 1. **ZENION 저장소**: Host `C:\Users\julyi\Documents\ZENION-MUSIC` ↔ Container `/data/ZENION-MUSIC`<br>2. **ACE 초안 저장소**: Host `C:\Users\julyi\Documents\ACE-Step-1.5` ↔ Container `/data/ACE-Step-1.5`<br>3. **DB 및 설정**: Host `./data` ↔ Container `/app/data`<br>4. **환경 변수**: Host `.env` ↔ Container `/app/.env` |
-| External Integration | 1. **AI 디렉터 LLM 엔진**: Google Gemini SDK (`@google/genai`) 기본 연동, OpenAI / Ollama 멀티 어댑터 지원<br>2. **ACE-Step-1.5 엔진 연동**: 로컬 REST API (`http://host.docker.internal:8001`) 및 백그라운드 CLI (`cli.py`) 하이브리드 트리거<br>3. **Docker 데몬 (선택)**: Gentle/Whisper 로컬 API (`http://localhost:8765`)<br>4. **Google Cloud Platform API**: Imagen / Speech-to-Text (선택 사항) |
+| External Integration | 1. **AI 디렉터 LLM 엔진**: Google Gemini SDK (`@google/genai`) 기본 연동, OpenAI / Ollama 멀티 어댑터 지원<br>2. **ACE-Step-1.5 엔진 연동**: 로컬 REST API (`http://host.docker.internal:8001`) 및 백그라운드 CLI (`cli.py`) 하이브리드 트리거<br>3. **Suno AI 웹 연동**: Custom Mode 3단 스타일 캡션 및 인라인 가사 마스터 패키지 클립보드 파이프라인 |
 | Deployment & Port | **Docker Compose 배포 (`docker compose up -d`)**, 웹 대시보드 포트: `5173:5173` (또는 `3000:3000`) |
 | Observability | Node.js 로컬 콘솔 로그 및 FFmpeg 인코딩 stderr 진행 상황 파이프 출력 로그 |
 

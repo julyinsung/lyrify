@@ -36,14 +36,32 @@ related_documents:
 | API-005 | POST | `/api/tracks/:id/generate-image` | `JSON` (`{ useApi: boolean, customPrompt?: "string" }`) | `JSON` (`{ success: true, imageUrl: "string" }`) | SCN-004 | AI 썸네일 또는 로컬 템플릿 커버 생성 |
 | API-006 | POST | `/api/tracks/:id/export-video` | `JSON` (`{ format: "youtube_16x9" \| "shorts_9x16" \| "all", audioType: "suno" \| "ace" }`) | `JSON` (`{ success: true, jobId: "string", videoUrls: object }`) | SCN-004 | 16:9 유튜브 및 9:16 숏폼 비디오 렌더링 |
 | API-007 | GET | `/api/tracks/:id/release-kit` | None | `JSON` (`{ youtube: { title, description, tags, timestampLyrics }, instagram: { caption, hashtags }, tiktok: { caption, hashtags } }`) | SCN-005 | SNS 플랫폼별 릴리즈 키트 조회 |
-| API-008 | POST | `/api/tracks/:id/sync` | `JSON` (`{ timeline: [{ part: "string", startSecond: number }] }`) | `JSON` (`{ success: true, updatedTimeline: array }`) | SCN-004 | 가사 타임라인 싱크 저장 |
+| API-008 | POST | `/api/tracks/:id/sync` | `timeline` JSON | `{success: true, track: Object}` | 가사 타임라인 싱크 정보 저장 및 마스터 볼트 동기화 |
+| API-009 | POST | `/api/director/deep-produce` | `{story, mood, reference, targetGenre, bpm}` | `{success: true, track: Object, blueprint: Object, rationale: Object}` | [v0.2.0] 단일 곡 심층 사운드 아키텍처 및 파트별 편곡 의도 기획 |
+| API-010 | POST | `/api/tracks/:id/branches` | `{parentTakeId, branchName, description}` | `{success: true, branchId: string, branch: Object}` | [v0.2.0] 신규 음악 테이크 브랜치 분기 생성 |
+| API-011 | POST | `/api/tracks/:id/branches/:branchId/merge` | `{commitMessage: string}` | `{success: true, masterVersion: string, track: Object}` | [v0.2.0] 특정 브랜치 테이크를 Master 원장으로 승격 및 확정 |
+| API-012 | GET | `/api/tracks/:id/compare` | Query: `?a=master&b=take-02` | `{success: true, diff: {lyricsDiff, styleDiff, audioDiff}}` | [v0.2.0] 두 테이크 간의 가사, 스타일 태그, 오디오 A/B 비교 데이터 반환 |
+| API-013 | POST | `/api/agent/co-produce` | `{trackId, branchId, userInstruction}` | `{success: true, suggestion: Object, tunedBranch: Object}` | [v0.2.0] AI Co-Producer Agent 대화형 편곡/작사 튜닝 및 지시 |
+
+## 2. Program Contracts (Facade/Domain)
+
+| Interface/Class | Method | Signature | 설명 |
+| --- | --- | --- | --- |
+| `DirectorService` | `generateStyles` | `(params: {keyword, count, mode}) => Promise<Object>` | AI 디렉터 가변 곡수 및 3대 모드 레시피 기획 |
+| `DirectorService` | `deepProduceTrack` | `(params: {story, mood, reference}) => Promise<Object>` | [v0.2.0] 1곡 집중 사운드 아키텍처 & Rationale 설계 |
+| `VaultStorageService`| `createTrackBranch`| `(trackId, branchData) => Promise<Object>` | [v0.2.0] 신규 테이크 브랜치 생성 및 물리 볼트 미러링 |
+| `VaultStorageService`| `mergeBranchToMaster`| `(trackId, branchId) => Promise<Object>` | [v0.2.0] 브랜치 테이크의 Master 승격 및 동기화 |
+| `QualityJudgeService`| `evaluateTrack` | `(trackId: string, options: Object) => Promise<Object>` | ACE/Suno 오디오 기술 결함 및 가사 1차 채점 |
+| `VideoRenderService` | `renderTrackVideo` | `(trackId: string, options: {format}) => Promise<Object>` | 16:9/9:16 비디오 렌더링 파이프라인 |
+| `ReleaseKitService` | `generateReleaseKit`| `(trackId: string) => Promise<Object>` | SNS 릴리즈 키트 생성 및 release_kit.md 저장 |
 
 ## 3. Data Contracts
 
-| DATA/DB ID | 이름 | 주요 필드 | 보안 분류 | 관련 API/Scenario | 상세 문서 / 설명 |
-| --- | --- | --- | --- | --- | --- |
-| DATA-001 | database.json | `id`, `title`, `bpm`, `genre`, `lyricsRaw`, `aiScore`, `aiReview`, `audioPathAceStep`, `audioPathSuno`, `coverImageUrl`, `timeline`, `releaseKit` | 일반 | API-001 ~ API-008 | 로컬 트랙 메타데이터 DB |
-| DATA-002 | config.json / .env | `zenionRootDirectory` (`/data/ZENION-MUSIC`), `aceWatchDirectory` (`/data/ACE-Step-1.5`), `GEMINI_API_KEY`, `OPENAI_API_KEY`, `LLM_PROVIDER` | 인증정보 | API-001, API-004, API-005, API-006 | Docker 볼륨 마운트 및 LLM API Key 환경설정 |
+| DATA ID | 엔티티/스키마 | 저장 위치 / 포맷 | 설명 |
+| --- | --- | --- | --- |
+| DATA-001 | Track Master Schema | `ZENION-MUSIC/[곡명]_[ID]/recipe.json` | 개별 트랙 메타데이터, BPM, 가사, 자산 상태, AI 채점 결과 |
+| DATA-002 | Master Database Index | `data/database.json` | 전체 트랙 색인 및 메타데이터 동기화 캐시 |
+| DATA-003 | SQLite Hybrid Engine | `data/zenion_studio.sqlite` | [v0.2.0] 트랙 원장(`tracks`), 테이크 브랜치(`track_branches`), 이력(`branch_history`), 에이전트 세션(`agent_sessions`) 관계형 스토리지 |
 
 ## 4. UI Contracts
 
@@ -53,6 +71,8 @@ related_documents:
 | UI-002 | AI 디렉터 기획 스위트 | Empty (키워드 입력) / Generating (10종 생성) / Ready (10종 스타일 레시피 카드 프리뷰 & ACE 원클릭 트리거) | SCN-001 | UI 기능 검증 |
 | UI-003 | 트랙 상세 & 비디오 스튜디오 | 듀얼 파형 A/B 청음, 가사 타임라인 싱크([Verse]/[Chorus]), AI 커버 썸네일, 16:9/9:16 비디오 원클릭 인코딩 | SCN-003, SCN-004 | 수동/자동 검증 |
 | UI-004 | SNS 원클릭 릴리즈 키트 허브 | YouTube/Instagram/TikTok 탭별 제목, 설명문, 해시태그, 타임스탬프 원클릭 복사 & ZENION 로컬 폴더 열기 | SCN-005 | 클립보드 복사 검증 |
+| UI-005 | 스튜디오 콘솔 & 타임라인 에디터 | [v0.2.0] 사운드 아키텍처 Rationale 뷰, [Intro~Outro] 파트별 시각적 타임라인 카드, Suno Style/Lyrics/Negative 일체형 마스터 패키지 | SCN-006 | UI 기능 검증 |
+| UI-006 | 버전 트리 & A/B 비교 스튜디오 | [v0.2.0] Master vs Branch 트리 그래프, A/B 파형 및 가사 Diff 뷰어, 원장 승격(Merge) 버튼, AI Co-Producer 대화창 | SCN-007, SCN-008 | UI 기능 검증 |
 
 ## 5. Security Contracts
 

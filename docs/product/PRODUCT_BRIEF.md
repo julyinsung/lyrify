@@ -83,6 +83,34 @@ updated_at: 2026-08-27
 
 | AC ID | 관련 NREQ | 인수 기준 설명 | 검증 방법 | 상태 |
 | --- | --- | --- | --- | --- |
-| AC-N001-01 | NREQ-001 | `music_recipes.md` 수정 또는 신규 초안 생성 후 대시보드에 업데이트된 카드가 반영되는 시간은 2초 이내여야 한다. | 파일 변경 이벤트 반응 속도 측정 테스트 | Draft |
-| AC-N001-02 | NREQ-001 | 로컬 동영상 인코딩 수행 시, 실시간 진행 상태(Progress %)를 사용자에게 직관적으로 제공해야 한다. | UI 상태 트래킹 검증 | Draft |
-| AC-N001-03 | NREQ-001 | 로컬 시스템에 FFmpeg가 미설치되어 있을 경우, 대시보드에 설치 필요 알림 및 가이드를 화면에 노출해야 한다. | FFmpeg 의존성 유효성 검사 및 UI 알림 검증 | Draft |
+| AC-N001-01 | NREQ-001 | `music_recipes.md` 수정 또는 신규 초안 생성 후 대시보드에 업데이트된 카드가 반영되는 시간은 2초 이내여야 한다. | 파일 변경 이벤트 반응 속도 측정 테스트 | Completed |
+| AC-N001-02 | NREQ-001 | 로컬 동영상 인코딩 수행 시, 실시간 진행 상태(Progress %)를 사용자에게 직관적으로 제공해야 한다. | UI 상태 트래킹 검증 | Completed |
+| AC-N001-03 | NREQ-001 | 로컬 시스템에 FFmpeg가 미설치되어 있을 경우, 대시보드에 설치 필요 알림 및 가이드를 화면에 노출해야 한다. | FFmpeg 의존성 유효성 검사 및 UI 알림 검증 | Completed |
+
+---
+
+## 5. [v0.2.0] 신규 시나리오 및 요구사항 정의 (Deep Production & Music Git-Flow)
+
+### 5.1. v0.2.0 핵심 시나리오 (Use Cases)
+| 시나리오 ID | 시나리오명 | 액터 | 사전 조건 | 주 흐름 (Main Flow) | 사후 결과 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **SCN-006** | 단일 곡 심층 기획 및 사운드 아키텍처(Rationale) 설계 | 음악 크리에이터 / 디렉터 | Lyrify 스튜디오 실행 | 1. 스토리/감정선/레퍼런스를 입력하여 1곡 집중 기획 요청<br>2. AI가 BPM, 조성(Key), 악기 편성, 보컬 캐릭터 선정 "이유(Rationale)"와 [Intro~Outro] 파트별 편곡 의도를 도출 | 1곡 전용 종합 음악 기획서(Sound Blueprint) 생성 |
+| **SCN-007** | 음악 버전 관리(Take Branching) 및 A/B 비교 청취 | 음악 크리에이터 | 트랙 스케치(Master v1.0) 존재 | 1. 특정 테이크에서 브랜치 생성(`take-02_brass`)<br>2. 브랜치에서 가사/편곡 지시어 수정 후 Suno 생성<br>3. Master와 Branch의 가사/스타일 Diff 및 오디오 A/B 비교<br>4. 마음에 드는 테이크를 Master로 승격(Merge) | 트랙 원장(Master)이 v2.0으로 갱신되고 물리 볼트에 보존 |
+| **SCN-008** | AI Co-Producer Agent와의 대화형 점진적 튜닝 | 음악 크리에이터 | 특정 브랜치 활성화 | 1. 지시창에 "Chorus에 브라스 추가하고 Verse 2 가사 수정해줘" 자연어 입력<br>2. AI Agent가 지시사항을 반영한 신규 브랜치 및 튜닝된 Suno 프롬프트 제안 | 인간과 AI의 대화형 점진적 편곡 완성 |
+
+### 5.2. v0.2.0 기능 요구사항 (Functional Requirements)
+| 요구사항 ID | 요구사항명 | 상세 설명 | 우선순위 | 상태 |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-004** | Rationale 기반 파트별 편곡 타임라인 및 Suno 마스터 패키징 | • 곡의 음악이론적 선택 이유(Rationale) 명시<br>• [Intro~Outro] 각 파트별 [편곡 의도 + 연주 지시어 + 한글 가사 + 보컬 큐] 시각적 타임라인 편집<br>• Suno v3.5~v5.x Style Box, Lyrics Box, Negative Prompt, Extend/Inpaint 팁 일체형 패키징 | Must | Proposed (v0.2) |
+| **REQ-005** | Music Git-Flow 브랜칭 및 하이브리드 SQLite 스토리지 엔진 | • 마스터 원장(Master)과 실험 브랜치(Takes) 버전 관리<br>• SQLite(`better-sqlite3`) 임베디드 DB를 통한 초고속 트리 쿼리 및 트랜잭션 관리<br>• 로컬 마스터 볼트(`ZENION-MUSIC/트랙명/master/`, `branches/take-xx/`) 물리 폴더 실시간 미러링 | Must | Proposed (v0.2) |
+
+### 5.3. v0.2.0 인수 기준 (Acceptance Criteria)
+| AC ID | 관련 REQ | 인수 기준 설명 | 검증 방법 | 상태 |
+| :--- | :--- | :--- | :--- | :--- |
+| **AC-004-01** | REQ-004 | 1곡 심층 기획 시 BPM, 조성, 악기 편성의 음악적 이유(Rationale)와 파트별 편곡 의도가 포함된 JSON 객체가 생성되어야 한다. | `POST /api/director/deep-produce` 단위 테스트 | Proposed |
+| **AC-004-02** | REQ-004 | 타임라인 상에서 파트별 가사 및 편곡 지시어를 개별 수정하고 마스터 볼트에 저장할 수 있어야 한다. | 타임라인 에디터 API 테스트 | Proposed |
+| **AC-004-03** | REQ-004 | Suno Style of Music, Lyrics, Negative Prompt를 원클릭으로 분리 복사할 수 있어야 한다. | UI 클립보드 복사 검증 | Proposed |
+| **AC-005-01** | REQ-005 | 특정 트랙에서 신규 테이크 브랜치를 생성하면 SQLite와 로컬 볼트 `branches/take-xx/` 폴더가 동시 생성되어야 한다. | `POST /api/tracks/:id/branches` 테스트 | Proposed |
+| **AC-005-02** | REQ-005 | 두 테이크(또는 Master와 Take) 간의 가사 및 스타일 프롬프트 Diff를 비교 조회할 수 있어야 한다. | `GET /api/tracks/:id/compare` 테스트 | Proposed |
+| **AC-005-03** | REQ-005 | 브랜치 승격(Merge) 실행 시 해당 테이크가 원장(Master)으로 승격되고 `master/` 디렉토리 파일이 갱신되어야 한다. | `POST /api/tracks/:id/branches/:id/merge` 테스트 | Proposed |
+
