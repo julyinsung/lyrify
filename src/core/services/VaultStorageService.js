@@ -93,7 +93,7 @@ export class VaultStorageService {
       throw new Error('Invalid trackInput provided to createTrackVault');
     }
 
-    const sanitizedTitle = track.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+    const sanitizedTitle = (track.title || 'Track').replace(/[<>:"/\\|?*\n\r\t]/g, '_').trim().slice(0, 25);
     const folderName = options.folderName || `${sanitizedTitle}_${track.id}`;
 
     // createTrackFolder ensures directory and 4 subdirectories exist safely

@@ -612,6 +612,20 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
       vocalDirection: '과도한 기교나 비브라토를 배제하고, 리스너의 귓가에 조용히 읊조리듯 친밀한 톤 (Dry intimate presence)'
     };
 
+    // Generate a clean, poetic short title (max 20 chars)
+    let shortTitle = '상처와 빛의 역설';
+    if (rawStory.includes('스크래치') || rawStory.includes('아크릴') || rawStory.includes('상처')) {
+      shortTitle = '빛을 품은 스크래치';
+    } else if (rawStory.includes('이별') || rawStory.includes('눈물')) {
+      shortTitle = '비 내리는 날의 이별';
+    } else if (rawStory.includes('새벽') || rawStory.includes('카페')) {
+      shortTitle = '새벽 두 시의 온기';
+    } else if (rawStory.includes('드라이브') || rawStory.includes('도시')) {
+      shortTitle = '네온사인 드라이브';
+    } else if (story) {
+      shortTitle = story.split('\n')[0].split('.')[0].slice(0, 18).trim() || '빛나는 기억';
+    }
+
     const sections = [
       {
         part: 'Intro',
@@ -624,22 +638,28 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
         part: 'Verse 1',
         tag: '[Verse 1 - dry bright sweet vocals, minimal rhythm, quiet bass]',
         rationale: '드럼을 절제하고 악기 1~2대와 보컬만으로 화자의 공간과 첫 독백을 담담하게 전개',
-        lyrics: '네온사인 물든 밤거리 위로\n조용히 번지는 젖은 아스팔트 불빛\n룸미러 속 스쳐가는 도시의 그림자\n잊혀진 라디오 멜로디가 귓가에 흘러',
+        lyrics: rawStory.includes('아크릴') 
+          ? '불투명한 아크릴 뒤로 켜진 은은한 불빛\n스쳐간 상처들이 빛을 머금고 번져가\n깊게 패인 자리마다 더 환하게 피어나는\n내 안의 숨겨진 빛을 마주하는 이 순간'
+          : '네온사인 물든 밤거리 위로\n조용히 번지는 젖은 아스팔트 불빛\n룸미러 속 스쳐가는 도시의 그림자\n잊혀진 라디오 멜로디가 귓가에 흘러',
         vocalAdlibs: '(스쳐가는 기억들)'
       },
       {
         part: 'Pre-Chorus',
         tag: '[Pre-Chorus - snappy bouncy rimshot drum enters, active electric bass, tension build-up]',
         rationale: '림샷 드럼과 베이스가 진입하며 심장 박동과 기대감을 고조시키는 빌드업 구간',
-        lyrics: '차창을 내리면 불어오는 서늘한 바람\n마음 한구석에 숨겨둔 너의 기억을 깨워\n조금씩 천천히 두근거리는 내 맘',
-        vocalAdlibs: '(너의 기억, 설레는 밤)'
+        lyrics: rawStory.includes('아크릴')
+          ? '아물지 않은 틈새 사이로 번져오는 온기\n상처가 깊을수록 더 찬란하게 빛나는\n결국 나를 비추는 아름다운 역설'
+          : '차창을 내리면 불어오는 서늘한 바람\n마음 한구석에 숨겨둔 너의 기억을 깨워\n조금씩 천천히 두근거리는 내 맘',
+        vocalAdlibs: '(찬란한 빛의 역설)'
       },
       {
         part: 'Chorus',
         tag: '[Chorus - full emotional climax groove, lush arrangement, warm keys, stacked harmonies]',
         rationale: '풀 밴드와 코러스 화음이 폭발하며 곡의 감정적 클라이맥스 완성',
-        lyrics: `비 내리는 날의 ${story || '네온사인 드라이브'}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n시간이 지나도 가슴속에 살아 숨 쉬어`,
-        vocalAdlibs: '(Yeah, forever in my heart)'
+        lyrics: rawStory.includes('아크릴')
+          ? `어둠을 뚫고 피어나는 ${shortTitle}\n아파했던 날들이 내게 남겨준 가장 큰 선물\n상처는 부서짐이 아닌 빛을 품는 통로였어\n이제야 온전히 나를 비추네`
+          : `비 내리는 날의 ${shortTitle}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n시간이 지나도 가슴속에 살아 숨 쉬어`,
+        vocalAdlibs: '(Yeah, shining through the scars)'
       },
       {
         part: 'Verse 2',
@@ -659,15 +679,17 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
         part: 'Chorus Climax',
         tag: '[Chorus - anthemic climax, explosive arrangement, stacked backing vocals]',
         rationale: '가장 화려하고 웅장한 피날레 후렴',
-        lyrics: `비 내리는 날의 ${story || '네온사인 드라이브'}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n영원히 잊지 않을게, 안녕`,
-        vocalAdlibs: '(Yeah, my love, goodbye)'
+        lyrics: rawStory.includes('아크릴')
+          ? `어둠을 뚫고 피어나는 ${shortTitle}\n아파했던 날들이 내게 남겨준 가장 큰 선물\n상처가 깊을수록 더 눈부시게 빛나니까\n영원히 빛나는 나의 이야기`
+          : `비 내리는 날의 ${shortTitle}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n영원히 잊지 않을게, 안녕`,
+        vocalAdlibs: '(Yeah, shining bright forever)'
       },
       {
         part: 'Outro',
         tag: `[Outro - fading bass groove, bright synth, warm chords fading out]`,
         rationale: '악기들이 하나씩 페이드아웃되며 깊은 여운을 남김',
         lyrics: '(Fading Out with Music)',
-        vocalAdlibs: '[Vocal Ad-libs: "Remembering you... thank you for the love... yeah..."]'
+        vocalAdlibs: '[Vocal Ad-libs: "Shining through the scars... thank you for the light... yeah..."]'
       }
     ];
 
@@ -678,7 +700,7 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
     const negativePrompt = '[no autotune hiss, no distorted vocal, no muddy bass, no aggressive heavy metal guitar, no flat mono mix]';
 
     return {
-      title: `${story || '비 오는 날의 네온사인'} - Master Production`,
+      title: `${shortTitle} - Master Production`,
       genre,
       bpm: tempo,
       key,
