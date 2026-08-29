@@ -48,6 +48,7 @@ export function createDirectorRouter({ directorService, vaultService }) {
               genre: style.genre || 'City Pop',
               bpm: style.bpm || 118,
               lyricsRaw: lyricsRaw,
+              sunoStylePrompt: style.sunoStylePrompt || '',
               aiScore: 0,
               aiReview: `감성 키워드 '${result.keyword}' 테마의 ${style.genre} 기획 완료. (초안 음원 생성 및 1차 채점 대기 중)`,
               status: 'draft'

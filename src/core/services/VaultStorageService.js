@@ -439,6 +439,43 @@ export class VaultStorageService {
   }
 
   /**
+   * Update track metadata, lyrics and style prompt
+   * @param {string} trackId 
+   * @param {Object} updates 
+   * @returns {Track}
+   */
+  updateTrackMetadata(trackId, updates = {}) {
+    const track = this.getTrack(trackId);
+    if (!track) {
+      throw new Error(`트랙을 찾을 수 없습니다: ${trackId}`);
+    }
+
+    if (updates.title) track.title = updates.title;
+    if (updates.genre) track.genre = updates.genre;
+    if (updates.bpm) track.bpm = Number(updates.bpm) || track.bpm;
+    if (updates.lyricsRaw !== undefined) track.lyricsRaw = updates.lyricsRaw;
+    if (updates.lyrics !== undefined && !updates.lyricsRaw) track.lyricsRaw = typeof updates.lyrics === 'string' ? updates.lyrics : JSON.stringify(updates.lyrics);
+    if (updates.sunoStylePrompt) track.sunoStylePrompt = updates.sunoStylePrompt;
+    if (updates.aiReview) track.aiReview = updates.aiReview;
+
+    this.saveTrack(track);
+
+    // Sync back to recipe.json
+    try {
+      const sanitized = track.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+      const folderPath = path.join(this.vaultRepository.zenionRootDir, `${sanitized}_${track.id}`);
+      if (fs.existsSync(folderPath)) {
+        const recipePath = path.join(folderPath, 'recipe.json');
+        const metadataPath = path.join(folderPath, 'metadata.json');
+        fs.writeFileSync(recipePath, JSON.stringify(track.toJSON(), null, 2), 'utf8');
+        fs.writeFileSync(metadataPath, JSON.stringify(track.toJSON(), null, 2), 'utf8');
+      }
+    } catch (_) {}
+
+    return track;
+  }
+
+  /**
    * Determine asset completion status for a track
    * @param {Track|string} trackOrId 
    * @returns {{hasDraft: boolean, hasFinalAudio: boolean, hasCover: boolean, hasVideo: boolean, hasReleaseKit: boolean, isComplete: boolean}}

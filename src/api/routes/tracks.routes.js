@@ -50,6 +50,23 @@ export function createTracksRouter({ vaultService, judgeService }) {
     }
   });
 
+  // PUT /api/tracks/:id or POST /api/tracks/:id/update - Update track metadata, lyrics and style prompt
+  const handleUpdate = (req, res, next) => {
+    try {
+      const track = vaultService.updateTrackMetadata(req.params.id, req.body || {});
+      return res.json({
+        success: true,
+        message: '트랙 정보가 성공적으로 수정 및 저장되었습니다.',
+        track: vaultService.enrichTrack(track)
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  router.put('/:id', handleUpdate);
+  router.post('/:id/update', handleUpdate);
+
   // POST /api/tracks/:id/evaluate (API-003, SCN-002) - AI Quality Screening
   router.post('/:id/evaluate', async (req, res, next) => {
     try {

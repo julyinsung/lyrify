@@ -101,9 +101,9 @@ async function main() {
       assert.ok(first.bpm >= 60 && first.bpm <= 180);
       assert.ok(first.instruments);
       assert.ok(first.promptText.includes('[Genre:'));
-      assert.ok(first.lyrics.verse1.includes('[Verse 1]'));
-      assert.ok(first.lyrics.chorus.includes('[Chorus]'));
-      assert.ok(first.lyrics.verse2.includes('[Verse 2]'));
+      assert.ok(first.lyrics?.verse1 && first.lyrics.verse1.includes('[Verse 1'));
+      assert.ok(first.lyrics?.chorus && first.lyrics.chorus.includes('[Chorus'));
+      assert.ok(first.lyrics?.verse2 && first.lyrics.verse2.includes('[Verse 2'));
     }
 
     // Edge cases: count clamping (< 1 -> 1, > 20 -> 20)

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Track Domain Entity
  * 
  * Represents an AI-generated/curated music track within the ZENION Music Studio pipeline.
@@ -33,6 +33,7 @@ export class Track {
     bpm = 120,
     genre = 'Pop',
     lyricsRaw = '',
+    sunoStylePrompt = '',
     aiScore = 0,
     aiReview = '',
     techCheck = { clipping: false, silence: false },
@@ -54,6 +55,7 @@ export class Track {
     this.bpm = Number(bpm) || 120;
     this.genre = genre;
     this.lyricsRaw = lyricsRaw;
+    this.sunoStylePrompt = sunoStylePrompt;
     this.aiScore = Math.min(100, Math.max(0, Number(aiScore) || 0));
     this.aiReview = aiReview;
     this.techCheck = techCheck;
@@ -123,6 +125,7 @@ export class Track {
       bpm: this.bpm,
       genre: this.genre,
       lyricsRaw: this.lyricsRaw,
+      sunoStylePrompt: this.sunoStylePrompt,
       aiScore: this.aiScore,
       aiReview: this.aiReview,
       techCheck: this.techCheck,
