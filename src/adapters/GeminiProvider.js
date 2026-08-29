@@ -81,68 +81,79 @@ export class GeminiProvider {
     const cleanApiKey = String(this.apiKey || '').trim().replace(/[^\x20-\x7E]/g, '');
 
     const candidateModels = [
-      this.model || 'gemini-2.0-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash',
-      'gemini-1.5-pro'
-    ];
+      this.model,
+      'gemini-2.5-flash',
+      'gemini-2.5-pro',
+      'gemini-2.0-flash-exp',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-pro-latest',
+      'gemini-3.7-flash'
+    ].filter(Boolean);
 
     let lastError = null;
 
     for (const modelName of candidateModels) {
-      try {
-        console.log(`[GeminiProvider] 🚀 Dispatching to Google Gemini API (model: ${modelName})...`);
-        const bodyPayload = {
-          contents: [{ parts: [{ text: String(prompt) }] }],
-          generationConfig: {
-            temperature: options.temperature || 0.7,
-            responseMimeType: options.jsonMode ? 'application/json' : 'text/plain'
-          }
-        };
-
-        const postData = Buffer.from(JSON.stringify(bodyPayload), 'utf8');
-
-        const resultText = await new Promise((resolve, reject) => {
-          const reqUrl = new URL(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanApiKey}`);
-          
-          const req = https.request(reqUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json; charset=utf-8',
-              'Content-Length': postData.length
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          console.log(`[GeminiProvider] 🚀 Dispatching to Google Gemini API (model: ${modelName}, attempt: ${attempt})...`);
+          const bodyPayload = {
+            contents: [{ parts: [{ text: String(prompt) }] }],
+            generationConfig: {
+              temperature: options.temperature || 0.7,
+              responseMimeType: options.jsonMode ? 'application/json' : 'text/plain'
             }
-          }, (res) => {
-            let responseBody = '';
-            res.setEncoding('utf8');
-            res.on('data', chunk => { responseBody += chunk; });
-            res.on('end', () => {
-              if (res.statusCode >= 200 && res.statusCode < 300) {
-                try {
-                  const data = JSON.parse(responseBody);
-                  if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                    resolve(data.candidates[0].content.parts[0].text);
-                  } else {
-                    reject(new Error('Invalid response candidates structure from Google API'));
-                  }
-                } catch (e) {
-                  reject(new Error('Failed to parse Google API response JSON: ' + e.message));
-                }
-              } else {
-                reject(new Error(`Google API responded with HTTP ${res.statusCode}: ${responseBody.slice(0, 200)}`));
+          };
+
+          const postData = Buffer.from(JSON.stringify(bodyPayload), 'utf8');
+
+          const resultText = await new Promise((resolve, reject) => {
+            const reqUrl = new URL(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanApiKey}`);
+            
+            const req = https.request(reqUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Content-Length': postData.length
               }
+            }, (res) => {
+              let responseBody = '';
+              res.setEncoding('utf8');
+              res.on('data', chunk => { responseBody += chunk; });
+              res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                  try {
+                    const data = JSON.parse(responseBody);
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                      resolve(data.candidates[0].content.parts[0].text);
+                    } else {
+                      reject(new Error('Invalid response candidates structure from Google API'));
+                    }
+                  } catch (e) {
+                    reject(new Error('Failed to parse Google API response JSON: ' + e.message));
+                  }
+                } else {
+                  reject(new Error(`Google API responded with HTTP ${res.statusCode}: ${responseBody.slice(0, 200)}`));
+                }
+              });
             });
+
+            req.on('error', err => reject(err));
+            req.write(postData);
+            req.end();
           });
 
-          req.on('error', err => reject(err));
-          req.write(postData);
-          req.end();
-        });
-
-        console.log(`[GeminiProvider] ✅ Google Gemini API (${modelName}) returned successful response!`);
-        return resultText;
-      } catch (err) {
-        lastError = err;
-        console.warn(`[GeminiProvider] Model ${modelName} failed (${err.message}). Trying fallback model...`);
+          console.log(`[GeminiProvider] ✅ Google Gemini API (${modelName}) returned successful response!`);
+          return resultText;
+        } catch (err) {
+          lastError = err;
+          console.warn(`[GeminiProvider] Model ${modelName} attempt ${attempt} failed (${err.message}).`);
+          if (err.message.includes('503') && attempt === 1) {
+            // Wait 1.5s on 503 high demand before retrying
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
+          }
+          break;
+        }
       }
     }
 
