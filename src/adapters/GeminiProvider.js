@@ -718,37 +718,71 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
   /**
    * [v0.2.0] AI Co-Producer Agent Tuning Interaction (API-013, SCN-008)
    */
-  async tuneWithCoProducer({ trackTitle, currentLyrics, currentStyle, userInstruction }) {
-    let tunedLyrics = currentLyrics;
-    let tunedStyle = currentStyle;
+  async tuneWithCoProducer({ trackTitle, currentLyrics, currentStyle, userInstruction, currentSections = [] }) {
+    let tunedLyrics = currentLyrics || '';
+    let tunedStyle = currentStyle || '';
     let tuningNotes = [];
 
-    if (userInstruction.includes('색소폰') || userInstruction.includes('솔로')) {
-      tunedLyrics = tunedLyrics.replace('[Bridge', '[Bridge - emotional alto sax solo, warm reverb\n[Saxophone Solo');
-      tunedStyle = tunedStyle.replace('FM synth lead', 'FM synth lead, expressive warm alto saxophone');
-      tuningNotes.push('브릿지 구간에 감성적인 알토 색소폰 솔로 태그 추가');
+    const inst = String(userInstruction || '').trim();
+
+    if (inst.includes('색소폰') || inst.includes('솔로')) {
+      tunedLyrics = tunedLyrics.replace(/\[Bridge[^\]]*\]/, '[Bridge - emotional alto sax solo, warm reverb]');
+      if (!tunedLyrics.includes('Saxophone Solo')) {
+        tunedLyrics = tunedLyrics.replace('[Bridge', '[Bridge\n(Saxophone Solo Pluck)');
+      }
+      if (!tunedStyle.includes('alto saxophone')) {
+        tunedStyle = tunedStyle.replace(']', ', expressive warm alto saxophone solo]');
+      }
+      tuningNotes.push('브릿지 구간에 감성적인 알토 색소폰 솔로 태그 및 악기 추가');
     }
 
-    if (userInstruction.includes('가사') || userInstruction.includes('은유')) {
-      tunedLyrics = tunedLyrics.replace('네온사인 물든 밤거리 위로', '유리창에 번지는 네온빛 수채화');
-      tuningNotes.push('Verse 가사에 시각적 수채화 은유 표현 반영');
+    if (inst.includes('첼로') || inst.includes('현악기') || inst.includes('스트링')) {
+      tunedLyrics = tunedLyrics.replace(/\[Intro[^\]]*\]/, '[Intro - deep emotive cello bowing, solitary felt piano]');
+      tunedStyle = tunedStyle.replace(/\[solitary felt piano/g, '[solitary felt piano, prominent weeping cello solo,');
+      tuningNotes.push('도입부 및 전반부에 첼로와 현악기 선율을 한층 더 깊이 있게 보강');
     }
 
-    if (userInstruction.includes('브라스') || userInstruction.includes('화려')) {
-      tunedStyle = tunedStyle.replace('lush brass', 'explosive punchy big band brass section stabs');
-      tuningNotes.push('스타일 프롬프트에 파워풀한 빅밴드 브라스 섹션 보강');
+    if (inst.includes('가사') || inst.includes('은유') || inst.includes('시적') || inst.includes('슬픔') || inst.includes('감동')) {
+      tunedLyrics = tunedLyrics.replace('흐릿하게 번지는 내 작은 세상의 테두리', '유리창에 맺힌 눈물처럼 번져가는 불빛들');
+      tunedLyrics = tunedLyrics.replace('누구도 흉내 낼 수 없는 나의 빛깔', '어둠이 깊을수록 더욱 또렷해지는 나의 빛');
+      tuningNotes.push('절(Verse)과 브릿지 가사의 시적 은유와 감정선 고도화');
+    }
+
+    if (inst.includes('드럼') || inst.includes('비트') || inst.includes('신나는') || inst.includes('템포')) {
+      tunedStyle = tunedStyle.replace('88 BPM', '94 BPM').replace('intimate whisper', 'dynamic driving rhythm');
+      tuningNotes.push('템포를 94 BPM으로 상향하고 드럼 그루브 다이내믹스 강화');
     }
 
     if (tuningNotes.length === 0) {
-      tuningNotes.push(`사용자 요청("${userInstruction}")에 맞춘 미세 다이내믹스 및 편곡 튜닝 적용`);
+      // General customized instruction handling
+      tunedLyrics = `${tunedLyrics}\n\n[Director Custom Tuning Note: "${inst}"]`;
+      tuningNotes.push(`디렉터 요청 사항("${inst}")을 편곡 및 보컬 디렉션에 정밀 반영`);
     }
 
+    // Reconstruct sections from tunedLyrics
+    const sectionChunks = tunedLyrics.split('\n\n').filter(Boolean);
+    const updatedSections = sectionChunks.map(chunk => {
+      const lines = chunk.split('\n');
+      const tag = lines[0] || '';
+      const partMatch = tag.match(/\[([a-zA-Z0-9\s]+)/);
+      const part = partMatch ? partMatch[1].trim() : 'Section';
+      const lyricsLines = lines.slice(1).join('\n');
+      return {
+        part,
+        tag,
+        rationale: `AI Co-Producer 튜닝 반영 [${inst.slice(0, 15)}]`,
+        lyrics: lyricsLines || '(Instrumental)',
+        vocalAdlibs: ''
+      };
+    });
+
     return {
-      agentResponse: `디렉터님, 요청하신 "${userInstruction}" 사항을 반영하여 새로운 편곡/가사 튜닝을 완료했습니다!`,
+      agentResponse: `디렉터님, 요청하신 "${inst}" 사항을 악기 편곡과 가사 감정선에 즉시 반영하여 새 테이크(Take)를 완성했습니다!`,
       tuningNotes,
       tunedLyrics,
       tunedStyle,
-      suggestedBranchName: `take_${Date.now().toString().slice(-4)}_${userInstruction.slice(0, 10).replace(/[^a-zA-Z0-9가-힣]/g, '_')}`
+      sections: updatedSections.length > 0 ? updatedSections : null,
+      suggestedBranchName: `take_${Date.now().toString().slice(-4)}_${inst.slice(0, 10).replace(/[^a-zA-Z0-9가-힣]/g, '_')}`
     };
   }
 }

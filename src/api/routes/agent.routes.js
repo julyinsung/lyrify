@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 
 /**
  * AI Co-Producer Agent Routes (API-013, SCN-008)
@@ -45,6 +45,9 @@ export function createAgentRouter({ vaultService, geminiProvider }) {
         success: true,
         agentResponse: tuningResult.agentResponse,
         tuningNotes: tuningResult.tuningNotes,
+        tunedLyrics: tuningResult.tunedLyrics,
+        tunedStyle: tuningResult.tunedStyle,
+        sections: tuningResult.sections,
         newBranch: newBranch.branch
       });
     } catch (err) {

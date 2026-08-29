@@ -581,32 +581,59 @@
         const container = document.getElementById('timeline-container');
         container.innerHTML = '';
 
-        bp.sections.forEach(s => {
+        bp.sections.forEach((s, idx) => {
           const card = document.createElement('div');
           card.className = 'timeline-card';
           card.innerHTML = `
             <div class="timeline-header">
-              <span class="timeline-part">[${s.part}]</span>
-              <span style="font-size: 11px; color: var(--text-muted);">${s.vocalAdlibs || ''}</span>
+              <div>
+                <span class="timeline-part">[${s.part}]</span>
+                <span style="font-size: 11px; color: var(--text-muted); margin-left: 6px;">${s.vocalAdlibs || ''}</span>
+              </div>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn btn-secondary btn-sm" onclick="editSectionPrompt(${idx})" style="font-size: 10px; padding: 2px 6px;">✏️ 이 파트 수정</button>
+              </div>
             </div>
             <div class="timeline-rationale">💡 ${s.rationale}</div>
             <code class="timeline-tag">${s.tag}</code>
-            <pre style="font-family: inherit; font-size: 12px; white-space: pre-wrap; color: #f3f4f6; margin-top: 6px;">${s.lyrics}</pre>
+            <pre id="sec-lyrics-${idx}" style="font-family: inherit; font-size: 12px; white-space: pre-wrap; color: #f3f4f6; margin-top: 6px;">${s.lyrics}</pre>
           `;
           container.appendChild(card);
         });
       }
 
+      function editSectionPrompt(idx) {
+        if (!currentBlueprint || !currentBlueprint.sections[idx]) return;
+        const sec = currentBlueprint.sections[idx];
+        const newLyrics = prompt(`[${sec.part}] 가사를 직접 수정해 주세요:`, sec.lyrics);
+        if (newLyrics !== null && newLyrics.trim() !== '') {
+          sec.lyrics = newLyrics.trim();
+          currentBlueprint.fullLyrics = currentBlueprint.sections.map(s => `${s.tag}\n${s.lyrics}${s.vocalAdlibs ? '\n' + s.vocalAdlibs : ''}`).join('\n\n');
+          renderBlueprint(currentBlueprint);
+          showToast(`✅ [${sec.part}] 가사가 실시간 수정되었습니다!`);
+        }
+      }
+
+      // Memory store for takes
+      let currentTakes = [];
+
       async function instructCoProducer() {
-        const instruction = document.getElementById('agent-instruction').value.trim();
+        const input = document.getElementById('agent-instruction');
+        const instruction = input.value.trim();
         if (!instruction) {
-          alert('지시사항을 입력해 주세요.');
+          alert('지시사항을 입력해 주세요. (예: Verse 1 가사를 더 애절하게 바꾸고 첼로 선율을 강조해줘)');
           return;
         }
 
         if (!currentTrackId) {
           alert('먼저 1곡 심층 기획을 실행해 주세요.');
           return;
+        }
+
+        const btn = document.querySelector('button[onclick="instructCoProducer()"]');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '⏳ AI Producer가 편곡 & 가사 튜닝 중...';
         }
 
         try {
@@ -621,21 +648,89 @@
             box.style.display = 'block';
             box.innerHTML = `<strong>🤖 AI Producer:</strong> ${data.agentResponse}<br><br><strong>✨ 튜닝 내역:</strong> ${data.tuningNotes.join(', ')}`;
             
-            // Add branch item
-            const bContainer = document.getElementById('branch-list-container');
-            const item = document.createElement('div');
-            item.className = 'branch-item';
-            item.innerHTML = `
-              <div>
-                <strong style="font-size: 13px;">🌿 ${data.newBranch.branchName}</strong>
-                <div style="font-size: 11px; color: var(--text-muted);">${data.newBranch.description}</div>
-              </div>
-              <button class="btn btn-sm btn-success" onclick="mergeTakeToMaster('${data.newBranch.id}')">🌟 Master 승격</button>
-            `;
-            bContainer.appendChild(item);
+            // 1. Immediately update and re-render current blueprint on screen
+            if (data.tunedLyrics) currentBlueprint.fullLyrics = data.tunedLyrics;
+            if (data.tunedStyle) currentBlueprint.sunoStylePrompt = data.tunedStyle;
+            if (data.sections && data.sections.length > 0) currentBlueprint.sections = data.sections;
+            currentBlueprint.title = `${currentBlueprint.title.split(' - ')[0]} - [Tuned: ${instruction.slice(0, 10)}]`;
+            
+            renderBlueprint(currentBlueprint);
+            showToast(`✨ AI 튜닝이 반영된 새 테이크가 화면에 즉시 갱신되었습니다!`);
+            input.value = '';
+
+            // 2. Save take and add to branch list
+            const branchObj = {
+              id: data.newBranch.id,
+              name: data.newBranch.branchName,
+              description: data.newBranch.description,
+              lyrics: data.tunedLyrics,
+              style: data.tunedStyle,
+              sections: data.sections || currentBlueprint.sections
+            };
+            currentTakes.push(branchObj);
+
+            // Re-render branches
+            renderBranchList(data.newBranch.id);
+          } else {
+            alert('AI 프로듀서 튜닝 실패: ' + (data.error || '알 수 없는 오류'));
           }
         } catch (err) {
           alert('AI 프로듀서 통신 오류: ' + err.message);
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '💬 지시사항 반영 및 새 테이크 분기';
+          }
+        }
+      }
+
+      function renderBranchList(activeId) {
+        const bContainer = document.getElementById('branch-list-container');
+        bContainer.innerHTML = `
+          <div class="branch-item ${!activeId || activeId === 'master' ? 'branch-active' : ''}" onclick="switchTake('master')" style="cursor: pointer;">
+            <div>
+              <strong style="font-size: 13px;">● Master v1.0 (원장)</strong>
+              <div style="font-size: 11px; color: var(--text-muted);">기본 마스터 스케치</div>
+            </div>
+            ${!activeId || activeId === 'master' ? '<span class="badge badge-success">Active</span>' : '<button class="btn btn-sm btn-secondary" style="font-size: 11px;">보기</button>'}
+          </div>
+        `;
+
+        currentTakes.forEach(take => {
+          const isActive = take.id === activeId;
+          const item = document.createElement('div');
+          item.className = `branch-item ${isActive ? 'branch-active' : ''}`;
+          item.style.cursor = 'pointer';
+          item.innerHTML = `
+            <div onclick="switchTake('${take.id}')" style="flex: 1;">
+              <strong style="font-size: 13px;">🌿 ${take.name}</strong>
+              <div style="font-size: 11px; color: var(--text-muted);">${take.description}</div>
+            </div>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              ${isActive ? '<span class="badge badge-success">Active</span>' : `<button class="btn btn-sm btn-secondary" onclick="switchTake('${take.id}')" style="font-size: 11px;">보기</button>`}
+              <button class="btn btn-sm btn-success" onclick="mergeTakeToMaster('${take.id}')" style="font-size: 11px;">🌟 승격</button>
+            </div>
+          `;
+          bContainer.appendChild(item);
+        });
+      }
+
+      function switchTake(takeId) {
+        if (takeId === 'master') {
+          generateDeepProduction();
+          renderBranchList('master');
+          showToast('📌 Master v1.0 원장 테이크로 전환되었습니다.');
+          return;
+        }
+
+        const found = currentTakes.find(t => t.id === takeId);
+        if (found) {
+          currentBlueprint.fullLyrics = found.lyrics;
+          currentBlueprint.sunoStylePrompt = found.style;
+          if (found.sections) currentBlueprint.sections = found.sections;
+          renderBlueprint(currentBlueprint);
+          renderBranchList(takeId);
+          showToast(`🌿 [${found.name}] 테이크로 화면이 전환되었습니다!`);
         }
       }
 
@@ -649,6 +744,7 @@
           });
           const data = await res.json();
           if (data.success) {
+            showToast('🎉 마스터 승격 완료! Master v2.0으로 릴리즈 준비가 완료되었습니다.');
             alert('🎉 ' + data.message);
             fetchTracks();
           }
