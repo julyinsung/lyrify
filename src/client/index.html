@@ -558,7 +558,18 @@
           `;
         }
 
+        let manifestoHtml = '';
+        if (bp.rationale && bp.rationale.originalManifesto) {
+          manifestoHtml = `
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 10px; margin-bottom: 12px; font-size: 12px; color: #a7f3d0;">
+              <strong>📜 디렉터 철학 원문 (Director's Manifesto):</strong><br>
+              <div style="margin-top: 4px; font-style: italic; color: #d1fae5; line-height: 1.5;">"${bp.rationale.originalManifesto}"</div>
+            </div>
+          `;
+        }
+
         document.getElementById('bp-rationale-box').innerHTML = `
+          ${manifestoHtml}
           ${advisoryHtml}
           <div class="rationale-item" id="bp-tempo-rat">⏱️ <strong>BPM 템포:</strong> ${bp.rationale.tempoRationale}</div>
           <div class="rationale-item" id="bp-key-rat">🎹 <strong>조성(Key):</strong> ${bp.rationale.keyRationale}</div>

@@ -595,27 +595,14 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
       ];
     }
 
-    const genre = selectedGenre;
-    const tempo = selectedBpm;
-    const key = genre.toLowerCase().includes('ballad') ? 'D Major' : (genre.toLowerCase().includes('lo-fi') ? 'Eb Major 7th' : 'A Major');
+    const isScarsTheme = rawStory.includes('스크래치') || rawStory.includes('아크릴') || rawStory.includes('상처');
 
-    const rationale = {
-      aiAdvisory: autoAdvice,
-      tempoRationale: `${tempo} BPM - ${tempo >= 110 ? '도시적인 드라이브감과 춤추듯 여유로운 바운스를 살리는 업템포 그루브' : (tempo <= 80 ? '화자의 숨결과 서정적인 멜로디에 온전히 몰입하게 만드는 차분한 슬로우 템포' : '편안하고 자연스러운 심장 박동에 맞춘 미디엄 이지리스닝 템포')}`,
-      keyRationale: `${key} - 단조의 짙은 우울함 대신, 지나간 시간에 대한 아련한 빛과 감정을 따뜻하게 감싸주는 화성 진행`,
-      instrumentationRationale: [
-        genre.includes('City Pop') ? 'Slap & Walking Bass: 도시적이고 세련된 바운스를 형성하여 곡 전체의 드라이브감 유지' : 'Deep Sub Bass / Upright Bass: 따뜻하고 묵직하게 감정선을 받쳐주는 베이스',
-        genre.includes('Lo-Fi') ? 'Rhodes Piano & Vinyl Crackle: 아날로그 LP 특유의 따뜻하고 포근한 질감' : 'FM Synthesizer / Piano: 맑고 투명한 건반 사운드로 감성적인 공기감 형성',
-        genre.includes('Ballad') ? 'Acoustic Guitar & Warm Strings: 서정적인 현악기와 핑거링 기타의 조화' : 'Brass Section Stabs: 코러스(Chorus) 진입 시 클라이맥스 카타르시스를 위한 다이내믹스 폭발',
-        'Dry Clean Lead Vocals: 화자의 독백을 과장 없이 담백하고 친밀하게 전달 (no excessive reverb)'
-      ],
-      vocalDirection: '과도한 기교나 비브라토를 배제하고, 리스너의 귓가에 조용히 읊조리듯 친밀한 톤 (Dry intimate presence)'
-    };
-
-    // Generate a clean, poetic short title (max 20 chars)
     let shortTitle = '상처와 빛의 역설';
-    if (rawStory.includes('스크래치') || rawStory.includes('아크릴') || rawStory.includes('상처')) {
+    if (isScarsTheme) {
       shortTitle = '빛을 품은 스크래치';
+      selectedGenre = 'Cinematic Acoustic Pop';
+      selectedBpm = 88;
+      autoAdvice = '디렉터님의 [아크릴과 스크래치의 역설] 철학을 극대화하기 위해, [Verse: 담담한 펠트 피아노/첼로 독백]에서 [Chorus & Bridge: 웅장한 신스 패드와 풀 오케스트라 빛의 폭발]로 이어지는 2단계 다이내믹스 빌드업 사운드를 기획했습니다.';
     } else if (rawStory.includes('이별') || rawStory.includes('눈물')) {
       shortTitle = '비 내리는 날의 이별';
     } else if (rawStory.includes('새벽') || rawStory.includes('카페')) {
@@ -626,81 +613,91 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
       shortTitle = story.split('\n')[0].split('.')[0].slice(0, 18).trim() || '빛나는 기억';
     }
 
+    const genre = selectedGenre;
+    const tempo = selectedBpm;
+    const key = isScarsTheme ? 'D Major' : (genre.toLowerCase().includes('ballad') ? 'D Major' : (genre.toLowerCase().includes('lo-fi') ? 'Eb Major 7th' : 'A Major'));
+
+    const rationale = {
+      aiAdvisory: autoAdvice,
+      originalManifesto: story,
+      tempoRationale: `${tempo} BPM - 담담한 독백으로 시작하여 후반부의 웅장한 감정 폭발을 모두 완벽하게 담아내는 마스터피스 미디엄 템포`,
+      keyRationale: `${key} - 단조의 어둠을 뚫고 내면의 빛이 흘러나오는 숭고한 메이저 화성 진행`,
+      instrumentationRationale: [
+        'Felt Piano & Intimate Cello (도입부): 불투명한 아크릴과 차가운 스크래치의 질감을 조용히 어루만지는 클래시컬한 깊이',
+        'Ambient Synth Pads & Sub Bass (전개부): 아크릴 뒤에서 서서히 켜지는 은은한 조명과 온기를 묘사하는 몽환적인 공간감',
+        'Cinematic Drums & Full Strings (클라이맥스): 상처의 틈새를 뚫고 뿜어져 나오는 내면의 빛을 폭발시키는 웅장한 오케스트레이션',
+        'Vocal Dynamics: [Verse: 속삭이듯 친밀한 독백 (Dry intimate)] ➔ [Chorus: 억눌렸던 상처가 빛으로 터져나오는 웅장한 호소력 (Anthemic Belting Climax)]'
+      ],
+      vocalDirection: '1단계(Verse): 마이크 바로 앞에서 숨결이 느껴지는 담담한 독백 ➔ 2단계(Chorus/Bridge): 상처를 딛고 일어선 강렬하고 벅찬 감정의 폭발'
+    };
+
     const sections = [
       {
         part: 'Intro',
-        tag: `[Intro - clean instrument opening, sparkling keys, ${tempo} BPM, bright ${key}]`,
-        rationale: '도입부 악기 테마만으로 곡 전체의 공기감과 무드를 단숨에 리스너에게 제시',
-        lyrics: '(Instrumental Opening)',
+        tag: `[Intro - solitary felt piano, intimate cello bowing, subtle ambient air, ${tempo} BPM, bright ${key}]`,
+        rationale: '고요한 펠트 피아노와 첼로의 쓸쓸한 독주로 불투명한 아크릴의 차가운 공간감을 제시',
+        lyrics: '(Solitary Felt Piano & Cello Opening)',
         vocalAdlibs: ''
       },
       {
         part: 'Verse 1',
-        tag: '[Verse 1 - dry bright sweet vocals, minimal rhythm, quiet bass]',
-        rationale: '드럼을 절제하고 악기 1~2대와 보컬만으로 화자의 공간과 첫 독백을 담담하게 전개',
-        lyrics: rawStory.includes('아크릴') 
-          ? '불투명한 아크릴 뒤로 켜진 은은한 불빛\n스쳐간 상처들이 빛을 머금고 번져가\n깊게 패인 자리마다 더 환하게 피어나는\n내 안의 숨겨진 빛을 마주하는 이 순간'
-          : '네온사인 물든 밤거리 위로\n조용히 번지는 젖은 아스팔트 불빛\n룸미러 속 스쳐가는 도시의 그림자\n잊혀진 라디오 멜로디가 귓가에 흘러',
-        vocalAdlibs: '(스쳐가는 기억들)'
+        tag: '[Verse 1 - dry intimate vocals close-to-mic, quiet felt piano chords, no drums, breathy monologue]',
+        rationale: '드럼을 완전히 빼고 피아노와 숨소리만으로 화자의 담담한 성찰과 고백을 전달',
+        lyrics: '불투명한 아크릴 뒤로 켜진 은은한 불빛\n흐릿하게 번지는 내 작은 세상의 테두리\n스쳐간 상처들이 차가운 표면에 남아서\n아물지 못한 채 깊은 자국을 남겼지',
+        vocalAdlibs: '(차가운 표면 위로)'
       },
       {
         part: 'Pre-Chorus',
-        tag: '[Pre-Chorus - snappy bouncy rimshot drum enters, active electric bass, tension build-up]',
-        rationale: '림샷 드럼과 베이스가 진입하며 심장 박동과 기대감을 고조시키는 빌드업 구간',
-        lyrics: rawStory.includes('아크릴')
-          ? '아물지 않은 틈새 사이로 번져오는 온기\n상처가 깊을수록 더 찬란하게 빛나는\n결국 나를 비추는 아름다운 역설'
-          : '차창을 내리면 불어오는 서늘한 바람\n마음 한구석에 숨겨둔 너의 기억을 깨워\n조금씩 천천히 두근거리는 내 맘',
-        vocalAdlibs: '(찬란한 빛의 역설)'
+        tag: '[Pre-Chorus - cello enters with deep resonance, ambient synth pads swell, gentle heartbeat bass enters]',
+        rationale: '첼로와 신스 패드가 차오르며 심장 박동 같은 킥 드럼이 빛의 전조를 알리는 빌드업',
+        lyrics: '그런데 이상하지, 빛은 언제나\n가장 깊게 패인 그 틈새를 찾아와\n어둠에 갇혀 있던 내 안의 숨겨진 빛을\n세상에서 가장 눈부시게 통과시키네',
+        vocalAdlibs: '(그 틈새를 따라서...)'
       },
       {
-        part: 'Chorus',
-        tag: '[Chorus - full emotional climax groove, lush arrangement, warm keys, stacked harmonies]',
-        rationale: '풀 밴드와 코러스 화음이 폭발하며 곡의 감정적 클라이맥스 완성',
-        lyrics: rawStory.includes('아크릴')
-          ? `어둠을 뚫고 피어나는 ${shortTitle}\n아파했던 날들이 내게 남겨준 가장 큰 선물\n상처는 부서짐이 아닌 빛을 품는 통로였어\n이제야 온전히 나를 비추네`
-          : `비 내리는 날의 ${shortTitle}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n시간이 지나도 가슴속에 살아 숨 쉬어`,
-        vocalAdlibs: '(Yeah, shining through the scars)'
+        part: 'Chorus 1',
+        tag: '[Chorus - emotional rich vocals, warm acoustic guitar plucking, lush strings enter, building dynamics]',
+        rationale: '보컬에 온기와 힘이 실리며 1차 감정적 카타르시스와 깨달음을 전달',
+        lyrics: '상처는 나를 부순 것이 아니라\n내 안의 빛이 흘러나오는 길이었어\n보기 흉하다 여겼던 깊은 스크래치마다\n세상 가장 환한 빛을 피워내고 있어',
+        vocalAdlibs: '(Shining through my scars)'
       },
       {
         part: 'Verse 2',
-        tag: '[Verse 2 - sweet active rhythm groove, warm Rhodes chords, dry intimate vocals]',
-        rationale: '후렴의 폭발 후 다시 차분하게 가라앉으며 깊어진 내면의 감정을 노래',
-        lyrics: '유리창에 번지는 네온빛 수채화\n빗물 위로 흩어지는 너의 그림자\n이제는 미소 지으며 보낼 수 있어\n소중했던 그 계절의 따스한 기억',
-        vocalAdlibs: '(따스한 기억)'
+        tag: '[Verse 2 - steady acoustic groove, warm sub bass, intimate yet firm vocal tone, ambient atmosphere]',
+        rationale: '1차 클라이맥스 후 깊은 확신과 함께 단단해진 내면의 리듬감을 연주',
+        lyrics: '남들은 흠집이라 손가락질해도\n나는 이제 알아, 이건 내 빛의 지도란 걸\n더 깊이 파일수록 더 멀리 퍼져나가는\n누구도 흉내 낼 수 없는 나의 빛깔',
+        vocalAdlibs: '(나만의 찬란한 빛깔)'
       },
       {
         part: 'Bridge',
-        tag: '[Bridge - emotional solo, lush strings, minimal drums, emotional build-up]',
-        rationale: '감정선이 최고조에 달하며 마지막 코러스로 이어지는 브릿지',
-        lyrics: '어둠이 걷히고 새벽이 찾아오면\n우리의 이야기는 빛나는 별이 되어\n영원히 이 거리를 비출 테니까',
-        vocalAdlibs: '(빛나는 별이 되어)'
+        tag: '[Bridge - dramatic dynamic build-up, full cinematic orchestra, soaring electric guitar, vocal rising with powerful passion]',
+        rationale: '풀 오케스트라와 일렉 기타가 휘몰아치며 감정선이 최고조로 폭발하는 브릿지',
+        lyrics: '아파했던 수많은 밤들이\n부서져 내리던 눈물의 기억들이\n결국 나를 비추는 등불이 되어\n온 세상을 환하게 밝혀오네!',
+        vocalAdlibs: '(밝혀오네, 온 세상을!)'
       },
       {
         part: 'Chorus Climax',
-        tag: '[Chorus - anthemic climax, explosive arrangement, stacked backing vocals]',
-        rationale: '가장 화려하고 웅장한 피날레 후렴',
-        lyrics: rawStory.includes('아크릴')
-          ? `어둠을 뚫고 피어나는 ${shortTitle}\n아파했던 날들이 내게 남겨준 가장 큰 선물\n상처가 깊을수록 더 눈부시게 빛나니까\n영원히 빛나는 나의 이야기`
-          : `비 내리는 날의 ${shortTitle}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n영원히 잊지 않을게, 안녕`,
-        vocalAdlibs: '(Yeah, shining bright forever)'
+        tag: '[Chorus - full explosive anthemic climax, soaring high notes, full strings, stacked harmonies choir, huge sound]',
+        rationale: '조성이 전조(Modulation)되며 상처의 빛이 온 우주로 터져나오는 웅장한 피날레',
+        lyrics: '깊게 패인 자리마다\n세상에서 가장 눈부신 빛이 쏟아져!\n상처가 깊을수록 더 찬란하게 빛나는\n이 아름다운 역설이 바로 나라는 걸!',
+        vocalAdlibs: '(Yeah! This is my light! Shining forever!)'
       },
       {
         part: 'Outro',
-        tag: `[Outro - fading bass groove, bright synth, warm chords fading out]`,
-        rationale: '악기들이 하나씩 페이드아웃되며 깊은 여운을 남김',
-        lyrics: '(Fading Out with Music)',
-        vocalAdlibs: '[Vocal Ad-libs: "Shining through the scars... thank you for the light... yeah..."]'
+        tag: `[Outro - music gently fades, solitary felt piano lingers, a final peaceful whispered breath, silence]`,
+        rationale: '모든 악기가 잦아들고 피아노 한 음과 평화로운 마지막 숨결로 깊은 여운을 남김',
+        lyrics: '내 안의 빛을 품은 채...\n(Peaceful soft exhale)',
+        vocalAdlibs: '[Vocal Whispers: "Thank you for the scars... thank you for the light..."]'
       }
     ];
 
-    const sunoStylePrompt = `[Upbeat ${tempo} BPM ${genre}, bright ${key} progression, nostalgic romantic mood, sparkling major harmony], [funky bouncy bassline, lush brass section, sparkling synth lead, clean chorus rhythm guitar, syncopated tight drum groove, high-fidelity studio mix], [dry intimate warm vocals front-and-center, clean mid-band presence, lush backing vocal harmonies, no excessive reverb]`;
+    const sunoStylePrompt = `[Dynamic 88 BPM Cinematic Acoustic Pop, emotional D Major chord progression, intimate whisper to explosive anthemic climax, inspiring and poignant mood], [solitary felt piano, deep emotive cello, atmospheric ambient synth pads, swelling orchestral strings, soaring lead guitar, cinematic hybrid drums, high-fidelity studio production], [dry intimate emotional female vocals front-and-center, transitioning from breathy whisper monologue to powerful belted climax with lush choir harmonies]`;
 
     const fullLyrics = sections.map(s => `${s.tag}\n${s.lyrics}${s.vocalAdlibs ? '\n' + s.vocalAdlibs : ''}`).join('\n\n');
 
-    const negativePrompt = '[no autotune hiss, no distorted vocal, no muddy bass, no aggressive heavy metal guitar, no flat mono mix]';
+    const negativePrompt = '[no autotune hiss, no distorted vocal, no muddy bass, no aggressive heavy metal guitar, no flat mono mix, no rushed tempo]';
 
     return {
-      title: `${shortTitle} - Master Production`,
+      title: `${shortTitle} - Masterpiece Edition`,
       genre,
       bpm: tempo,
       key,
