@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -289,13 +289,14 @@
         <div class="panel">
           <div class="panel-title">💡 1곡 집중 기획 & 사운드 설계 (Deep Produce)</div>
           <div class="form-group">
-            <label>곡 테마 / 스토리라인 (서사 중심)</label>
-            <textarea id="deep-story" rows="3" placeholder="예: 늦은 밤 비 내리는 도시, 룸미러 속 젖은 아스팔트를 보며 지난 사랑을 덤덤하게 추억하는 80s 시티팝"></textarea>
+            <label>곡 테마 / 스토리라인 (서사 & 감정선)</label>
+            <textarea id="deep-story" rows="3" placeholder="예: 늦은 밤 비 내리는 도시, 룸미러 속 젖은 아스팔트를 보며 지난 사랑을 덤덤하게 추억하는 감성"></textarea>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="form-group">
               <label>장르 (Genre)</label>
-              <select id="deep-genre">
+              <select id="deep-genre" onchange="handleGenreChange(this.value)">
+                <option value="auto" selected>🤖 AI 자동 추천 (스토리 감정 기반)</option>
                 <option value="City Pop">80s Japanese City Pop</option>
                 <option value="K-Pop Ballad">K-Pop Acoustic Ballad</option>
                 <option value="Lo-Fi Chillhop">Lo-Fi Chillhop</option>
@@ -305,12 +306,12 @@
               </select>
             </div>
             <div class="form-group">
-              <label>BPM 템포</label>
-              <input type="number" id="deep-bpm" value="118" min="60" max="180" />
+              <label>BPM 템포 (0 = AI 자동 추천)</label>
+              <input type="number" id="deep-bpm" value="0" min="0" max="180" placeholder="0 (자동 추천)" />
             </div>
           </div>
           <button class="btn" style="width: 100%;" id="btn-deep-produce" onclick="generateDeepProduction()">
-            🚀 1곡 심층 프로덕션 기획
+            🚀 1곡 심층 프로덕션 기획 (AI 가이드)
           </button>
         </div>
 
@@ -458,14 +459,68 @@
         }
       }
 
+      function handleGenreChange(val) {
+        const bpmInput = document.getElementById('deep-bpm');
+        if (val === 'auto') {
+          bpmInput.value = 0;
+        } else if (val === 'K-Pop Ballad') {
+          bpmInput.value = 72;
+        } else if (val === 'Lo-Fi Chillhop') {
+          bpmInput.value = 84;
+        } else if (val === 'Synthwave') {
+          bpmInput.value = 126;
+        } else if (val === 'Neo-Soul') {
+          bpmInput.value = 90;
+        } else if (val === 'Acoustic Folk') {
+          bpmInput.value = 92;
+        } else {
+          bpmInput.value = 118;
+        }
+      }
+
+      function applyAlternative(genre, bpm) {
+        document.getElementById('deep-genre').value = genre;
+        document.getElementById('deep-bpm').value = bpm;
+        generateDeepProduction();
+      }
+
       function renderBlueprint(bp) {
         document.getElementById('bp-title').innerText = '🎼 ' + bp.title;
         document.getElementById('bp-badge').innerText = `${bp.genre} / ${bp.bpm} BPM / ${bp.key}`;
         
-        document.getElementById('bp-tempo-rat').innerHTML = `⏱️ <strong>BPM 템포:</strong> ${bp.rationale.tempoRationale}`;
-        document.getElementById('bp-key-rat').innerHTML = `🎹 <strong>조성(Key):</strong> ${bp.rationale.keyRationale}`;
-        document.getElementById('bp-inst-rat').innerHTML = `🎸 <strong>악기 편성:</strong> ${bp.rationale.instrumentationRationale.join(' / ')}`;
-        document.getElementById('bp-vocal-rat').innerHTML = `🎤 <strong>보컬 디렉션:</strong> ${bp.rationale.vocalDirection}`;
+        let advisoryHtml = '';
+        if (bp.rationale && bp.rationale.aiAdvisory) {
+          advisoryHtml = `
+            <div style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 6px; padding: 10px; margin-bottom: 12px; font-size: 12px; color: #c4b5fd;">
+              <strong>💡 AI 디렉터 사운드 가이드:</strong> ${bp.rationale.aiAdvisory}
+            </div>
+          `;
+        }
+
+        let altHtml = '';
+        if (bp.alternatives && bp.alternatives.length > 0) {
+          altHtml = `
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
+              <span style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px;">🔄 AI가 추천하는 다른 사운드 대안 (클릭 시 즉시 전환):</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                ${bp.alternatives.map(a => `
+                  <button class="btn btn-secondary btn-sm" onclick="applyAlternative('${a.genre}', ${a.bpm})" style="font-size: 11px; padding: 4px 8px;">
+                    ✨ ${a.genre} (${a.bpm} BPM) - <span style="color: #94a3b8;">${a.reason}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById('bp-rationale-box').innerHTML = `
+          ${advisoryHtml}
+          <div class="rationale-item" id="bp-tempo-rat">⏱️ <strong>BPM 템포:</strong> ${bp.rationale.tempoRationale}</div>
+          <div class="rationale-item" id="bp-key-rat">🎹 <strong>조성(Key):</strong> ${bp.rationale.keyRationale}</div>
+          <div class="rationale-item" id="bp-inst-rat">🎸 <strong>악기 편성:</strong> ${bp.rationale.instrumentationRationale.join(' / ')}</div>
+          <div class="rationale-item" id="bp-vocal-rat">🎤 <strong>보컬 디렉션:</strong> ${bp.rationale.vocalDirection}</div>
+          ${altHtml}
+        `;
 
         const container = document.getElementById('timeline-container');
         container.innerHTML = '';

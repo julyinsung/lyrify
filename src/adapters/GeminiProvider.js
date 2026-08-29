@@ -531,49 +531,113 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
    * [v0.2.0] Generate Single Track Deep Production Blueprint (API-009, SCN-006)
    * Includes sound architecture, music theory rationales, section timeline, and Suno master prompts.
    */
-  async generateDeepProductionBlueprint({ story, mood = '낭만적인', reference = '', targetGenre = 'City Pop', bpm = 118 }) {
-    const genre = targetGenre || 'City Pop';
-    const tempo = Number(bpm) || 118;
+  /**
+   * [v0.2.0] Generate Single Track Deep Production Blueprint (API-009, SCN-006)
+   * Includes smart genre/tempo auto-recommendations, sound architecture, rationales, timeline, and Suno master prompts.
+   */
+  async generateDeepProductionBlueprint({ story, mood = '', reference = '', targetGenre = 'auto', bpm = 0 }) {
+    const rawStory = String(story || '').toLowerCase();
+
+    // 1. Smart Genre & Tempo Auto-Analysis by AI Director
+    let selectedGenre = targetGenre;
+    let selectedBpm = Number(bpm) || 0;
+    let autoAdvice = '';
+    let alternatives = [];
+
+    if (!selectedGenre || selectedGenre === 'auto') {
+      if (rawStory.includes('이별') || rawStory.includes('눈물') || rawStory.includes('슬픔') || rawStory.includes('발라드')) {
+        selectedGenre = 'K-Pop Ballad';
+        selectedBpm = selectedBpm || 72;
+        autoAdvice = '입력하신 스토리의 애절하고 깊은 감정선을 극대화하기 위해 서정적인 [K-Pop Acoustic Ballad]와 차분한 [72 BPM]을 메인으로 추천합니다.';
+        alternatives = [
+          { genre: 'Lo-Fi Chillhop', bpm: 82, reason: '너무 무겁지 않은 담담한 이별의 쓸쓸함을 원할 때 추천' },
+          { genre: 'Acoustic Folk', bpm: 90, reason: '어쿠스틱 기타 한 대로 진솔한 이야기를 전달할 때 추천' }
+        ];
+      } else if (rawStory.includes('새벽') || rawStory.includes('공부') || rawStory.includes('휴식') || rawStory.includes('카페')) {
+        selectedGenre = 'Lo-Fi Chillhop';
+        selectedBpm = selectedBpm || 84;
+        autoAdvice = '나른하고 편안한 새벽/휴식 무드를 연출하기 위해 따뜻한 재즈 피아노와 바이닐 질감의 [Lo-Fi Chillhop (84 BPM)]을 추천합니다.';
+        alternatives = [
+          { genre: 'City Pop', bpm: 112, reason: '새벽 드라이브의 리듬감을 원할 때 추천' },
+          { genre: 'Neo-Soul', bpm: 88, reason: '그루비한 베이스와 소울풀한 보컬을 원할 때 추천' }
+        ];
+      } else if (rawStory.includes('드라이브') || rawStory.includes('도시') || rawStory.includes('비') || rawStory.includes('네온')) {
+        selectedGenre = 'City Pop';
+        selectedBpm = selectedBpm || 118;
+        autoAdvice = '도시의 젖은 밤거리와 세련된 그루브를 살리기 위해 펑키한 슬랩베이스와 브라스가 어우러진 [80s Japanese City Pop (118 BPM)]을 추천합니다.';
+        alternatives = [
+          { genre: 'Synthwave', bpm: 124, reason: '80년대 레트로 전자음과 질주감을 강조할 때 추천' },
+          { genre: 'Lo-Fi Chillhop', bpm: 86, reason: '차분한 빗소리 분위기를 강조할 때 추천' }
+        ];
+      } else if (rawStory.includes('여름') || rawStory.includes('신나는') || rawStory.includes('질주') || rawStory.includes('파티')) {
+        selectedGenre = 'Synthwave';
+        selectedBpm = selectedBpm || 126;
+        autoAdvice = '에너지 넘치는 질주감과 화려한 사운드를 위해 강렬한 아날로그 신스 [Retro Synthwave (126 BPM)]를 추천합니다.';
+        alternatives = [
+          { genre: 'City Pop', bpm: 120, reason: '경쾌한 펑크 그루브를 원할 때 추천' },
+          { genre: 'Neo-Soul', bpm: 105, reason: '트렌디한 어반 댄스 팝을 원할 때 추천' }
+        ];
+      } else {
+        selectedGenre = 'City Pop';
+        selectedBpm = selectedBpm || 118;
+        autoAdvice = '서사와 멜로디의 밸런스가 가장 뛰어난 [80s Japanese City Pop (118 BPM)]을 기본 추천 사운드로 설정했습니다.';
+        alternatives = [
+          { genre: 'K-Pop Ballad', bpm: 74, reason: '보컬의 서정성을 강조할 때 추천' },
+          { genre: 'Lo-Fi Chillhop', bpm: 84, reason: '편안한 이지리스닝을 원할 때 추천' }
+        ];
+      }
+    } else {
+      selectedBpm = selectedBpm || (selectedGenre.includes('Ballad') ? 72 : (selectedGenre.includes('Chillhop') ? 84 : 118));
+      autoAdvice = `디렉터님이 지정하신 [${selectedGenre}] 장르에 가장 어울리는 프로덕션 템포인 [${selectedBpm} BPM]으로 맞춤 기획했습니다.`;
+      alternatives = [
+        { genre: 'City Pop', bpm: 118, reason: '도시적인 세련된 그루브' },
+        { genre: 'Lo-Fi Chillhop', bpm: 84, reason: '따뜻한 로우파이 감성' }
+      ];
+    }
+
+    const genre = selectedGenre;
+    const tempo = selectedBpm;
     const key = genre.toLowerCase().includes('ballad') ? 'D Major' : (genre.toLowerCase().includes('lo-fi') ? 'Eb Major 7th' : 'A Major');
 
     const rationale = {
-      tempoRationale: `${tempo} BPM - 너무 빠르지 않으면서도 곡의 서사와 리듬감을 살릴 수 있는 최적의 미디엄 그루브 템포`,
-      keyRationale: `${key} - 단조의 무거움 대신, 과거의 빛나던 감정과 아련함을 따뜻하게 감싸주는 메이저 화성 진행`,
+      aiAdvisory: autoAdvice,
+      tempoRationale: `${tempo} BPM - ${tempo >= 110 ? '도시적인 드라이브감과 춤추듯 여유로운 바운스를 살리는 업템포 그루브' : (tempo <= 80 ? '화자의 숨결과 서정적인 멜로디에 온전히 몰입하게 만드는 차분한 슬로우 템포' : '편안하고 자연스러운 심장 박동에 맞춘 미디엄 이지리스닝 템포')}`,
+      keyRationale: `${key} - 단조의 짙은 우울함 대신, 지나간 시간에 대한 아련한 빛과 감정을 따뜻하게 감싸주는 화성 진행`,
       instrumentationRationale: [
-        'Slap & Walking Bass: 도시적이고 세련된 바운스를 형성하여 곡 전체의 드라이브감 유지',
-        'FM Synthesizer / Rhodes: 아날로그 질감의 따뜻한 건반 사운드로 감성적인 공기감 형성',
-        'Brass Section Stabs: 코러스(Chorus) 진입 시 클라이맥스 카타르시스를 위한 다이내믹스 폭발',
-        'Dry Clean Rhythm Guitar: 도입부와 절(Verse)에서 화자의 독백을 담백하고 친밀하게 전달'
+        genre.includes('City Pop') ? 'Slap & Walking Bass: 도시적이고 세련된 바운스를 형성하여 곡 전체의 드라이브감 유지' : 'Deep Sub Bass / Upright Bass: 따뜻하고 묵직하게 감정선을 받쳐주는 베이스',
+        genre.includes('Lo-Fi') ? 'Rhodes Piano & Vinyl Crackle: 아날로그 LP 특유의 따뜻하고 포근한 질감' : 'FM Synthesizer / Piano: 맑고 투명한 건반 사운드로 감성적인 공기감 형성',
+        genre.includes('Ballad') ? 'Acoustic Guitar & Warm Strings: 서정적인 현악기와 핑거링 기타의 조화' : 'Brass Section Stabs: 코러스(Chorus) 진입 시 클라이맥스 카타르시스를 위한 다이내믹스 폭발',
+        'Dry Clean Lead Vocals: 화자의 독백을 과장 없이 담백하고 친밀하게 전달 (no excessive reverb)'
       ],
-      vocalDirection: '감정을 억지로 과장하지 않고 속삭이듯 친밀한 톤 (Dry intimate, no excessive reverb)'
+      vocalDirection: '과도한 기교나 비브라토를 배제하고, 리스너의 귓가에 조용히 읊조리듯 친밀한 톤 (Dry intimate presence)'
     };
 
     const sections = [
       {
         part: 'Intro',
-        tag: `[Intro - funky slap bass solo, sparkling FM synth, ${tempo} BPM, bright ${key}]`,
-        rationale: '슬랩 베이스와 신스 사운드만으로 도시의 밤공기 공간감과 그루브를 단숨에 제시',
+        tag: `[Intro - clean instrument opening, sparkling keys, ${tempo} BPM, bright ${key}]`,
+        rationale: '도입부 악기 테마만으로 곡 전체의 공기감과 무드를 단숨에 리스너에게 제시',
         lyrics: '(Instrumental Opening)',
         vocalAdlibs: ''
       },
       {
         part: 'Verse 1',
-        tag: '[Verse 1 - dry bright sweet female vocals, clean rhythm guitar, quiet bouncy slap bass]',
-        rationale: '드럼을 절제하고 나일론/클린 기타와 보컬만으로 화자의 쓸쓸하면서도 덤덤한 공간 제시',
+        tag: '[Verse 1 - dry bright sweet vocals, minimal rhythm, quiet bass]',
+        rationale: '드럼을 절제하고 악기 1~2대와 보컬만으로 화자의 공간과 첫 독백을 담담하게 전개',
         lyrics: '네온사인 물든 밤거리 위로\n조용히 번지는 젖은 아스팔트 불빛\n룸미러 속 스쳐가는 도시의 그림자\n잊혀진 라디오 멜로디가 귓가에 흘러',
         vocalAdlibs: '(스쳐가는 기억들)'
       },
       {
         part: 'Pre-Chorus',
-        tag: '[Pre-Chorus - snappy bouncy rimshot drum, active electric bass, brass stabs]',
+        tag: '[Pre-Chorus - snappy bouncy rimshot drum enters, active electric bass, tension build-up]',
         rationale: '림샷 드럼과 베이스가 진입하며 심장 박동과 기대감을 고조시키는 빌드업 구간',
         lyrics: '차창을 내리면 불어오는 서늘한 바람\n마음 한구석에 숨겨둔 너의 기억을 깨워\n조금씩 천천히 두근거리는 내 맘',
         vocalAdlibs: '(너의 기억, 설레는 밤)'
       },
       {
         part: 'Chorus',
-        tag: '[Chorus - full upbeat funk groove, lush brass section, warm FM synth, stacked harmonies]',
-        rationale: '풀 브라스와 코러스 화음이 폭발하며 곡의 감정적 클라이맥스를 완성',
+        tag: '[Chorus - full emotional climax groove, lush arrangement, warm keys, stacked harmonies]',
+        rationale: '풀 밴드와 코러스 화음이 폭발하며 곡의 감정적 클라이맥스 완성',
         lyrics: `비 내리는 날의 ${story || '네온사인 드라이브'}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n시간이 지나도 가슴속에 살아 숨 쉬어`,
         vocalAdlibs: '(Yeah, forever in my heart)'
       },
@@ -586,28 +650,28 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
       },
       {
         part: 'Bridge',
-        tag: '[Bridge - emotional sax solo, lush strings, minimal drums, build-up]',
+        tag: '[Bridge - emotional solo, lush strings, minimal drums, emotional build-up]',
         rationale: '감정선이 최고조에 달하며 마지막 코러스로 이어지는 브릿지',
         lyrics: '어둠이 걷히고 새벽이 찾아오면\n우리의 이야기는 빛나는 별이 되어\n영원히 이 거리를 비출 테니까',
         vocalAdlibs: '(빛나는 별이 되어)'
       },
       {
         part: 'Chorus Climax',
-        tag: '[Chorus - anthemic climax, explosive brass, stacked female backing vocals]',
+        tag: '[Chorus - anthemic climax, explosive arrangement, stacked backing vocals]',
         rationale: '가장 화려하고 웅장한 피날레 후렴',
         lyrics: `비 내리는 날의 ${story || '네온사인 드라이브'}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n영원히 잊지 않을게, 안녕`,
         vocalAdlibs: '(Yeah, my love, goodbye)'
       },
       {
         part: 'Outro',
-        tag: `[Outro - fading slap bass groove, bright FM synth, warm Rhodes fading out]`,
+        tag: `[Outro - fading bass groove, bright synth, warm chords fading out]`,
         rationale: '악기들이 하나씩 페이드아웃되며 깊은 여운을 남김',
         lyrics: '(Fading Out with Music)',
-        vocalAdlibs: '[Vocal Ad-libs: "In the city rain... remembering you... thank you for the love... yeah..."]'
+        vocalAdlibs: '[Vocal Ad-libs: "Remembering you... thank you for the love... yeah..."]'
       }
     ];
 
-    const sunoStylePrompt = `[Upbeat ${tempo} BPM Japanese ${genre}, bright ${key} progression, nostalgic romantic sunset drive mood, sparkling major harmony], [funky bouncy slap bassline, lush brass section stabs, sparkling FM synth lead, clean chorus rhythm guitar, syncopated tight funk drum groove, high-fidelity studio mix], [dry intimate warm female vocals front-and-center, clean mid-band vocal presence, lush backing vocal harmonies, no excessive reverb]`;
+    const sunoStylePrompt = `[Upbeat ${tempo} BPM ${genre}, bright ${key} progression, nostalgic romantic mood, sparkling major harmony], [funky bouncy bassline, lush brass section, sparkling synth lead, clean chorus rhythm guitar, syncopated tight drum groove, high-fidelity studio mix], [dry intimate warm vocals front-and-center, clean mid-band presence, lush backing vocal harmonies, no excessive reverb]`;
 
     const fullLyrics = sections.map(s => `${s.tag}\n${s.lyrics}${s.vocalAdlibs ? '\n' + s.vocalAdlibs : ''}`).join('\n\n');
 
@@ -619,6 +683,7 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
       bpm: tempo,
       key,
       rationale,
+      alternatives,
       sections,
       sunoStylePrompt,
       fullLyrics,

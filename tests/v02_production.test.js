@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert';
+import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -43,9 +43,22 @@ async function runV02Suite() {
   const vaultService = new VaultStorageService({ vaultRepository: vaultRepo });
 
   // -------------------------------------------------------------
-  // Test 1: REG-006 - Single Track Deep Production Blueprint & Rationale
+  // Test 1: REG-006 - Single Track Deep Production Blueprint & Rationale (with Auto Recommendation)
   // -------------------------------------------------------------
-  await runAsyncTest('REG-006: Single Track Deep Production & Rationale Engine (API-009, SCN-006)', async () => {
+  await runAsyncTest('REG-006: Single Track Deep Production & AI Smart Advisory (API-009, SCN-006)', async () => {
+    // 1-1. Auto Genre and BPM analysis test
+    const autoRes = await directorService.deepProduceTrack({
+      story: '비 오는 날의 이별과 눈물',
+      targetGenre: 'auto',
+      bpm: 0
+    });
+    assert.strictEqual(autoRes.success, true);
+    assert.ok(autoRes.blueprint.genre.includes('Ballad'));
+    assert.strictEqual(autoRes.blueprint.bpm, 72);
+    assert.ok(autoRes.blueprint.rationale.aiAdvisory.includes('Ballad'));
+    assert.ok(autoRes.blueprint.alternatives.length >= 2);
+
+    // 1-2. Specific Genre production test
     const res = await directorService.deepProduceTrack({
       story: '비 오는 날의 네온사인 드라이브',
       mood: '쓸쓸하면서도 낭만적인',
