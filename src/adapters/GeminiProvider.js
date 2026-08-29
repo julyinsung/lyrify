@@ -1,3 +1,5 @@
+import https from 'https';
+import { URL } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
 
 /**
@@ -65,7 +67,7 @@ export class GeminiProvider {
   }
 
   /**
-   * Direct Google Gemini REST API Call with automatic fallback models
+   * Direct Google Gemini REST API Call with rock-solid UTF-8 handling and model fallbacks
    * @param {string} prompt
    * @param {Object} [options]
    * @returns {Promise<string>}
@@ -74,6 +76,9 @@ export class GeminiProvider {
     if (!this.isConfigured()) {
       throw new Error('Gemini API Key is not configured');
     }
+
+    // Clean API Key to strictly ASCII
+    const cleanApiKey = String(this.apiKey || '').trim().replace(/[^\x20-\x7E]/g, '');
 
     const candidateModels = [
       this.model || 'gemini-2.0-flash',
@@ -86,38 +91,58 @@ export class GeminiProvider {
 
     for (const modelName of candidateModels) {
       try {
-        console.log(`[GeminiProvider] Calling Google Gemini API (model: ${modelName})...`);
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`;
-        
+        console.log(`[GeminiProvider] 🚀 Dispatching to Google Gemini API (model: ${modelName})...`);
         const bodyPayload = {
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ parts: [{ text: String(prompt) }] }],
           generationConfig: {
             temperature: options.temperature || 0.7,
             responseMimeType: options.jsonMode ? 'application/json' : 'text/plain'
           }
         };
 
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyPayload)
+        const postData = Buffer.from(JSON.stringify(bodyPayload), 'utf8');
+
+        const resultText = await new Promise((resolve, reject) => {
+          const reqUrl = new URL(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanApiKey}`);
+          
+          const req = https.request(reqUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+              'Content-Length': postData.length
+            }
+          }, (res) => {
+            let responseBody = '';
+            res.setEncoding('utf8');
+            res.on('data', chunk => { responseBody += chunk; });
+            res.on('end', () => {
+              if (res.statusCode >= 200 && res.statusCode < 300) {
+                try {
+                  const data = JSON.parse(responseBody);
+                  if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                    resolve(data.candidates[0].content.parts[0].text);
+                  } else {
+                    reject(new Error('Invalid response candidates structure from Google API'));
+                  }
+                } catch (e) {
+                  reject(new Error('Failed to parse Google API response JSON: ' + e.message));
+                }
+              } else {
+                reject(new Error(`Google API responded with HTTP ${res.statusCode}: ${responseBody.slice(0, 200)}`));
+              }
+            });
+          });
+
+          req.on('error', err => reject(err));
+          req.write(postData);
+          req.end();
         });
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error ? data.error.message : `HTTP ${res.status}`);
-        }
-
-        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-          const text = data.candidates[0].content.parts[0].text;
-          console.log(`[GeminiProvider] ✅ Gemini API response received successfully from ${modelName}!`);
-          return text;
-        } else {
-          throw new Error('Invalid response structure from Gemini API');
-        }
+        console.log(`[GeminiProvider] ✅ Google Gemini API (${modelName}) returned successful response!`);
+        return resultText;
       } catch (err) {
         lastError = err;
-        console.warn(`[GeminiProvider] Attempt with model ${modelName} failed (${err.message}). Trying fallback model...`);
+        console.warn(`[GeminiProvider] Model ${modelName} failed (${err.message}). Trying fallback model...`);
       }
     }
 
@@ -612,6 +637,73 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
    * Includes smart genre/tempo auto-recommendations, sound architecture, rationales, timeline, and Suno master prompts.
    */
   async generateDeepProductionBlueprint({ story, mood = '', reference = '', targetGenre = 'auto', bpm = 0 }) {
+    // If Gemini API is configured, attempt real-time deep production blueprint generation
+    if (this.isConfigured()) {
+      try {
+        const prompt = `You are a legendary Master Executive Music Producer and Professional Lyricist.
+The Director wants to produce a flagship track with the following vision / story / emotion:
+"${story}"
+
+User specified genre: "${targetGenre}" (or 'auto')
+User specified BPM: "${bpm}" (or 0 for auto-recommendation)
+
+Generate a complete, deeply emotional, commercial-ready deep production blueprint matching the JSON structure:
+{
+  "title": "Inspiring Korean Song Title (e.g. 빛을 품은 스크래치)",
+  "genre": "Precise Genre Name (e.g. Cinematic Acoustic Pop)",
+  "bpm": 88,
+  "key": "D Major",
+  "rationale": {
+    "aiAdvisory": "Director advice explaining genre and emotion rationale in Korean",
+    "originalManifesto": "${story.slice(0, 100).replace(/"/g, '')}",
+    "tempoRationale": "Why this BPM was chosen in Korean",
+    "keyRationale": "Why this Musical Key was chosen in Korean",
+    "instrumentationRationale": [
+      "Arrangement layer 1 description",
+      "Arrangement layer 2 description",
+      "Arrangement layer 3 description"
+    ],
+    "vocalDirection": "Vocal dynamics and tone guidance in Korean"
+  },
+  "alternatives": [
+    { "genre": "Alternative Genre 1", "bpm": 90, "reason": "Why recommend" },
+    { "genre": "Alternative Genre 2", "bpm": 82, "reason": "Why recommend" }
+  ],
+  "sections": [
+    { "part": "Intro", "tag": "[Intro - instruments, bpm, key]", "rationale": "Why", "lyrics": "(Instrumental Cues)", "vocalAdlibs": "" },
+    { "part": "Verse 1", "tag": "[Verse 1 - vocal tone, instruments]", "rationale": "Why", "lyrics": "Korean lyrics lines (4-6 lines)", "vocalAdlibs": "" },
+    { "part": "Pre-Chorus", "tag": "[Pre-Chorus - build-up cue]", "rationale": "Why", "lyrics": "Korean lyrics lines (2-4 lines)", "vocalAdlibs": "" },
+    { "part": "Chorus", "tag": "[Chorus - climax arrangement]", "rationale": "Why", "lyrics": "Korean lyrics lines (4-6 lines)", "vocalAdlibs": "" },
+    { "part": "Verse 2", "tag": "[Verse 2 - arrangement change]", "rationale": "Why", "lyrics": "Korean lyrics lines (4-6 lines)", "vocalAdlibs": "" },
+    { "part": "Bridge", "tag": "[Bridge - emotional peak solo]", "rationale": "Why", "lyrics": "Korean lyrics lines (3-4 lines)", "vocalAdlibs": "" },
+    { "part": "Chorus", "tag": "[Chorus - explosive climax with backing adlibs]", "rationale": "Why", "lyrics": "Korean lyrics lines", "vocalAdlibs": "" },
+    { "part": "Outro", "tag": "[Outro - fade out cue]", "rationale": "Why", "lyrics": "Korean lyrics lines", "vocalAdlibs": "" }
+  ],
+  "sunoStylePrompt": "[Suno 3-bracket style caption, bpm, key, instruments, vocal presence]",
+  "fullLyrics": "Full structured lyrics with inline tags",
+  "negativePrompt": "harsh treble, clipping, muddy low-end, synthetic brass"
+}`;
+
+        const rawJsonText = await this._callGeminiApiDirect(prompt, { jsonMode: true, temperature: 0.7 });
+        if (rawJsonText) {
+          const cleaned = rawJsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+          if (parsed && parsed.title && parsed.fullLyrics) {
+            parsed.rationale = parsed.rationale || {};
+            parsed.rationale.originalManifesto = story;
+            parsed.sunoTips = {
+              extendGuide: '1차 생성 시 Verse 1 ~ Chorus(약 1분 20초)를 먼저 생성 후 마음에 들면 [Extend]로 완성하세요.',
+              inpaintGuide: '솔로 구간이나 브릿지가 어색할 때는 해당 타임스탬프에서 [Inpaint (Replace Section)]를 사용하세요.',
+              customModeGuide: 'Suno 웹의 Custom Mode를 켜고 Style of Music과 Lyrics를 각각 붙여넣으세요.'
+            };
+            return parsed;
+          }
+        }
+      } catch (err) {
+        console.warn('[GeminiProvider] Online blueprint generation failed, falling back to heuristic generator:', err.message);
+      }
+    }
+
     const rawStory = String(story || '').toLowerCase();
 
     // 1. Smart Genre & Tempo Auto-Analysis by AI Director
