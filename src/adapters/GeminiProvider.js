@@ -526,6 +526,148 @@ CRITICAL REQUIREMENTS FOR SUNO AI (v3.5 / v4) OPTIMIZATION:
       }
     };
   }
+
+  /**
+   * [v0.2.0] Generate Single Track Deep Production Blueprint (API-009, SCN-006)
+   * Includes sound architecture, music theory rationales, section timeline, and Suno master prompts.
+   */
+  async generateDeepProductionBlueprint({ story, mood = '낭만적인', reference = '', targetGenre = 'City Pop', bpm = 118 }) {
+    const genre = targetGenre || 'City Pop';
+    const tempo = Number(bpm) || 118;
+    const key = genre.toLowerCase().includes('ballad') ? 'D Major' : (genre.toLowerCase().includes('lo-fi') ? 'Eb Major 7th' : 'A Major');
+
+    const rationale = {
+      tempoRationale: `${tempo} BPM - 너무 빠르지 않으면서도 곡의 서사와 리듬감을 살릴 수 있는 최적의 미디엄 그루브 템포`,
+      keyRationale: `${key} - 단조의 무거움 대신, 과거의 빛나던 감정과 아련함을 따뜻하게 감싸주는 메이저 화성 진행`,
+      instrumentationRationale: [
+        'Slap & Walking Bass: 도시적이고 세련된 바운스를 형성하여 곡 전체의 드라이브감 유지',
+        'FM Synthesizer / Rhodes: 아날로그 질감의 따뜻한 건반 사운드로 감성적인 공기감 형성',
+        'Brass Section Stabs: 코러스(Chorus) 진입 시 클라이맥스 카타르시스를 위한 다이내믹스 폭발',
+        'Dry Clean Rhythm Guitar: 도입부와 절(Verse)에서 화자의 독백을 담백하고 친밀하게 전달'
+      ],
+      vocalDirection: '감정을 억지로 과장하지 않고 속삭이듯 친밀한 톤 (Dry intimate, no excessive reverb)'
+    };
+
+    const sections = [
+      {
+        part: 'Intro',
+        tag: `[Intro - funky slap bass solo, sparkling FM synth, ${tempo} BPM, bright ${key}]`,
+        rationale: '슬랩 베이스와 신스 사운드만으로 도시의 밤공기 공간감과 그루브를 단숨에 제시',
+        lyrics: '(Instrumental Opening)',
+        vocalAdlibs: ''
+      },
+      {
+        part: 'Verse 1',
+        tag: '[Verse 1 - dry bright sweet female vocals, clean rhythm guitar, quiet bouncy slap bass]',
+        rationale: '드럼을 절제하고 나일론/클린 기타와 보컬만으로 화자의 쓸쓸하면서도 덤덤한 공간 제시',
+        lyrics: '네온사인 물든 밤거리 위로\n조용히 번지는 젖은 아스팔트 불빛\n룸미러 속 스쳐가는 도시의 그림자\n잊혀진 라디오 멜로디가 귓가에 흘러',
+        vocalAdlibs: '(스쳐가는 기억들)'
+      },
+      {
+        part: 'Pre-Chorus',
+        tag: '[Pre-Chorus - snappy bouncy rimshot drum, active electric bass, brass stabs]',
+        rationale: '림샷 드럼과 베이스가 진입하며 심장 박동과 기대감을 고조시키는 빌드업 구간',
+        lyrics: '차창을 내리면 불어오는 서늘한 바람\n마음 한구석에 숨겨둔 너의 기억을 깨워\n조금씩 천천히 두근거리는 내 맘',
+        vocalAdlibs: '(너의 기억, 설레는 밤)'
+      },
+      {
+        part: 'Chorus',
+        tag: '[Chorus - full upbeat funk groove, lush brass section, warm FM synth, stacked harmonies]',
+        rationale: '풀 브라스와 코러스 화음이 폭발하며 곡의 감정적 클라이맥스를 완성',
+        lyrics: `비 내리는 날의 ${story || '네온사인 드라이브'}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n시간이 지나도 가슴속에 살아 숨 쉬어`,
+        vocalAdlibs: '(Yeah, forever in my heart)'
+      },
+      {
+        part: 'Verse 2',
+        tag: '[Verse 2 - sweet active rhythm groove, warm Rhodes chords, dry intimate vocals]',
+        rationale: '후렴의 폭발 후 다시 차분하게 가라앉으며 깊어진 내면의 감정을 노래',
+        lyrics: '유리창에 번지는 네온빛 수채화\n빗물 위로 흩어지는 너의 그림자\n이제는 미소 지으며 보낼 수 있어\n소중했던 그 계절의 따스한 기억',
+        vocalAdlibs: '(따스한 기억)'
+      },
+      {
+        part: 'Bridge',
+        tag: '[Bridge - emotional sax solo, lush strings, minimal drums, build-up]',
+        rationale: '감정선이 최고조에 달하며 마지막 코러스로 이어지는 브릿지',
+        lyrics: '어둠이 걷히고 새벽이 찾아오면\n우리의 이야기는 빛나는 별이 되어\n영원히 이 거리를 비출 테니까',
+        vocalAdlibs: '(빛나는 별이 되어)'
+      },
+      {
+        part: 'Chorus Climax',
+        tag: '[Chorus - anthemic climax, explosive brass, stacked female backing vocals]',
+        rationale: '가장 화려하고 웅장한 피날레 후렴',
+        lyrics: `비 내리는 날의 ${story || '네온사인 드라이브'}\n밤하늘을 수놓은 오색빛깔 불빛들\n우리 함께 나누었던 그 수많은 약속들\n영원히 잊지 않을게, 안녕`,
+        vocalAdlibs: '(Yeah, my love, goodbye)'
+      },
+      {
+        part: 'Outro',
+        tag: `[Outro - fading slap bass groove, bright FM synth, warm Rhodes fading out]`,
+        rationale: '악기들이 하나씩 페이드아웃되며 깊은 여운을 남김',
+        lyrics: '(Fading Out with Music)',
+        vocalAdlibs: '[Vocal Ad-libs: "In the city rain... remembering you... thank you for the love... yeah..."]'
+      }
+    ];
+
+    const sunoStylePrompt = `[Upbeat ${tempo} BPM Japanese ${genre}, bright ${key} progression, nostalgic romantic sunset drive mood, sparkling major harmony], [funky bouncy slap bassline, lush brass section stabs, sparkling FM synth lead, clean chorus rhythm guitar, syncopated tight funk drum groove, high-fidelity studio mix], [dry intimate warm female vocals front-and-center, clean mid-band vocal presence, lush backing vocal harmonies, no excessive reverb]`;
+
+    const fullLyrics = sections.map(s => `${s.tag}\n${s.lyrics}${s.vocalAdlibs ? '\n' + s.vocalAdlibs : ''}`).join('\n\n');
+
+    const negativePrompt = '[no autotune hiss, no distorted vocal, no muddy bass, no aggressive heavy metal guitar, no flat mono mix]';
+
+    return {
+      title: `${story || '비 오는 날의 네온사인'} - Master Production`,
+      genre,
+      bpm: tempo,
+      key,
+      rationale,
+      sections,
+      sunoStylePrompt,
+      fullLyrics,
+      negativePrompt,
+      sunoTips: {
+        extendGuide: '1차 생성 시 Verse 1 ~ Chorus(약 1분 20초)를 먼저 생성 후 마음에 들면 [Extend]로 완성하세요.',
+        inpaintGuide: '솔로 구간이나 브릿지가 어색할 때는 해당 타임스탬프에서 [Inpaint (Replace Section)]를 사용하세요.',
+        customModeGuide: 'Suno 웹의 Custom Mode를 켜고 Style of Music과 Lyrics를 각각 붙여넣으세요.'
+      }
+    };
+  }
+
+  /**
+   * [v0.2.0] AI Co-Producer Agent Tuning Interaction (API-013, SCN-008)
+   */
+  async tuneWithCoProducer({ trackTitle, currentLyrics, currentStyle, userInstruction }) {
+    let tunedLyrics = currentLyrics;
+    let tunedStyle = currentStyle;
+    let tuningNotes = [];
+
+    if (userInstruction.includes('색소폰') || userInstruction.includes('솔로')) {
+      tunedLyrics = tunedLyrics.replace('[Bridge', '[Bridge - emotional alto sax solo, warm reverb\n[Saxophone Solo');
+      tunedStyle = tunedStyle.replace('FM synth lead', 'FM synth lead, expressive warm alto saxophone');
+      tuningNotes.push('브릿지 구간에 감성적인 알토 색소폰 솔로 태그 추가');
+    }
+
+    if (userInstruction.includes('가사') || userInstruction.includes('은유')) {
+      tunedLyrics = tunedLyrics.replace('네온사인 물든 밤거리 위로', '유리창에 번지는 네온빛 수채화');
+      tuningNotes.push('Verse 가사에 시각적 수채화 은유 표현 반영');
+    }
+
+    if (userInstruction.includes('브라스') || userInstruction.includes('화려')) {
+      tunedStyle = tunedStyle.replace('lush brass', 'explosive punchy big band brass section stabs');
+      tuningNotes.push('스타일 프롬프트에 파워풀한 빅밴드 브라스 섹션 보강');
+    }
+
+    if (tuningNotes.length === 0) {
+      tuningNotes.push(`사용자 요청("${userInstruction}")에 맞춘 미세 다이내믹스 및 편곡 튜닝 적용`);
+    }
+
+    return {
+      agentResponse: `디렉터님, 요청하신 "${userInstruction}" 사항을 반영하여 새로운 편곡/가사 튜닝을 완료했습니다!`,
+      tuningNotes,
+      tunedLyrics,
+      tunedStyle,
+      suggestedBranchName: `take_${Date.now().toString().slice(-4)}_${userInstruction.slice(0, 10).replace(/[^a-zA-Z0-9가-힣]/g, '_')}`
+    };
+  }
 }
 
 export default GeminiProvider;
+

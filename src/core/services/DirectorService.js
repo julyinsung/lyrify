@@ -91,20 +91,51 @@ export class DirectorService {
     return [
       {
         mode: 'explore',
-        name: '다양성 탐색 모드 (Explore)',
-        description: 'K-Pop, Lo-Fi, City Pop, Synthwave 등 폭넓은 장르와 감성을 탐색합니다.'
+        name: '다채로운 장르 탐색 (Explore)',
+        description: '입력된 감성 키워드를 바탕으로 시티팝, 발라드, 로우파이 등 10가지 이상의 다양한 장르/스타일 레시피를 제안합니다.'
       },
       {
         mode: 'single',
-        name: '싱글 집중 모드 (Single)',
-        description: '하나의 곡 테마를 중심으로 어쿠스틱, 클럽 리믹스, 피아노 발라드 등 다채로운 편곡 바리에이션을 생성합니다.'
+        name: '단일 곡 테마 변주 (Single Theme)',
+        description: '하나의 곡 테마를 어쿠스틱 버전, EDM 리믹스, 피아노 발라드 등 다채로운 편곡 버전으로 확장합니다.'
       },
       {
         mode: 'album',
-        name: '앨범 컨셉 모드 (Album)',
-        description: 'Intro부터 Title, B-side, Climax, Outro까지 유기적인 서사 구조를 갖춘 컨셉 앨범 트랙리스트를 완성합니다.'
+        name: '콘셉트 앨범 서사 기획 (Album Tracklist)',
+        description: 'Intro부터 Title, Sub-title, Outro까지 유기적으로 이어지는 완성도 높은 정규/미니 앨범 트랙리스트를 기획합니다.'
       }
     ];
+  }
+
+  /**
+   * [v0.2.0] Single Track Deep Production Blueprint (API-009, SCN-006)
+   * Plans sound architecture, music theory rationales, section timeline, and Suno master prompts.
+   * 
+   * @param {Object} params
+   * @param {string} params.story
+   * @param {string} [params.mood]
+   * @param {string} [params.reference]
+   * @param {string} [params.targetGenre]
+   * @param {number} [params.bpm]
+   * @returns {Promise<Object>}
+   */
+  async deepProduceTrack({ story, mood, reference, targetGenre, bpm }) {
+    if (!story) {
+      throw new Error('Story or narrative theme is required for deep track production.');
+    }
+
+    const blueprint = await this.geminiProvider.generateDeepProductionBlueprint({
+      story: String(story).trim(),
+      mood,
+      reference,
+      targetGenre,
+      bpm
+    });
+
+    return {
+      success: true,
+      blueprint
+    };
   }
 }
 

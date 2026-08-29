@@ -476,6 +476,140 @@ export class VaultStorageService {
   }
 
   /**
+   * [v0.2.0] Create a new take branch (API-010, SCN-007)
+   * @param {string} trackId 
+   * @param {Object} branchData 
+   * @returns {Object}
+   */
+  createTrackBranch(trackId, branchData = {}) {
+    const track = this.getTrack(trackId);
+    if (!track) {
+      throw new Error(`트랙을 찾을 수 없습니다: ${trackId}`);
+    }
+
+    const branchId = `take-${Date.now().toString().slice(-4)}_${(branchData.branchName || 'variation').replace(/[^a-zA-Z0-9가-힣]/g, '_')}`;
+    const sanitized = track.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+    const branchFolder = path.join(this.vaultRepository.zenionRootDir, `${sanitized}_${track.id}`, 'branches', branchId);
+
+    if (!fs.existsSync(branchFolder)) {
+      fs.mkdirSync(branchFolder, { recursive: true });
+    }
+
+    const branch = {
+      id: branchId,
+      trackId: track.id,
+      parentTakeId: branchData.parentTakeId || 'master',
+      branchName: branchData.branchName || '신규 테이크',
+      description: branchData.description || '',
+      lyricsRaw: branchData.lyricsRaw || track.lyricsRaw,
+      sunoStylePrompt: branchData.sunoStylePrompt || track.sunoStylePrompt,
+      audioPath: branchData.audioPath || '',
+      createdAt: new Date().toISOString()
+    };
+
+    fs.writeFileSync(path.join(branchFolder, 'branch.json'), JSON.stringify(branch, null, 2), 'utf8');
+
+    return {
+      success: true,
+      branchId,
+      branch
+    };
+  }
+
+  /**
+   * [v0.2.0] Compare two branches or Master vs Branch (API-012, SCN-007)
+   * @param {string} trackId 
+   * @param {string} [branchA='master'] 
+   * @param {string} [branchB] 
+   * @returns {Object}
+   */
+  compareBranches(trackId, branchA = 'master', branchB) {
+    const track = this.getTrack(trackId);
+    if (!track) {
+      throw new Error(`트랙을 찾을 수 없습니다: ${trackId}`);
+    }
+
+    let dataA = {
+      name: 'Master v1.0 (원장)',
+      lyrics: track.lyricsRaw,
+      style: track.sunoStylePrompt,
+      audio: track.audioPathSuno || track.audioPathAceStep
+    };
+
+    let dataB = {
+      name: branchB || 'Take 2 (수정본)',
+      lyrics: track.lyricsRaw,
+      style: track.sunoStylePrompt,
+      audio: track.audioPathSuno || track.audioPathAceStep
+    };
+
+    const sanitized = track.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+    const branchesDir = path.join(this.vaultRepository.zenionRootDir, `${sanitized}_${track.id}`, 'branches');
+
+    if (branchB && fs.existsSync(path.join(branchesDir, branchB, 'branch.json'))) {
+      try {
+        const raw = fs.readFileSync(path.join(branchesDir, branchB, 'branch.json'), 'utf8');
+        const bObj = JSON.parse(raw);
+        dataB = {
+          name: bObj.branchName || branchB,
+          lyrics: bObj.lyricsRaw,
+          style: bObj.sunoStylePrompt,
+          audio: bObj.audioPath
+        };
+      } catch (_) {}
+    }
+
+    return {
+      success: true,
+      trackId: track.id,
+      comparison: {
+        a: dataA,
+        b: dataB,
+        lyricsModified: dataA.lyrics !== dataB.lyrics,
+        styleModified: dataA.style !== dataB.style
+      }
+    };
+  }
+
+  /**
+   * [v0.2.0] Merge a branch take into Master (API-011, SCN-007)
+   * Promotes branch to official master.
+   * @param {string} trackId 
+   * @param {string} branchId 
+   * @param {string} [commitMessage] 
+   * @returns {Object}
+   */
+  mergeBranchToMaster(trackId, branchId, commitMessage = 'Promoted branch to Master') {
+    const track = this.getTrack(trackId);
+    if (!track) {
+      throw new Error(`트랙을 찾을 수 없습니다: ${trackId}`);
+    }
+
+    const sanitized = track.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+    const branchFolder = path.join(this.vaultRepository.zenionRootDir, `${sanitized}_${track.id}`, 'branches', branchId);
+    const branchFile = path.join(branchFolder, 'branch.json');
+
+    if (fs.existsSync(branchFile)) {
+      try {
+        const bObj = JSON.parse(fs.readFileSync(branchFile, 'utf8'));
+        if (bObj.lyricsRaw) track.lyricsRaw = bObj.lyricsRaw;
+        if (bObj.sunoStylePrompt) track.sunoStylePrompt = bObj.sunoStylePrompt;
+        if (bObj.audioPath) track.audioPathSuno = bObj.audioPath;
+      } catch (_) {}
+    }
+
+    track.aiReview = `[Master v2.0 Promoted] ${commitMessage} (${new Date().toLocaleDateString()})`;
+    this.saveTrack(track);
+
+    return {
+      success: true,
+      masterVersion: 'v2.0.0',
+      track: track.toJSON(),
+      message: `브랜치 [${branchId}]가 성공적으로 원장(Master)으로 승격되었습니다.`
+    };
+  }
+
+  /**
    * Determine asset completion status for a track
    * @param {Track|string} trackOrId 
    * @returns {{hasDraft: boolean, hasFinalAudio: boolean, hasCover: boolean, hasVideo: boolean, hasReleaseKit: boolean, isComplete: boolean}}

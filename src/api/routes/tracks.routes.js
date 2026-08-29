@@ -243,11 +243,33 @@ export function createTracksRouter({ vaultService, judgeService }) {
     }
   });
 
-  // POST /api/tracks/clear - Clear all tracks
-  router.post('/clear', (req, res, next) => {
+  // POST /api/tracks/:id/branches (API-010, SCN-007) - Create a new take branch
+  router.post('/:id/branches', (req, res, next) => {
     try {
-      vaultService.clearAllTracks();
-      return res.json({ success: true, message: 'All tracks cleared successfully.' });
+      const result = vaultService.createTrackBranch(req.params.id, req.body || {});
+      return res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // POST /api/tracks/:id/branches/:branchId/merge (API-011, SCN-007) - Merge branch take to Master
+  router.post('/:id/branches/:branchId/merge', (req, res, next) => {
+    try {
+      const { commitMessage } = req.body || {};
+      const result = vaultService.mergeBranchToMaster(req.params.id, req.params.branchId, commitMessage);
+      return res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // GET /api/tracks/:id/compare (API-012, SCN-007) - Compare Master vs Branch or Branch vs Branch
+  router.get('/:id/compare', (req, res, next) => {
+    try {
+      const { a = 'master', b } = req.query || {};
+      const result = vaultService.compareBranches(req.params.id, a, b);
+      return res.json(result);
     } catch (err) {
       next(err);
     }

@@ -67,16 +67,46 @@ export function createDirectorRouter({ directorService, vaultService }) {
     }
   });
 
-  // POST /api/director/trigger-ace - Trigger ACE-Step local draft generation
-  router.post('/trigger-ace', async (req, res, next) => {
+  // POST /api/director/deep-produce (API-009, SCN-006) - Single Track Deep Production Blueprint & Rationale
+  router.post('/deep-produce', async (req, res, next) => {
     try {
-      const { recipeId, recipeData } = req.body || {};
-      if (!recipeId) {
-        return res.status(400).json({ success: false, error: 'Recipe ID is required' });
+      const { story, mood, reference, targetGenre, bpm } = req.body || {};
+      if (!story || typeof story !== 'string' || !story.trim()) {
+        return res.status(400).json({ success: false, error: 'Story or narrative theme is required' });
       }
 
-      const result = await directorService.triggerAceDraft(recipeId, recipeData);
-      return res.json(result);
+      const result = await directorService.deepProduceTrack({
+        story: story.trim(),
+        mood,
+        reference,
+        targetGenre,
+        bpm
+      });
+
+      // Save deep produced track to Master Vault
+      let track = null;
+      if (vaultService && result.blueprint) {
+        const bp = result.blueprint;
+        const trackId = `TRK-${Date.now().toString().slice(-6)}-PROD`;
+        track = new Track({
+          id: trackId,
+          title: bp.title,
+          genre: bp.genre,
+          bpm: bp.bpm,
+          lyricsRaw: bp.fullLyrics,
+          sunoStylePrompt: bp.sunoStylePrompt,
+          aiScore: 0,
+          aiReview: `[Rationale 기획 완료] ${bp.rationale.tempoRationale}`,
+          status: 'draft'
+        });
+        await vaultService.createTrackVault(track);
+      }
+
+      return res.json({
+        success: true,
+        track: track ? track.toJSON() : null,
+        blueprint: result.blueprint
+      });
     } catch (err) {
       next(err);
     }

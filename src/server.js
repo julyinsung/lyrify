@@ -21,6 +21,7 @@ import { createDirectorRouter } from './api/routes/director.routes.js';
 import { createTracksRouter } from './api/routes/tracks.routes.js';
 import { createVideoRouter } from './api/routes/video.routes.js';
 import { createReleaseRouter } from './api/routes/release.routes.js';
+import { createAgentRouter } from './api/routes/agent.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -93,6 +94,7 @@ export function createApp() {
   app.use('/api/tracks', createTracksRouter({ vaultService, judgeService }));
   app.use('/api/tracks', createVideoRouter({ renderService }));
   app.use('/api/tracks', createReleaseRouter({ releaseService }));
+  app.use('/api/agent', createAgentRouter({ vaultService, geminiProvider }));
 
   // Global Error Handler
   app.use((err, req, res, next) => {

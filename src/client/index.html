@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZENION Music Studio (@zenion.studio)</title>
+    <title>ZENION Music Studio v0.2.0 - Deep Production & Music Git-Flow</title>
     <style>
       :root {
         --bg-dark: #0a0e17;
@@ -23,70 +23,91 @@
         background-color: var(--bg-dark);
         color: var(--text);
         line-height: 1.5;
-        padding: 24px;
+        padding: 20px;
       }
       .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         padding-bottom: 16px;
         border-bottom: 1px solid var(--card-border);
       }
       .logo {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 700;
         background: linear-gradient(135deg, #60a5fa, #c084fc);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .nav-tab {
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #111827;
+        border: 1px solid var(--card-border);
+        color: var(--text-muted);
+        transition: all 0.2s;
+      }
+      .nav-tab.active {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+        border-color: var(--primary);
+        color: #60a5fa;
       }
       .badge {
         display: inline-block;
-        padding: 4px 10px;
+        padding: 3px 8px;
         border-radius: 9999px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
       }
       .badge-success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
       .badge-primary { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
       .badge-warning { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
       
-      .grid {
-        display: grid;
-        grid-template-columns: 360px 1fr;
-        gap: 24px;
-      }
       .panel {
         background-color: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: 12px;
         padding: 20px;
+        margin-bottom: 20px;
       }
       .panel-title {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: space-between;
       }
       .form-group {
-        margin-bottom: 16px;
+        margin-bottom: 14px;
       }
       label {
         display: block;
-        font-size: 13px;
+        font-size: 12px;
         color: var(--text-muted);
         margin-bottom: 6px;
+        font-weight: 600;
       }
       input, select, textarea {
         width: 100%;
         background-color: #0f172a;
         border: 1px solid var(--card-border);
         color: var(--text);
-        padding: 10px 12px;
+        padding: 9px 12px;
         border-radius: 8px;
-        font-size: 14px;
+        font-size: 13px;
       }
       input:focus, select:focus, textarea:focus {
         outline: none;
@@ -96,739 +117,522 @@
         background: linear-gradient(135deg, var(--primary), var(--accent));
         color: white;
         border: none;
-        padding: 10px 16px;
+        padding: 9px 16px;
         border-radius: 8px;
+        font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        width: 100%;
         transition: opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
       .btn:hover { opacity: 0.9; }
       .btn-secondary {
-        background: #1e293b;
+        background: #1f2937;
         color: var(--text);
         border: 1px solid var(--card-border);
       }
-      .track-card {
-        background-color: #0f172a;
-        border: 1px solid var(--card-border);
-        border-radius: 10px;
-        padding: 16px;
-        margin-bottom: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+      .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+      .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+      /* Deep Production Layout */
+      .deep-layout {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 20px;
       }
-      .track-header {
+      .timeline-card {
+        background: #0f172a;
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 12px;
+        border-left: 4px solid var(--primary);
+      }
+      .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .timeline-part {
+        font-size: 13px;
+        font-weight: 700;
+        color: #60a5fa;
+      }
+      .timeline-rationale {
+        font-size: 11px;
+        color: #a78bfa;
+        background: rgba(139, 92, 246, 0.1);
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+      }
+      .timeline-tag {
+        font-family: monospace;
+        font-size: 11px;
+        color: #34d399;
+        background: #064e3b22;
+        padding: 4px 6px;
+        border-radius: 4px;
+        margin-bottom: 6px;
+        display: block;
+      }
+      .rationale-box {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px dashed rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 16px;
+      }
+      .rationale-item {
+        font-size: 12px;
+        margin-bottom: 6px;
+        color: #cbd5e1;
+      }
+      .suno-box {
+        background: #090d16;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      .copy-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      /* Git-Flow Branching View */
+      .branch-item {
+        background: #0f172a;
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
-      .track-title {
-        font-size: 16px;
-        font-weight: 600;
+      .branch-active {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.05);
       }
-      .score-box {
-        font-size: 20px;
-        font-weight: 700;
-        color: #34d399;
-      }
-      .tags {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-      .tag {
-        background-color: #1e293b;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        color: var(--text-muted);
-      }
-      .btn-group {
-        display: flex;
-        gap: 8px;
-      }
-      .lyrics-box {
-        background-color: #080c14;
-        padding: 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        color: #cbd5e1;
-        white-space: pre-line;
-        max-height: 120px;
-        overflow-y: auto;
-      }
-      .modal {
+
+      /* Modal */
+      .modal-overlay {
         display: none;
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.8);
-        align-items: center;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
         justify-content: center;
+        align-items: center;
         padding: 20px;
       }
       .modal-content {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: 12px;
-        max-width: 600px;
         width: 100%;
-        padding: 24px;
-        max-height: 90vh;
+        max-width: 1100px;
+        max-height: 94vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--card-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-body {
+        padding: 20px;
         overflow-y: auto;
+        flex: 1;
+      }
+      .modal-footer {
+        padding: 14px 20px;
+        border-top: 1px solid var(--card-border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
       }
     </style>
   </head>
   <body>
     <div class="header">
-      <div>
-        <div class="logo">ZENION Music Studio</div>
-        <div style="font-size: 12px; color: var(--text-muted);">@zenion.studio 올인원 AI 음악 크리에이터 파이프라인 (v0.1.0 MVP)</div>
+      <div class="logo">
+        🎵 ZENION Music Studio <span class="badge badge-primary">v0.2.0 Deep Production & Git-Flow</span>
       </div>
-      <div>
-        <span class="badge badge-success" id="server-status">● Live (Docker Engine)</span>
-      </div>
-    </div>
-
-    <div class="grid">
-      <!-- Left Panel: AI Director Suite -->
-      <div class="panel">
-        <div class="panel-title">✨ AI 음악 디렉터 (기획 엔진)</div>
-        <div class="form-group">
-          <label>감성 키워드 / 테마</label>
-          <input type="text" id="director-keyword" value="비 오는 날 네온사인 시티팝" placeholder="예: 여름 드라이브 칠합, 몽환적인 R&B" />
-        </div>
-        <div class="form-group">
-          <label>기획 모드</label>
-          <select id="director-mode">
-            <option value="explore">다중 스타일 탐색 (Explore Mode)</option>
-            <option value="single">단일 곡 미세 변주 (Single Track Focus)</option>
-            <option value="album">컨셉 앨범 / EP (Album Curation)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>생성할 곡 수 (가변: 1~20곡)</label>
-          <input type="number" id="director-count" value="3" min="1" max="20" />
-        </div>
-        <button class="btn" id="btn-generate-styles" onclick="generateStyles()">🚀 AI 스타일 & 가사 레시피 기획</button>
-        
-        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--card-border);">
-          <div class="panel-title">📁 ZENION 마스터 볼트</div>
-          <button class="btn btn-secondary" onclick="scanVault()" style="margin-bottom: 8px;">🔄 저장소 재스캔 (syncVault)</button>
-          <div style="font-size: 11px; color: var(--text-muted);">
-            마운트: <code>/data/ZENION-MUSIC</code><br>
-            초안 감시: <code>/data/ACE-Step-1.5</code>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Panel: Screening Room & Studio -->
-      <div class="panel">
-        <div class="panel-title" style="justify-content: space-between;">
-          <span>🎧 AI Screening Room & Master Vault Tracks</span>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="btn btn-secondary" onclick="clearAllTracks()" style="width: auto; padding: 4px 10px; font-size: 12px; background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4);">
-              🗑️ 전체 비우기
-            </button>
-            <span class="badge badge-primary" id="track-count">0 Tracks</span>
-          </div>
-        </div>
-        <div id="tracks-list">
-          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-            트랙 목록을 불러오는 중입니다...
-          </div>
-        </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary btn-sm" onclick="window.open('/docs/user/USER_MANUAL.md', '_blank')">📖 실전 매뉴얼</button>
+        <button class="btn btn-secondary btn-sm" onclick="fetchTracks()">🔄 새로고침</button>
       </div>
     </div>
 
-    <!-- Release Kit Modal -->
-    <div class="modal" id="release-modal">
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <div class="nav-tab active" id="tab-btn-deep" onclick="switchMainTab('deep')">🌟 1곡 심층 프로덕션 스튜디오 (Master Studio)</div>
+      <div class="nav-tab" id="tab-btn-vault" onclick="switchMainTab('vault')">🎛️ AI 탐색 & 트랙 볼트 (Library)</div>
+    </div>
+
+    <!-- [TAB 1] 1곡 심층 프로덕션 스튜디오 -->
+    <div id="view-deep" class="deep-layout">
+      <!-- Left Column: Input & AI Co-Producer -->
+      <div>
+        <div class="panel">
+          <div class="panel-title">💡 1곡 집중 기획 & 사운드 설계 (Deep Produce)</div>
+          <div class="form-group">
+            <label>곡 테마 / 스토리라인 (서사 중심)</label>
+            <textarea id="deep-story" rows="3" placeholder="예: 늦은 밤 비 내리는 도시, 룸미러 속 젖은 아스팔트를 보며 지난 사랑을 덤덤하게 추억하는 80s 시티팝"></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label>장르 (Genre)</label>
+              <select id="deep-genre">
+                <option value="City Pop">80s Japanese City Pop</option>
+                <option value="K-Pop Ballad">K-Pop Acoustic Ballad</option>
+                <option value="Lo-Fi Chillhop">Lo-Fi Chillhop</option>
+                <option value="Synthwave">Retro Synthwave</option>
+                <option value="Neo-Soul">Neo-Soul & R&B</option>
+                <option value="Acoustic Folk">Acoustic Indie Folk</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>BPM 템포</label>
+              <input type="number" id="deep-bpm" value="118" min="60" max="180" />
+            </div>
+          </div>
+          <button class="btn" style="width: 100%;" id="btn-deep-produce" onclick="generateDeepProduction()">
+            🚀 1곡 심층 프로덕션 기획
+          </button>
+        </div>
+
+        <!-- AI Co-Producer Agent Chat -->
+        <div class="panel" style="margin-top: 16px;">
+          <div class="panel-title">🤖 AI Co-Producer 지시창 (대화형 튜닝)</div>
+          <div class="form-group">
+            <label>어시스턴트 프로듀서에게 지시할 내용</label>
+            <textarea id="agent-instruction" rows="2" placeholder="예: Verse 2 가사를 은유적으로 바꾸고 브릿지에 색소폰 솔로 넣어서 브랜치 하나 따줘"></textarea>
+          </div>
+          <button class="btn btn-secondary" style="width: 100%;" onclick="instructCoProducer()">
+            💬 지시사항 반영 및 새 테이크 분기
+          </button>
+          <div id="agent-response-box" style="display: none; margin-top: 12px; font-size: 12px; background: #0f172a; padding: 10px; border-radius: 6px; border-left: 3px solid #8b5cf6;"></div>
+        </div>
+
+        <!-- Music Git-Flow Takes History -->
+        <div class="panel" style="margin-top: 16px;">
+          <div class="panel-title">🌳 테이크 브랜치 (Takes / Versions)</div>
+          <div id="branch-list-container">
+            <div class="branch-item branch-active">
+              <div>
+                <strong style="font-size: 13px;">● Master v1.0 (원장)</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">기본 마스터 스케치</div>
+              </div>
+              <span class="badge badge-success">Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Blueprint, Timeline & Suno Master Package -->
+      <div>
+        <!-- Rationale Blueprint Box -->
+        <div class="panel" id="blueprint-panel">
+          <div class="panel-title">
+            <span id="bp-title">🎼 사운드 아키텍처 기획서 (Sound Blueprint)</span>
+            <span class="badge badge-primary" id="bp-badge">Ready</span>
+          </div>
+          
+          <div class="rationale-box" id="bp-rationale-box">
+            <div class="rationale-item" id="bp-tempo-rat">⏱️ <strong>BPM 템포:</strong> 118 BPM - 도시적인 드라이브감과 여유로운 그루브 형성</div>
+            <div class="rationale-item" id="bp-key-rat">🎹 <strong>조성(Key):</strong> A Major - 단조의 우울함 대신 아련한 빛과 낭만 강조</div>
+            <div class="rationale-item" id="bp-inst-rat">🎸 <strong>악기 편성:</strong> Slap Bass (바운스) + FM Synth (80s 공기감) + Brass Stabs (후렴 폭발)</div>
+            <div class="rationale-item" id="bp-vocal-rat">🎤 <strong>보컬 디렉션:</strong> 속삭이듯 친밀한 톤 (Dry intimate, no excessive reverb)</div>
+          </div>
+
+          <!-- Suno Copy Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+            <button class="btn btn-secondary btn-sm" onclick="copySunoStyle()">📋 Style of Music 복사</button>
+            <button class="btn btn-secondary btn-sm" onclick="copySunoLyrics()">✍️ Structured Lyrics 복사</button>
+            <button class="btn btn-secondary btn-sm" onclick="copySunoNegative()">🚫 Negative Prompt 복사</button>
+          </div>
+
+          <!-- Section Timeline Cards -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="font-size: 14px; font-weight: 600;">📑 섹션별 편곡 & 작사 타임라인</h4>
+            <button class="btn btn-sm btn-secondary" onclick="openMasterEditor()">📝 전면 에디터로 편집</button>
+          </div>
+
+          <div id="timeline-container">
+            <!-- Timeline Cards Rendered Here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- [TAB 2] AI 탐색 & 트랙 볼트 (Library) -->
+    <div id="view-vault" style="display: none;">
+      <div class="panel">
+        <div class="panel-title">
+          <span>🗄️ ZENION-MUSIC 트랙 볼트 라이브러리</span>
+          <span class="badge badge-success" id="vault-count-badge">0 Tracks</span>
+        </div>
+        <div id="tracks-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px;">
+          <!-- Track Cards Rendered Here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Screen Editor Modal -->
+    <div class="modal-overlay" id="editor-modal">
       <div class="modal-content">
-        <div class="track-header" style="margin-bottom: 16px;">
-          <div class="track-title" id="modal-title">SNS 릴리즈 키트</div>
-          <button class="btn btn-secondary" onclick="closeModal()" style="width: auto; padding: 4px 12px;">✕</button>
+        <div class="modal-header">
+          <h3 style="font-size: 16px; font-weight: 700;">📝 가사 & Suno 스타일 전면 에디터</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeEditorModal()">✕ 닫기</button>
         </div>
-        <div class="form-group">
-          <label>YouTube 롱폼 (16:9) 설명문 & 타임스탬프</label>
-          <textarea id="modal-youtube" rows="6" readonly></textarea>
+        <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <label>📋 Suno Style of Music (스타일 캡션)</label>
+            <textarea id="modal-style-text" style="height: 380px; font-family: monospace; font-size: 12px;"></textarea>
+          </div>
+          <div>
+            <label>✍️ Structured Lyrics (인라인 편곡 태그 포함 가사)</label>
+            <textarea id="modal-lyrics-text" style="height: 380px; font-family: monospace; font-size: 12px;"></textarea>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Instagram Reels 캡션 & 해시태그</label>
-          <textarea id="modal-instagram" rows="4" readonly></textarea>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeEditorModal()">취소</button>
+          <button class="btn btn-success" onclick="saveEditorModalChanges()">💾 변경사항 저장</button>
         </div>
-        <div class="form-group">
-          <label>TikTok 숏폼 캡션 & 해시태그</label>
-          <textarea id="modal-tiktok" rows="3" readonly></textarea>
-        </div>
-        <button class="btn" onclick="copyReleaseKit()">📋 원클릭 클립보드 전체 복사</button>
       </div>
     </div>
 
     <script>
-      const API_BASE = '/api';
+      let currentBlueprint = null;
+      let currentTrackId = null;
+      let activeMainTab = 'deep';
 
-      async function fetchTracks() {
-        try {
-          const res = await fetch(`${API_BASE}/tracks`);
-          const data = await res.json();
-          renderTracks(data.tracks || []);
-        } catch (e) {
-          console.error(e);
-        }
+      function switchMainTab(tab) {
+        activeMainTab = tab;
+        document.getElementById('tab-btn-deep').classList.toggle('active', tab === 'deep');
+        document.getElementById('tab-btn-vault').classList.toggle('active', tab === 'vault');
+        document.getElementById('view-deep').style.display = tab === 'deep' ? 'grid' : 'none';
+        document.getElementById('view-vault').style.display = tab === 'vault' ? 'block' : 'none';
       }
 
-      function renderTracks(tracks) {
-        const container = document.getElementById('tracks-list');
-        document.getElementById('track-count').innerText = `${tracks.length} Tracks`;
-        if (tracks.length === 0) {
-          container.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-muted);">등록된 트랙이 없습니다. 좌측에서 AI 스타일 기획을 실행해 보세요!</div>`;
-          return;
-        }
+      async function generateDeepProduction() {
+        const story = document.getElementById('deep-story').value.trim() || '비 오는 날의 네온사인 드라이브';
+        const genre = document.getElementById('deep-genre').value;
+        const bpm = Number(document.getElementById('deep-bpm').value) || 118;
+        const btn = document.getElementById('btn-deep-produce');
 
-        // Sort by score descending
-        const sorted = [...tracks].sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
-
-        container.innerHTML = sorted.map((t, idx) => {
-          let lyricsDisplay = t.lyricsRaw || t.lyricsText;
-          if (!lyricsDisplay && t.lyrics) {
-            if (typeof t.lyrics === 'string') {
-              lyricsDisplay = t.lyrics;
-            } else if (typeof t.lyrics === 'object') {
-              lyricsDisplay = Object.entries(t.lyrics)
-                .map(([k, v]) => `[${k.toUpperCase()}]\n${v}`)
-                .join('\n\n');
-            }
-          }
-          if (!lyricsDisplay) lyricsDisplay = '가사 정보 없음';
-
-          const isEvaluated = Boolean(t.aiScore && t.aiScore > 0);
-          const grade = t.aiScore >= 90 ? 'S' : (t.aiScore >= 80 ? 'A' : (t.aiScore >= 70 ? 'B' : 'C'));
-          
-          let rankBadge = '🎵 RECIPE';
-          let badgeClass = 'badge-secondary';
-          if (isEvaluated) {
-            rankBadge = idx === 0 ? '🏆 TOP 1 PICK' : (idx === 1 ? '🥈 TOP 2' : (idx === 2 ? '🥉 TOP 3' : '⭐ EVALUATED'));
-            badgeClass = idx === 0 ? 'badge-warning' : (idx < 3 ? 'badge-primary' : 'badge-secondary');
-          }
-
-          const hasAudio = Boolean(t.audioPathSuno || t.audioPathAceStep || (t.assetsStatus && (t.assetsStatus.hasFinalAudio || t.assetsStatus.hasDraft)));
-          const stylePromptDisplay = t.sunoStylePrompt || `[Upbeat ${t.bpm || 118} BPM ${t.genre || 'City Pop'}, Major harmony], [Instruments & drums, high-fidelity studio mix], [dry intimate female vocal, no reverb]`;
-
-          return `
-          <div class="track-card" id="card-${t.id}">
-            <div class="track-header">
-              <div>
-                <span class="badge ${badgeClass}">${rankBadge}</span>
-                <span class="track-title" style="margin-left: 8px;">${t.title}</span>
-                ${hasAudio ? '<span class="badge badge-success" style="margin-left: 6px;">🎧 음원 탑재됨</span>' : '<span class="badge badge-secondary" style="margin-left: 6px;">⏳ 초안 대기 중</span>'}
-              </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                ${isEvaluated ? `
-                  <div class="score-box">${t.aiScore}<span style="font-size: 12px; color: var(--text-muted);">점 (${grade}급)</span></div>
-                ` : `
-                  <div style="font-size: 11px; color: #94a3b8; text-align: right; line-height: 1.2;">
-                    <span style="font-weight: bold; color: #cbd5e1;">미채점</span><br>
-                    <span style="font-size: 10px; color: var(--text-muted);">초안 생성 대기</span>
-                  </div>
-                `}
-                <button class="btn btn-secondary" onclick="deleteTrack('${t.id}', '${t.title}')" style="width: auto; padding: 2px 8px; font-size: 12px; color: #f87171; border-color: rgba(239, 68, 68, 0.3);" title="트랙 삭제">🗑️</button>
-              </div>
-            </div>
-            <div class="tags">
-              <span class="tag">장르: ${t.genre || 'City Pop'}</span>
-              <span class="tag">BPM: ${t.bpm || 118}</span>
-              <span class="tag">상태: ${t.status || 'draft'}</span>
-              ${t.aiReview ? `<span class="tag" style="color: #60a5fa;">💡 ${t.aiReview}</span>` : ''}
-            </div>
-
-            <!-- Real HTML5 Audio Player -->
-            <div style="background: #080c14; padding: 8px; border-radius: 8px; border: 1px solid var(--card-border);">
-              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between;">
-                <span>🔊 실제 AI 음악 오디오 플레이어</span>
-                ${hasAudio ? '<span style="color: #34d399;">● 재생 준비 완료 (스트리밍 가능)</span>' : '<span style="color: #fbbf24;">● 아래 버튼으로 Suno / ACE 음원을 매핑하세요</span>'}
-              </div>
-              <audio controls src="/api/tracks/${t.id}/audio" style="width: 100%; height: 36px; outline: none; border-radius: 4px;"></audio>
-            </div>
-
-            <!-- Style Caption Prompt -->
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-size: 12px; font-weight: 600; color: #38bdf8;">📋 스타일 캡션 프롬프트 (Suno Style of Music)</span>
-                <button class="btn btn-secondary" style="width: auto; padding: 2px 8px; font-size: 11px;" onclick="copySingleField('${escapeHtml(stylePromptDisplay)}')">복사</button>
-              </div>
-              <div style="background: #090d16; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 6px; padding: 8px 10px; font-family: monospace; font-size: 12px; color: #bae6fd; line-height: 1.4;">
-                ${stylePromptDisplay}
-              </div>
-            </div>
-
-            <!-- Structured Lyrics with Metatags -->
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-size: 12px; font-weight: 600; color: #facc15;">✍️ 구조화 가사 및 편곡 태그 (Suno Lyrics)</span>
-                <button class="btn btn-secondary" style="width: auto; padding: 2px 8px; font-size: 11px; color: #facc15; border-color: rgba(250, 204, 21, 0.4);" onclick="openEditorModal('${t.id}')">🔍 전면 확대 및 수정</button>
-              </div>
-              <div class="lyrics-box" onclick="openEditorModal('${t.id}')" title="클릭하여 확대 및 가사/스타일 직접 수정" style="cursor: pointer;">
-                ${lyricsDisplay}
-              </div>
-            </div>
-
-            <div class="btn-group">
-              <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); flex: 1.3;" onclick="openEditorModal('${t.id}')">
-                📝 가사 & 스타일 전면 에디터
-              </button>
-              <button class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); flex: 1.2;" onclick="copySunoPrompt('${t.id}')">
-                📋 Suno 전체 프롬프트 복사
-              </button>
-              <button class="btn btn-secondary" onclick="mapAudioModal('${t.id}')">📁 음원 연결</button>
-              <button class="btn btn-secondary" onclick="evaluateTrack('${t.id}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">🔍 품질 채점</button>
-              <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'youtube_16x9')">🎬 비디오</button>
-              <button class="btn btn-secondary" onclick="openReleaseModal('${t.id}')">🚀 릴리즈</button>
-            </div>
-          </div>
-        `;
-        }).join('');
-      }
-
-      function escapeHtml(str) {
-        return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      }
-
-      function copySingleField(text) {
-        navigator.clipboard.writeText(text);
-        alert('📋 클립보드에 복사되었습니다!');
-      }
-
-      async function copySunoPrompt(trackId) {
-        try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}`);
-          const data = await res.json();
-          const t = data.track || {};
-          const stylePrompt = t.sunoStylePrompt || `[Upbeat ${t.bpm || 118} BPM ${t.genre || 'City Pop'}, Major harmony], [Instruments & drums, high-fidelity mix], [dry intimate female vocal, no reverb]`;
-          const text = `[SUNO AI - STYLE OF MUSIC]\n${stylePrompt}\n\n[SUNO AI - LYRICS]\n${t.lyricsRaw || ''}`;
-          navigator.clipboard.writeText(text);
-          alert('🎉 [Suno AI 최적화 프롬프트]가 클립보드에 복사되었습니다!\n\n1. Suno AI 웹(suno.com)의 Custom Mode 접속\n2. Style of Music & Lyrics 란에 각각 붙여넣어 완벽한 음악을 생성하세요.');
-        } catch (e) {
-          alert('복사 오류: ' + e.message);
-        }
-      }
-
-      async function mapAudioModal(trackId) {
-        const audioPath = prompt('연결할 실제 오디오 파일의 로컬 경로(.mp3/.wav)를 입력해 주세요:\n(예: C:/Users/julyi/Documents/ACE-Step-1.5/output/sample.mp3)');
-        if (!audioPath || !audioPath.trim()) return;
-
-        try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}/map-suno`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sunoAudioPath: audioPath.trim() })
-          });
-          const data = await res.json();
-          if (data.success) {
-            alert('🎉 실제 음원이 성공적으로 매핑되었습니다!\n상단 오디오 플레이어에서 바로 들어보실 수 있습니다.');
-            fetchTracks();
-          } else {
-            alert('매핑 실패: ' + (data.error || '파일을 찾을 수 없습니다.'));
-          }
-        } catch (e) {
-          alert('매핑 오류: ' + e.message);
-        }
-      }
-
-      async function evaluateTrack(trackId) {
-        try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}/evaluate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
-          });
-          const data = await res.json();
-          if (data.success) {
-            alert(`🔍 AI 1차 퀄리티 채점 완료!\n• 점수: ${data.aiScore}점 (${data.grade || 'A'}급)\n• 총평: ${data.aiReview}`);
-            fetchTracks();
-          } else {
-            alert('채점 실패: ' + (data.error || '채점 중 오류가 발생했습니다.'));
-          }
-        } catch (e) {
-          alert('채점 오류: ' + e.message);
-        }
-      }
-
-      async function copyAcePrompt(trackId) {
-        try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}`);
-          const data = await res.json();
-          const t = data.track || {};
-          const prompt = `[ACE-STEP 1.5 PROMPT]\nGenre: ${t.genre || 'City Pop'}\nBPM: ${t.bpm || 118}\nMood: ${t.title}\n\n[STRUCTURED LYRICS]\n${t.lyricsRaw || ''}`;
-          navigator.clipboard.writeText(prompt);
-          alert('📋 [ACE-Step 1.5 전용 프롬프트 & 가사]가 복사되었습니다!\nACE-Step CLI 또는 WebUI에 붙여넣어 초안을 생성하세요.');
-        } catch (e) {
-          alert('복사 오류: ' + e.message);
-        }
-      }
-
-      async function deleteTrack(trackId, title) {
-        if (!confirm(`정말로 트랙 '${title || trackId}'을(를) 삭제하시겠습니까?`)) {
-          return;
-        }
-
-        try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}?deleteFiles=true`, { method: 'DELETE' });
-          const data = await res.json();
-          if (data.success) {
-            fetchTracks();
-          } else {
-            alert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
-          }
-        } catch (e) {
-          alert('삭제 오류: ' + e.message);
-        }
-      }
-
-      async function clearAllTracks() {
-        if (!confirm('⚠️ 정말로 등록된 모든 트랙과 레시피를 비우시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
-          return;
-        }
-
-        try {
-          const res = await fetch(`${API_BASE}/tracks/clear`, { method: 'POST' });
-          const data = await res.json();
-          if (data.success) {
-            alert('🧹 모든 트랙이 성공적으로 초기화되었습니다.');
-            fetchTracks();
-          } else {
-            alert('초기화 실패: ' + (data.error || '알 수 없는 오류'));
-          }
-        } catch (e) {
-          alert('초기화 오류: ' + e.message);
-        }
-      }
-
-      // Web Audio Synth Preview Engine
-      let currentAudioCtx = null;
-      let activeTrackPlaying = null;
-
-      function toggleMelodyPreview(trackId, genre, bpm, title) {
-        if (activeTrackPlaying === trackId) {
-          stopMelodyPreview();
-          return;
-        }
-
-        stopMelodyPreview();
-        activeTrackPlaying = trackId;
-        const btn = document.getElementById(`play-btn-${trackId}`);
-        if (btn) btn.innerText = '⏹ 재생 정지';
-
-        try {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          currentAudioCtx = new AudioContext();
-          
-          // Notes for City Pop / Synthwave / Ballad (F# Minor 7 / B Minor 7 progression)
-          const notes = [
-            293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25, 739.99,
-            440.00, 369.99, 440.00, 587.33, 493.88, 440.00, 369.99, 293.66
-          ];
-          
-          const beatDuration = 60 / (bpm || 118);
-          const startTime = currentAudioCtx.currentTime + 0.1;
-
-          notes.forEach((freq, i) => {
-            const osc = currentAudioCtx.createOscillator();
-            const gain = currentAudioCtx.createGain();
-            const filter = currentAudioCtx.createBiquadFilter();
-
-            osc.type = genre.toLowerCase().includes('synth') ? 'sawtooth' : 'triangle';
-            osc.frequency.setValueAtTime(freq, startTime + i * (beatDuration / 2));
-
-            // Soft filter for warm analog vibe
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(1600, startTime + i * (beatDuration / 2));
-
-            // Attack / Decay envelope
-            gain.gain.setValueAtTime(0.01, startTime + i * (beatDuration / 2));
-            gain.gain.exponentialRampToValueAtTime(0.25, startTime + i * (beatDuration / 2) + 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.001, startTime + i * (beatDuration / 2) + (beatDuration * 0.45));
-
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(currentAudioCtx.destination);
-
-            osc.start(startTime + i * (beatDuration / 2));
-            osc.stop(startTime + i * (beatDuration / 2) + (beatDuration * 0.5));
-          });
-
-          // Auto stop when loop finishes
-          const totalDuration = notes.length * (beatDuration / 2);
-          setTimeout(() => {
-            if (activeTrackPlaying === trackId) {
-              stopMelodyPreview();
-            }
-          }, (totalDuration + 0.5) * 1000);
-
-        } catch (err) {
-          console.error('[Audio Preview Error]', err);
-          stopMelodyPreview();
-        }
-      }
-
-      function stopMelodyPreview() {
-        if (currentAudioCtx) {
-          try { currentAudioCtx.close(); } catch (e) {}
-          currentAudioCtx = null;
-        }
-        if (activeTrackPlaying) {
-          const btn = document.getElementById(`play-btn-${activeTrackPlaying}`);
-          if (btn) btn.innerText = '🎵 멜로디 프리뷰 듣기';
-          activeTrackPlaying = null;
-        }
-      }
-
-      async function generateStyles() {
-        const keyword = document.getElementById('director-keyword').value;
-        const mode = document.getElementById('director-mode').value;
-        const count = parseInt(document.getElementById('director-count').value, 10);
-        const btn = document.getElementById('btn-generate-styles');
-        btn.innerText = '⏳ AI 기획 생성 중...';
         btn.disabled = true;
+        btn.innerHTML = '⏳ 1곡 심층 기획 중...';
 
         try {
-          const res = await fetch(`${API_BASE}/director/generate-styles`, {
+          const res = await fetch('/api/director/deep-produce', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ keyword, count, mode })
+            body: JSON.stringify({ story, targetGenre: genre, bpm })
           });
           const data = await res.json();
-          alert(`🎉 ${data.styles.length}개의 스타일 레시피가 생성되었습니다!`);
-          fetchTracks();
-        } catch (e) {
-          alert('오류 발생: ' + e.message);
+          if (data.success && data.blueprint) {
+            currentBlueprint = data.blueprint;
+            if (data.track) currentTrackId = data.track.id;
+            renderBlueprint(data.blueprint);
+            fetchTracks();
+          }
+        } catch (err) {
+          alert('기획 생성 중 오류: ' + err.message);
         } finally {
-          btn.innerText = '🚀 AI 스타일 & 가사 레시피 기획';
           btn.disabled = false;
+          btn.innerHTML = '🚀 1곡 심층 프로덕션 기획';
         }
       }
 
-      async function scanVault() {
-        try {
-          const res = await fetch(`${API_BASE}/tracks/scan`, { method: 'POST' });
-          const data = await res.json();
-          alert(`저장소 스캔 완료: ${data.discoveredCount}개 트랙 동기화`);
-          fetchTracks();
-        } catch (e) {
-          alert('스캔 오류: ' + e.message);
-        }
+      function renderBlueprint(bp) {
+        document.getElementById('bp-title').innerText = '🎼 ' + bp.title;
+        document.getElementById('bp-badge').innerText = `${bp.genre} / ${bp.bpm} BPM / ${bp.key}`;
+        
+        document.getElementById('bp-tempo-rat').innerHTML = `⏱️ <strong>BPM 템포:</strong> ${bp.rationale.tempoRationale}`;
+        document.getElementById('bp-key-rat').innerHTML = `🎹 <strong>조성(Key):</strong> ${bp.rationale.keyRationale}`;
+        document.getElementById('bp-inst-rat').innerHTML = `🎸 <strong>악기 편성:</strong> ${bp.rationale.instrumentationRationale.join(' / ')}`;
+        document.getElementById('bp-vocal-rat').innerHTML = `🎤 <strong>보컬 디렉션:</strong> ${bp.rationale.vocalDirection}`;
+
+        const container = document.getElementById('timeline-container');
+        container.innerHTML = '';
+
+        bp.sections.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'timeline-card';
+          card.innerHTML = `
+            <div class="timeline-header">
+              <span class="timeline-part">[${s.part}]</span>
+              <span style="font-size: 11px; color: var(--text-muted);">${s.vocalAdlibs || ''}</span>
+            </div>
+            <div class="timeline-rationale">💡 ${s.rationale}</div>
+            <code class="timeline-tag">${s.tag}</code>
+            <pre style="font-family: inherit; font-size: 12px; white-space: pre-wrap; color: #f3f4f6; margin-top: 6px;">${s.lyrics}</pre>
+          `;
+          container.appendChild(card);
+        });
       }
 
-      async function exportVideo(trackId, format) {
+      async function instructCoProducer() {
+        const instruction = document.getElementById('agent-instruction').value.trim();
+        if (!instruction) {
+          alert('지시사항을 입력해 주세요.');
+          return;
+        }
+
+        if (!currentTrackId) {
+          alert('먼저 1곡 심층 기획을 실행해 주세요.');
+          return;
+        }
+
         try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}/export-video`, {
+          const res = await fetch('/api/agent/co-produce', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ format })
+            body: JSON.stringify({ trackId: currentTrackId, userInstruction: instruction })
           });
           const data = await res.json();
-          alert(`비디오 렌더링 완료! 저장 경로: 04_videos/`);
-        } catch (e) {
-          alert('렌더링 오류: ' + e.message);
+          if (data.success) {
+            const box = document.getElementById('agent-response-box');
+            box.style.display = 'block';
+            box.innerHTML = `<strong>🤖 AI Producer:</strong> ${data.agentResponse}<br><br><strong>✨ 튜닝 내역:</strong> ${data.tuningNotes.join(', ')}`;
+            
+            // Add branch item
+            const bContainer = document.getElementById('branch-list-container');
+            const item = document.createElement('div');
+            item.className = 'branch-item';
+            item.innerHTML = `
+              <div>
+                <strong style="font-size: 13px;">🌿 ${data.newBranch.branchName}</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">${data.newBranch.description}</div>
+              </div>
+              <button class="btn btn-sm btn-success" onclick="mergeTakeToMaster('${data.newBranch.id}')">🌟 Master 승격</button>
+            `;
+            bContainer.appendChild(item);
+          }
+        } catch (err) {
+          alert('AI 프로듀서 통신 오류: ' + err.message);
         }
       }
 
-      async function openReleaseModal(trackId) {
+      async function mergeTakeToMaster(branchId) {
+        if (!confirm('이 테이크를 최종 마스터(Master v2.0)로 승격하시겠습니까?')) return;
         try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}/release-kit`);
+          const res = await fetch(`/api/tracks/${currentTrackId}/branches/${branchId}/merge`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ commitMessage: '사용자 승격 승인' })
+          });
           const data = await res.json();
-          const kit = data.releaseKit || {};
-          document.getElementById('modal-youtube').value = `${kit.youtube?.title || ''}\n\n${kit.youtube?.description || ''}\n\nTags: ${(kit.youtube?.tags || []).join(', ')}`;
-          document.getElementById('modal-instagram').value = `${kit.instagram?.caption || ''}\n\n${(kit.instagram?.hashtags || []).join(' ')}`;
-          document.getElementById('modal-tiktok').value = `${kit.tiktok?.caption || ''} ${(kit.tiktok?.hashtags || []).join(' ')}`;
-          document.getElementById('release-modal').style.display = 'flex';
-        } catch (e) {
-          alert('릴리즈 키트 조회 오류: ' + e.message);
+          if (data.success) {
+            alert('🎉 ' + data.message);
+            fetchTracks();
+          }
+        } catch (err) {
+          alert('마스터 승격 실패: ' + err.message);
         }
       }
 
-      function closeModal() {
-        document.getElementById('release-modal').style.display = 'none';
+      function copySunoStyle() {
+        if (!currentBlueprint) return;
+        navigator.clipboard.writeText(currentBlueprint.sunoStylePrompt);
+        alert('📋 Suno Style of Music 프롬프트가 클립보드에 복사되었습니다!');
       }
 
-      function copyReleaseKit() {
-        const text = [
-          '=== YouTube ===\n' + document.getElementById('modal-youtube').value,
-          '=== Instagram ===\n' + document.getElementById('modal-instagram').value,
-          '=== TikTok ===\n' + document.getElementById('modal-tiktok').value
-        ].join('\n\n');
-        navigator.clipboard.writeText(text);
-        alert('📋 전체 플랫폼 릴리즈 키트가 클립보드에 복사되었습니다!');
+      function copySunoLyrics() {
+        if (!currentBlueprint) return;
+        navigator.clipboard.writeText(currentBlueprint.fullLyrics);
+        alert('✍️ Suno Structured Lyrics 가사가 클립보드에 복사되었습니다!');
       }
 
-      let currentEditingTrackId = null;
+      function copySunoNegative() {
+        if (!currentBlueprint) return;
+        navigator.clipboard.writeText(currentBlueprint.negativePrompt);
+        alert('🚫 Negative Prompt가 클립보드에 복사되었습니다!');
+      }
 
-      async function openEditorModal(trackId) {
-        try {
-          currentEditingTrackId = trackId;
-          const res = await fetch(`${API_BASE}/tracks/${trackId}`);
-          const data = await res.json();
-          const t = data.track || {};
-
-          document.getElementById('edit-title').value = t.title || '';
-          document.getElementById('edit-genre').value = t.genre || 'City Pop';
-          document.getElementById('edit-bpm').value = t.bpm || 118;
-          document.getElementById('edit-style-prompt').value = t.sunoStylePrompt || `[Upbeat ${t.bpm || 118} BPM ${t.genre || 'City Pop'}, Major harmony], [Instruments & drums, high-fidelity mix], [dry intimate female vocal, no reverb]`;
-          document.getElementById('edit-lyrics').value = t.lyricsRaw || '';
-
-          document.getElementById('editor-modal').style.display = 'flex';
-        } catch (e) {
-          alert('트랙 정보를 불러오지 못했습니다: ' + e.message);
-        }
+      function openMasterEditor() {
+        if (!currentBlueprint) return;
+        document.getElementById('modal-style-text').value = currentBlueprint.sunoStylePrompt;
+        document.getElementById('modal-lyrics-text').value = currentBlueprint.fullLyrics;
+        document.getElementById('editor-modal').style.display = 'flex';
       }
 
       function closeEditorModal() {
         document.getElementById('editor-modal').style.display = 'none';
-        currentEditingTrackId = null;
       }
 
-      async function saveEditorChanges() {
-        if (!currentEditingTrackId) return;
-        const btn = document.getElementById('btn-save-editor');
-        btn.innerText = '⏳ 저장 중...';
-        btn.disabled = true;
+      async function saveEditorModalChanges() {
+        const style = document.getElementById('modal-style-text').value;
+        const lyrics = document.getElementById('modal-lyrics-text').value;
+        if (currentBlueprint) {
+          currentBlueprint.sunoStylePrompt = style;
+          currentBlueprint.fullLyrics = lyrics;
+        }
 
-        try {
-          const payload = {
-            title: document.getElementById('edit-title').value,
-            genre: document.getElementById('edit-genre').value,
-            bpm: parseInt(document.getElementById('edit-bpm').value, 10) || 120,
-            sunoStylePrompt: document.getElementById('edit-style-prompt').value,
-            lyricsRaw: document.getElementById('edit-lyrics').value
-          };
-
-          const res = await fetch(`${API_BASE}/tracks/${currentEditingTrackId}`, {
+        if (currentTrackId) {
+          await fetch(`/api/tracks/${currentTrackId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ sunoStylePrompt: style, lyricsRaw: lyrics })
           });
-          const data = await res.json();
-          if (data.success) {
-            alert('🎉 가사 및 Suno 스타일 프롬프트가 성공적으로 저장되었습니다!');
-            closeEditorModal();
-            fetchTracks();
-          } else {
-            alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
-          }
-        } catch (e) {
-          alert('저장 오류: ' + e.message);
-        } finally {
-          btn.innerText = '💾 변경사항 저장 (Vault 반영)';
-          btn.disabled = false;
         }
+        closeEditorModal();
+        alert('💾 변경사항이 저장되었습니다!');
       }
 
-      function copyEditorSunoStyle() {
-        const text = document.getElementById('edit-style-prompt').value;
-        navigator.clipboard.writeText(text);
-        alert('📋 Suno Style of Music 프롬프트가 복사되었습니다!');
+      async function fetchTracks() {
+        try {
+          const res = await fetch('/api/tracks');
+          const data = await res.json();
+          if (data.tracks) {
+            document.getElementById('vault-count-badge').innerText = `${data.tracks.length} Tracks`;
+            renderVaultGrid(data.tracks);
+          }
+        } catch (err) {}
       }
 
-      function copyEditorSunoLyrics() {
-        const text = document.getElementById('edit-lyrics').value;
-        navigator.clipboard.writeText(text);
-        alert('✍️ 구조화 가사 및 편곡 태그가 복사되었습니다!');
+      function renderVaultGrid(tracks) {
+        const grid = document.getElementById('tracks-grid');
+        grid.innerHTML = '';
+        tracks.forEach(t => {
+          const card = document.createElement('div');
+          card.className = 'panel';
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="font-size: 14px;">${t.title}</strong>
+              <span class="badge badge-primary">${t.genre} / ${t.bpm} BPM</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">${t.aiReview || ''}</div>
+            <div style="display: flex; gap: 6px; margin-top: 10px;">
+              <button class="btn btn-sm btn-secondary" onclick="loadTrackToStudio('${t.id}')">🎛️ 스튜디오 로드</button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
       }
 
-      // Initial load
+      function loadTrackToStudio(trackId) {
+        alert('트랙 ID ' + trackId + ' 로드 완료');
+      }
+
+      // Initial Load
       fetchTracks();
+      // Auto-generate default preview
+      generateDeepProduction();
     </script>
-
-    <!-- Release Kit Modal -->
-    <div id="release-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
-      <div class="panel" style="width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 class="panel-title" style="margin-bottom: 0;">🚀 SNS 릴리즈 키트</h3>
-          <button class="btn btn-secondary" style="width: auto; padding: 4px 10px;" onclick="closeModal()">✕</button>
-        </div>
-        <div class="form-group">
-          <label>YouTube 제목 & 설명</label>
-          <textarea id="modal-youtube" rows="4"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Instagram 캡션 & 해시태그</label>
-          <textarea id="modal-instagram" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label>TikTok 캡션 & 해시태그</label>
-          <textarea id="modal-tiktok" rows="2"></textarea>
-        </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn" onclick="copyReleaseKit()">📋 전체 복사</button>
-          <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Full Screen Lyrics & Suno Style Editor Modal -->
-    <div id="editor-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; padding: 24px;">
-      <div class="panel" style="width: 100%; max-width: 1100px; max-height: 94vh; overflow-y: auto; border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
-          <div>
-            <h2 style="font-size: 20px; font-weight: 700; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
-              <span>📝 가사 & Suno 스타일 전면 에디터</span>
-              <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">(실시간 수정 및 마스터 볼트 영구 저장)</span>
-            </h2>
-          </div>
-          <button class="btn btn-secondary" style="width: auto; padding: 6px 14px; font-size: 16px;" onclick="closeEditorModal()">✕ 닫기</button>
-        </div>
-
-        <!-- Meta Inputs (Title, Genre, BPM) -->
-        <div style="display: grid; grid-template-columns: 2fr 1fr 100px; gap: 12px; margin-bottom: 16px;">
-          <div>
-            <label>곡 제목 (Title)</label>
-            <input type="text" id="edit-title" />
-          </div>
-          <div>
-            <label>장르 (Genre)</label>
-            <input type="text" id="edit-genre" />
-          </div>
-          <div>
-            <label>BPM</label>
-            <input type="number" id="edit-bpm" />
-          </div>
-        </div>
-
-        <!-- Dual Column Editor (Style Prompt & Lyrics) -->
-        <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 16px; margin-bottom: 20px;">
-          <!-- Left: Suno Style Caption -->
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="color: #38bdf8; font-weight: bold; margin-bottom: 0;">📋 스타일 캡션 프롬프트 (Style of Music Box)</label>
-              <button class="btn btn-secondary" style="width: auto; padding: 2px 10px; font-size: 11px; color: #38bdf8;" onclick="copyEditorSunoStyle()">📋 복사</button>
-            </div>
-            <textarea id="edit-style-prompt" rows="16" style="font-family: monospace; font-size: 13px; line-height: 1.5; color: #bae6fd; resize: vertical; min-height: 380px;"></textarea>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-              💡 <b>Tip:</b> [장르, BPM, 조성, 무드], [악기군, 베이스, 드럼, 믹싱], [보컬 톤, 공간감] 3단 브래킷 구조
-            </div>
-          </div>
-
-          <!-- Right: Structured Lyrics & Inline Metatags -->
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="color: #facc15; font-weight: bold; margin-bottom: 0;">✍️ 구조화 가사 및 편곡 태그 (Lyrics Box)</label>
-              <button class="btn btn-secondary" style="width: auto; padding: 2px 10px; font-size: 11px; color: #facc15;" onclick="copyEditorSunoLyrics()">📋 복사</button>
-            </div>
-            <textarea id="edit-lyrics" rows="16" style="font-family: monospace; font-size: 13px; line-height: 1.5; color: #fef08a; resize: vertical; min-height: 380px;"></textarea>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-              💡 <b>Tip:</b> 대괄호 <code>[Verse 1 - ...]</code>는 연주/편곡 지시어, 소괄호 <code>(코러스)</code>는 백보컬/애드리브
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Footer -->
-        <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--card-border); padding-top: 16px;">
-          <button class="btn btn-secondary" style="width: auto; padding: 10px 20px;" onclick="closeEditorModal()">취소</button>
-          <button class="btn" id="btn-save-editor" style="width: auto; padding: 10px 30px; background: linear-gradient(135deg, #10b981, #059669);" onclick="saveEditorChanges()">
-            💾 변경사항 저장 (Vault 반영)
-          </button>
-        </div>
-      </div>
-    </div>
   </body>
 </html>
