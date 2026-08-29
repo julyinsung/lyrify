@@ -90,15 +90,31 @@ export class GeminiProvider {
    * Structured generation via Google Gemini SDK (@google/genai)
    * @private
    */
+    /**
+   * Structured generation via Google Gemini SDK (@google/genai)
+   * @private
+   */
   async _generateWithGeminiSdk({ keyword, count, mode }) {
-    const prompt = `You are the Lead Music Director and Composer of ZENION AI Music Studio.
-Generate exactly ${count} distinct and structured song recipes based on the keyword/theme: "${keyword}".
+    const prompt = `You are the Lead Music Director and Professional Songwriter of ZENION AI Music Studio.
+Generate exactly ${count} distinct, highly creative, and complete commercial song recipes based on the keyword/theme: "${keyword}".
 The planning mode is "${mode}".
-- explore mode: Diverse genre exploration (K-Pop, Lo-Fi, City Pop, Synthwave, Rock, Ambient, R&B, etc.).
-- single mode: Focused stylistic variations of a single core song (Acoustic, Radio Edit, Lo-Fi Chill, Synthwave Club, Piano Ballad, etc.).
-- album mode: Cohesive concept album narrative (Track 1: Intro, Track 2: Lead Title Track, Track 3: B-side Groove, ..., Final Track: Outro).
+- explore mode: Diverse genre exploration (City Pop, K-Pop Ballad, Lo-Fi Chillhop, Synthwave, R&B Soul, Acoustic Indie, Modern Rock, Nu-Disco, Deep House, etc.).
+- single mode: Stylistic arrangement variations of a single core song (Original Radio Edit, Acoustic Unplugged, Lo-Fi Midnight, Synthwave Club, Stripped Piano, Cinematic Orchestral, etc.).
+- album mode: Cohesive concept album narrative tracklist (Track 1: Prologue Intro, Track 2: Lead Title Track, Track 3: Sub Title Groove, ..., Final Track: Epilogue Outro).
 
-Every track must include structured Korean lyrics with [Verse 1], [Chorus], and [Verse 2] sections.`;
+CRITICAL REQUIREMENTS FOR SUNO AI OPTIMIZATION:
+1. Every track MUST include professional Suno AI style prompt tags formatted as: "[Style Tags: {genre}, {tempo} bpm, {instruments}, {mood}, {vocal_type}]".
+2. Lyrics MUST be full-scale, emotional, poetic Korean lyrics featuring complete song structure:
+   - [Intro - Instrumental Vibe]
+   - [Verse 1] (4-6 poetic lines)
+   - [Pre-Chorus] (2-4 lines building tension)
+   - [Chorus] (4-6 lines memorable main hook)
+   - [Verse 2] (4-6 lines narrative continuation)
+   - [Bridge] (3-4 lines emotional climax)
+   - [Solo / Instrumental Break]
+   - [Chorus] (Explosive full chorus)
+   - [Outro] (Fading emotional finish)
+   - [Fade Out]`;
 
     const responseSchema = {
       type: Type.ARRAY,
@@ -115,12 +131,17 @@ Every track must include structured Korean lyrics with [Verse 1], [Chorus], and 
           lyrics: {
             type: Type.OBJECT,
             properties: {
+              intro: { type: Type.STRING },
               verse1: { type: Type.STRING },
+              preChorus: { type: Type.STRING },
               chorus: { type: Type.STRING },
-              verse2: { type: Type.STRING }
+              verse2: { type: Type.STRING },
+              bridge: { type: Type.STRING },
+              outro: { type: Type.STRING }
             },
             required: ['verse1', 'chorus', 'verse2']
           },
+          sunoStylePrompt: { type: Type.STRING },
           promptText: { type: Type.STRING },
           mode: { type: Type.STRING },
           concept: { type: Type.STRING }
@@ -135,110 +156,159 @@ Every track must include structured Korean lyrics with [Verse 1], [Chorus], and 
       config: {
         responseMimeType: 'application/json',
         responseSchema: responseSchema,
-        temperature: 0.7
+        temperature: 0.75
       }
     });
 
     const parsed = JSON.parse(response.text);
     if (Array.isArray(parsed)) {
-      return parsed.map((item, index) => ({
-        id: item.id || `RECIPE-${String(index + 1).padStart(3, '0')}`,
-        title: item.title || `${keyword} - Track #${index + 1}`,
-        genre: item.genre || 'Pop',
-        bpm: Number(item.bpm) || 120,
-        instruments: item.instruments || 'Piano, Drums, Bass',
-        lyricTheme: item.lyricTheme || `${keyword} 스토리텔링`,
-        lyrics: {
-          verse1: item.lyrics?.verse1 || `[Verse 1]\n${keyword}의 기억을 따라 걷는 밤`,
-          chorus: item.lyrics?.chorus || `[Chorus]\n마음속 깊이 울리는 우리의 노래`,
-          verse2: item.lyrics?.verse2 || `[Verse 2]\n새로운 계절이 찾아와도 남겨진 멜로디`
-        },
-        promptText: item.promptText || `[Genre: ${item.genre || 'Pop'}] [BPM: ${item.bpm || 120}] [Theme: ${keyword}]`,
-        mode: mode,
-        concept: item.concept || `${mode} Track ${index + 1}`
-      }));
+      return parsed.map((item, index) => {
+        const lyr = item.lyrics || {};
+        const fullLyrics = [
+          lyr.intro ? `[Intro]\n${lyr.intro}` : '[Intro - Instrumental]',
+          `[Verse 1]\n${lyr.verse1 || ''}`,
+          lyr.preChorus ? `[Pre-Chorus]\n${lyr.preChorus}` : '',
+          `[Chorus]\n${lyr.chorus || ''}`,
+          `[Verse 2]\n${lyr.verse2 || ''}`,
+          lyr.bridge ? `[Bridge]\n${lyr.bridge}` : '',
+          '[Instrumental Break]',
+          `[Chorus]\n${lyr.chorus || ''}`,
+          lyr.outro ? `[Outro]\n${lyr.outro}` : '[Outro]\n[Fade Out]'
+        ].filter(Boolean).join('\n\n');
+
+        const stylePrompt = item.sunoStylePrompt || `${item.genre || 'City Pop'}, ${item.bpm || 118} bpm, ${item.instruments || 'synths, bass'}, melodic, emotional, high quality`;
+
+        return {
+          id: item.id || `RECIPE-${String(index + 1).padStart(3, '0')}`,
+          title: item.title || `${keyword} - Track #${index + 1}`,
+          genre: item.genre || 'Pop',
+          bpm: Number(item.bpm) || 120,
+          instruments: item.instruments || 'Piano, Drums, Bass, Synthesizer',
+          lyricTheme: item.lyricTheme || `${keyword} 스토리텔링`,
+          lyrics: lyr,
+          fullLyrics,
+          sunoStylePrompt: stylePrompt,
+          promptText: item.promptText || `[Genre: ${item.genre || 'Pop'}] [BPM: ${item.bpm || 120}] [Theme: ${keyword}] [Style: ${stylePrompt}]`,
+          mode: mode,
+          concept: item.concept || `${mode} Track ${index + 1}`
+        };
+      });
     }
 
     return null;
   }
 
   /**
-   * High quality offline style & lyrics recipe generator supporting 3 modes and 1~20 tracks
+   * High quality offline style & lyrics recipe generator supporting Suno AI tags, 3 modes and 1~20 tracks
    * @private
    */
   _generateOfflineRecipes({ keyword, count, mode }) {
     const recipes = [];
 
-    // Genre catalog for 'explore' mode
-    const exploreGenres = [
-      { genre: 'K-Pop Ballad', bpm: 72, instruments: 'Acoustic Piano, Strings, Electric Bass, Delicate Vocal' },
-      { genre: 'Lo-Fi Chillhop', bpm: 85, instruments: 'Rhodes Piano, Vinyl Crackle, Muted Jazz Guitar, Soft Boom Bap' },
-      { genre: 'City Pop', bpm: 118, instruments: 'Funky Slap Bass, Brass Section, Sparkling Synth Lead, Electric Guitar' },
-      { genre: 'Acoustic Indie Pop', bpm: 95, instruments: 'Acoustic Guitar, Tambourine, Warm Cello, Finger Snaps' },
-      { genre: 'R&B / Soul', bpm: 80, instruments: 'Electric Piano, 808 Sub Bass, Finger Snaps, Lush Harmony' },
-      { genre: 'Synthwave / Retro 80s', bpm: 124, instruments: 'Analog Synths, LinnDrum, Chorus Guitar, Gated Reverb Snare' },
-      { genre: 'Cinematic Ambient', bpm: 65, instruments: 'Atmospheric Pads, Solo Grand Piano, Reverb Strings, Sub Drone' },
-      { genre: 'Deep House / Melodic', bpm: 122, instruments: 'Pluck Synth, Deep Bassline, Four-on-the-floor Kick, Hi-hats' },
-      { genre: 'Modern Rock / Ballad', bpm: 88, instruments: 'Distortion Electric Guitar, Heavy Drums, Grand Piano, Bass' },
-      { genre: 'Neo-Classical', bpm: 68, instruments: 'Upright Piano, String Quartet, Ambient Reverb Drone' },
-      { genre: 'Hyperpop / Future Pop', bpm: 145, instruments: 'Bitcrushed Synths, Auto-tuned Vocals, Glitch 808s, Metallic Percussion' },
-      { genre: 'Nu-Disco / Funk', bpm: 115, instruments: 'Disco Strings, Slap Bass, Wah Guitar, Rhythm Claps' },
-      { genre: 'Dream Pop / Shoegaze', bpm: 104, instruments: 'Shimmer Reverb Guitar, Soft Female Vocal, Analog Bass, Lush Synths' },
-      { genre: 'Future Bass / Melodic EDM', bpm: 140, instruments: 'Super Saw Chords, Vocal Chops, Heavy 808, Pitch Bends' },
-      { genre: 'Cyberpunk EBM / Dark Synth', bpm: 130, instruments: 'Saw Bass Arpeggios, Industrial Drums, Distorted Lead' },
-      { genre: 'Afrobeat / Melodic Pop', bpm: 102, instruments: 'Log Drums, Marimba, Brass Horns, Groovy Bass' },
-      { genre: 'Jazz Hop / Coffee Vibe', bpm: 82, instruments: 'Muted Trumpet, Upright Bass, Wurlitzer Piano, Brushed Snare' },
-      { genre: 'Folk Acoustic / Campfire', bpm: 90, instruments: 'Fingerpicking Acoustic, Harmonica, Stomp Box, Mandolin' },
-      { genre: 'Symphonic Rock / Epic', bpm: 128, instruments: 'Full Orchestra Strings, Heavy Guitar Riffs, Timpani, Double Bass' },
-      { genre: 'Reggae Fusion / Chill', bpm: 76, instruments: 'Offbeat Clean Guitar, Deep Reggae Bass, Organ Bubble, Rimshot' }
+    // Genre catalog for 'explore' mode with rich Suno AI prompt tags & lyrics
+    const exploreCatalog = [
+      {
+        genre: '80s Japanese City Pop',
+        bpm: 118,
+        instruments: 'Funky Slap Bass, Brass Horn Section, Sparkling FM Synths, Clean Electric Guitar, Acoustic Drums',
+        vocal: 'Female Lead, Warm & Bright Velvet Tone',
+        mood: 'Nostalgic, Romantic, Groovy, Tokyo Night Drive',
+        sunoStyle: '80s Japanese City Pop, funk, slap bass, lush brass, sparkling synths, 118 bpm, groovy, nostalgic female vocal, studio quality',
+        verse1: `네온사인 물든 밤거리 위로\n조용히 번지는 젖은 아스팔트 불빛\n룸미러 속 스쳐가는 도시의 그림자\n잊혀진 라디오 멜로디가 귓가에 흘러`,
+        preChorus: `차창을 내리면 불어오는 서늘한 바람\n마음 한구석에 숨겨둔 너의 기억을 깨워`,
+        chorus: `비 오는 날의 네온사인 시티팝\n밤하늘을 수놓은 오색빛깔 우리들의 추억\n끝나지 않을 것 같던 그 여름밤의 드라이브\n이 도시에 영원히 울려 퍼지는 노래`,
+        verse2: `신호등이 깜빡이는 교차로에 서서\n너와 함께 걷던 그 골목길을 바라봐\n빗방울이 유리창을 토닥일 때마다\n선명해지는 너의 따스했던 미소`,
+        bridge: `멈춰버린 시간도, 흩어진 계절도\n이 밤의 그루브 속에 모두 다시 살아나`,
+        outro: `흐르는 멜로디에 실려 보내는 안녕\n네온 불빛 속으로 아련히 사라지는 밤\n[Fade Out]`
+      },
+      {
+        genre: 'Emotional K-Pop Ballad',
+        bpm: 72,
+        instruments: 'Grand Piano, 24-Piece String Orchestra, Acoustic Bass, Delicate Drum Brush, Cello Solo',
+        vocal: 'Airy & Powerful Korean Emotional Vocal, Dramatic High Notes',
+        mood: 'Heartbreaking, Melancholic, Tearful, Cinematic',
+        sunoStyle: 'Korean emotional ballad, grand piano, lush string orchestra, dramatic, 72 bpm, heartfelt, powerful vocal, acoustic cello, cinematic',
+        verse1: `창밖으로 하나둘 떨어지는 빗방울 소리\n텅 빈 방 안을 가득 채우는 서늘한 침묵\n서랍 깊은 곳에 묻어둔 너의 편지 속\n여전히 온기가 남아있는 우리들의 날들`,
+        preChorus: `시간이 흐르면 잊혀질 거라 믿었어\n하지만 계절이 돌아올 때마다 가슴이 저려와`,
+        chorus: `너를 사랑했던 그 모든 순간들이\n비가 되어 가슴 깊은 곳으로 흘러내려\n아무리 지우려 해도 지워지지 않는 사람\n눈물로 써 내려간 나의 마지막 고백`,
+        verse2: `함께 걷던 우산 아래 나누었던 숨결\n작은 온기마저 소중했던 그 계절의 끝\n이제는 혼자 남아 비를 맞으며\n너 없는 세상에 홀로 익숙해져 가`,
+        bridge: `다시 한 번만 너의 이름을 부를 수 있다면\n내 모든 걸 버려서라도 널 안아줄 텐데`,
+        outro: `빗소리에 묻어둔 못다 한 이야기\n안녕, 나의 찬란했던 사랑아\n[Slow Fade Out]`
+      },
+      {
+        genre: 'Lo-Fi Midnight Chillhop',
+        bpm: 84,
+        instruments: 'Fender Rhodes Electric Piano, Vinyl Crackle, Muted Jazz Guitar, Soft Boom-Bap Drums, Rain Ambient FX',
+        vocal: 'Warm Whispering Male/Female Vocal, Lo-Fi Tape Saturation',
+        mood: 'Cozy, Relaxing, Melancholy, Late Night Study',
+        sunoStyle: 'Lofi chillhop, warm rhodes piano, vinyl crackle, muted jazz guitar, soft drums, rain sounds, cozy, 84 bpm, late night, relaxing',
+        verse1: `새벽 두 시, 책상 위 커피잔의 온기\n창문을 두드리는 차분한 빗소리 리듬\n로파이 비트 위에 얹어보는 조용한 생각들\n지나간 하루의 무게를 천천히 내려놓네`,
+        preChorus: `턴테이블 바늘이 긁히는 따스한 소리\n복잡했던 마음이 서서히 녹아내리고`,
+        chorus: `자정의 빗소리와 함께 흐르는 칠홉\n어두운 방 안을 밝히는 은은한 스탠드 불빛\n숨 가빴던 세상에서 벗어나 잠시 쉬어가\n이 밤의 온도는 너와 나의 멜로디`,
+        verse2: `벽시계 초침 소리마저 리듬이 되는 순간\n헤드폰 너머로 번지는 나른한 베이스라인\n적어두지 못한 일기장의 마지막 줄에\n오늘의 감정을 소박하게 새겨두네`,
+        bridge: `어지러운 내일 걱정은 창밖에 두고\n지금 이 멜로디에 온전히 나를 맡겨`,
+        outro: `커피 한 모금과 깊어지는 새벽\n빗소리 속으로 부드럽게 흩어지네\n[Vinyl Crackle & Rain Fade Out]`
+      },
+      {
+        genre: '80s Synthwave / Retrowave',
+        bpm: 124,
+        instruments: 'Analog Juno Synths, LinnDrum, Driving Arpeggiated Bass, Chorus Guitar, Gated Reverb Snare',
+        vocal: 'Vocoder & Reverb Lead Vocal, Cybernetic 80s Vibe',
+        mood: 'Futuristic, High Energy, Neon Highway, Cyberpunk',
+        sunoStyle: '80s synthwave, retrowave, analog juno synth, arpeggiated bass, linndrum, 124 bpm, neon drive, gated reverb, cybernetic, energetic',
+        verse1: `보랏빛 네온이 번지는 끝없는 사이버 고속도로\n가속 페달을 밟으며 어둠을 뚫고 질주해\n디지털 계기판 위에 떠오르는 너의 좌표\n80년대 레트로 신스가 심장을 두드려`,
+        preChorus: `사이버 시티의 밤은 잠들지 않고\n전파를 타고 흐르는 우리의 시그널`,
+        chorus: `네온 하이웨이를 달리는 레트로웨이브\n시속 140km로 날아가는 아날로그 신스 사운드\n과거와 미래가 교차하는 레이저 불빛 아래\n우리의 드라이브는 끝나지 않아`,
+        verse2: `사이드미러 너머로 멀어지는 크롬빛 빌딩숲\n비트에 맞춰 요동치는 묵직한 아르페지오 베이스\n시간의 왜곡을 넘어 너에게 닿을 때까지\n이 밤의 에너지는 멈추지 않아`,
+        bridge: `[Synth Solo]\n(Dramatic Analog Arpeggio & Gated Snare Burst)`,
+        outro: `네온의 끝자락에서 맞이하는 여명\n디지털 지평선 너머로 사라지는 밤\n[Laser Synth Fade Out]`
+      },
+      {
+        genre: 'Modern R&B / Neo-Soul',
+        bpm: 80,
+        instruments: 'Electric Piano, Deep 808 Sub-Bass, Smooth Finger Snaps, Lush Vocal Harmonies, Clean Strat Guitar',
+        vocal: 'Sensual, Smooth Falsetto, Soulful Vocal Runs',
+        mood: 'Groovy, Sensual, Intimate, Midnight Candlelight',
+        sunoStyle: 'Modern R&B, neo-soul, rhodes electric piano, deep 808 bass, finger snaps, lush harmonies, 80 bpm, sensual, smooth falsetto, groove',
+        verse1: `촛불 하나 켜둔 채 마주 앉은 새벽\n와인잔에 비친 너의 깊은 눈빛\n말하지 않아도 전해지는 공기의 떨림\n부드러운 소울 그루브가 우리 사이를 감싸네`,
+        preChorus: `손끝이 닿을 때 전해지는 전율\n숨소리마저 완벽한 화음이 되는 밤`,
+        chorus: `새벽 네 시, 우리만의 네오 소울\n깊은 베이스라인처럼 심장에 스며드는 너\n아침이 오지 않길 바라는 이 순간\n영원히 머물고 싶은 달콤한 멜로디`,
+        verse2: `창가에 맺힌 이슬처럼 투명한 감정들\n감미로운 건반 소리에 너를 맡겨봐\n세상 모든 소음이 멈춘 이 작은 방에서\n우리의 사랑은 가장 깊은 빛을 내`,
+        bridge: `Baby, don't let this groove fade away\n이 밤이 끝날 때까지 널 놓지 않을게`,
+        outro: `속삭이는 애드리브와 부드러운 하모니\n아침 햇살이 스밀 때까지\n[Smooth R&B Fade Out]`
+      },
+      {
+        genre: 'Acoustic Indie Folk Pop',
+        bpm: 95,
+        instruments: 'Steel-String Acoustic Guitar, Warm Cello, Tambourine, Hand Claps, Glockenspiel, Upright Bass',
+        vocal: 'Pure & Organic Singer-Songwriter Vocal, Natural Room Acoustics',
+        mood: 'Heartwarming, Breeze, Sunshine, Cozy Cabin',
+        sunoStyle: 'Acoustic indie folk pop, steel string acoustic guitar, warm cello, tambourine, hand claps, 95 bpm, singer-songwriter, organic, heartwarming',
+        verse1: `따스한 햇살이 비추는 작은 옥상 테라스\n어쿠스틱 기타를 품에 안고 튕기는 첫 음\n바람결에 실려 온 풀내음과 커피 향기\n소박하지만 눈부신 우리들의 일상`,
+        preChorus: `특별하지 않아도 좋아\n너와 함께 웃을 수 있다면`,
+        chorus: `바람 부는 날의 어쿠스틱 포크 송\n통기타 멜로디에 실어 보내는 소소한 행복\n어깨를 나란히 맞대고 흥얼거리는 노래\n세상 가장 따뜻한 우리의 봄날`,
+        verse2: `골목길을 지나가는 사람들의 발걸음\n벽에 걸린 낡은 사진 속 다정한 미소\n시간이 천천히 흐르는 이 오후에\n너를 위한 작은 연주를 들려줄게`,
+        bridge: `어려운 말 대신 건네는 따스한 멜로디\n언제나 네 곁에 머물겠다는 약속`,
+        outro: `통기타 스트로크 소리와 함께 남는 미소\n라라라 노래하며 걷는 우리들의 길\n[Gentle Acoustic Fade Out]`
+      }
     ];
 
-    // Variations catalog for 'single' mode
-    const singleVariations = [
-      { name: 'Original Radio Edit', genre: 'Modern Pop', bpm: 116, instruments: 'Full Production, Synths, Punchy Beats, Lead Vocal', concept: 'Main Commercial Radio Edit' },
-      { name: 'Acoustic Unplugged Ver.', genre: 'Acoustic Indie', bpm: 88, instruments: 'Warm Acoustic Guitar, Upright Piano, Soft Strings', concept: 'Intimate Unplugged Session' },
-      { name: 'Lo-Fi Midnight Chillhop Remix', genre: 'Lo-Fi Chillhop', bpm: 82, instruments: 'Vinyl Rhodes, Muted Guitar, Soft Drums, Tape Saturation', concept: 'Late Night Study & Relaxation' },
-      { name: 'Synthwave Neon Club Mix', genre: 'Synthwave', bpm: 126, instruments: '80s Analog Synths, LinnDrum, Driving Arp Bass', concept: 'Retro Driving & Dance Anthem' },
-      { name: 'Stripped Piano & Cello Ballad', genre: 'K-Pop Ballad', bpm: 70, instruments: 'Grand Piano, Solo Cello, Emotional Vocal', concept: 'Deep Emotional Confession' },
-      { name: 'Cinematic Orchestral Edition', genre: 'Cinematic Ambient', bpm: 66, instruments: 'Full String Ensemble, French Horns, Timpani, Reverb Piano', concept: 'Dramatic Movie Soundtrack' },
-      { name: 'Funk & Slap Groove Ver.', genre: 'Nu-Disco', bpm: 118, instruments: 'Slap Bass, Brass Stabs, Rhythm Guitar, Hand Claps', concept: 'High Energy Party Remix' },
-      { name: 'Future Bass Drop Remix', genre: 'Future Bass', bpm: 140, instruments: 'Saw Synthesizers, Vocal Chops, Heavy 808 Sub', concept: 'Festival Electronic Climax' },
-      { name: 'R&B Midnight Slow Jam', genre: 'R&B / Soul', bpm: 78, instruments: 'Rhodes Piano, 808 Bass, Subtle Finger Snaps, Harmony', concept: 'Sensual Night Vibe' },
-      { name: 'Rock Band Live Arrangement', genre: 'Modern Rock', bpm: 132, instruments: 'Overdrive Guitars, Live Drum Kit, Energetic Bass', concept: 'Festival Live Stage Version' },
-      { name: 'City Pop Retro Drive Ver.', genre: 'City Pop', bpm: 120, instruments: 'Electric Piano, Funky Bass, Chorus Guitar, Brass', concept: 'Tokyo Sunset Highway' },
-      { name: 'Dream Pop Ambient Mix', genre: 'Dream Pop', bpm: 98, instruments: 'Shimmer Guitars, Soft Synth Pads, Warm Bass', concept: 'Surreal Ethereal Atmosphere' },
-      { name: 'Coffee House Jazz Ver.', genre: 'Jazz Hop', bpm: 84, instruments: 'Upright Bass, Soft Brushes, Jazz Guitar, Saxophone', concept: 'Afternoon Cafe Mood' },
-      { name: 'Hyperpop Glitch Edition', genre: 'Hyperpop', bpm: 148, instruments: 'Glitch Synth, Fast 808s, Distorted Chords', concept: 'Cyber Futuristic Style' },
-      { name: 'Reggae Sunset Groove Ver.', genre: 'Reggae Fusion', bpm: 75, instruments: 'Skank Guitar, Deep Sub Bass, Percussions', concept: 'Tropical Sunset Relaxation' },
-      { name: 'Minimalist Vocal & Guitar', genre: 'Folk Acoustic', bpm: 92, instruments: 'Solo Nylon Guitar, Pure Vocal, Room Reverb', concept: 'Raw Acoustic Essence' },
-      { name: 'Deep Melodic House Mix', genre: 'Deep House', bpm: 123, instruments: 'Pluck Synths, Sub Bass, Crisp Hi-Hats, Vocal FX', concept: 'Late Night Club Groove' },
-      { name: 'Dark Cyberpunk EBM Ver.', genre: 'Cyberpunk EBM', bpm: 128, instruments: 'Industrial Bass, Aggressive Beats, Synthesizers', concept: 'Futuristic Dystopian Energy' },
-      { name: 'Symphonic Climax Ver.', genre: 'Symphonic Rock', bpm: 110, instruments: 'Strings Quartet, Distorted Guitars, Heavy Cymbals', concept: 'Grand Orchestral Explosion' },
-      { name: 'Extended Instrumental Outro Edit', genre: 'Ambient Pop', bpm: 100, instruments: 'Melodic Guitars, Synth Atmosphere, Echo Delay', concept: 'Extended Journey Edit' }
+    // Single variations catalog
+    const singleCatalog = [
+      { name: 'Original Radio Edit', genre: 'Modern Pop', bpm: 116, instruments: 'Full Production, Synths, Punchy Beats', sunoStyle: 'Modern pop, radio edit, punchy beats, sparkling synths, 116 bpm, catchy commercial melody' },
+      { name: 'Acoustic Unplugged Ver.', genre: 'Acoustic Indie', bpm: 88, instruments: 'Warm Acoustic Guitar, Upright Piano', sunoStyle: 'Acoustic indie, warm acoustic guitar, upright piano, 88 bpm, intimate unplugged session' },
+      { name: 'Lo-Fi Midnight Chillhop Remix', genre: 'Lo-Fi Chillhop', bpm: 82, instruments: 'Vinyl Rhodes, Muted Guitar', sunoStyle: 'Lofi chillhop, vinyl rhodes, muted guitar, 82 bpm, midnight chill remix, relaxing' },
+      { name: 'Synthwave Neon Club Mix', genre: 'Synthwave', bpm: 126, instruments: '80s Analog Synths, LinnDrum', sunoStyle: '80s synthwave, driving arpeggio bass, linndrum, 126 bpm, neon club mix, energetic' },
+      { name: 'Stripped Piano & Cello Ballad', genre: 'K-Pop Ballad', bpm: 70, instruments: 'Grand Piano, Solo Cello', sunoStyle: 'Korean emotional ballad, grand piano, solo cello, 70 bpm, heartfelt stripped ballad' }
     ];
 
-    // Narrative tracklist structure for 'album' mode
-    const albumConcepts = [
-      { role: 'Prologue / Intro', titleSuffix: 'Intro: 여명의 빛', genre: 'Cinematic Ambient', bpm: 64, instruments: 'Ambient Drone, Solo Piano, Wind FX', concept: '앨범의 서막을 여는 잔잔하고 신비로운 프롤로그' },
-      { role: 'Lead Title Track', titleSuffix: '타이틀: 운명의 밤', genre: 'K-Pop Ballad', bpm: 76, instruments: 'Grand Piano, String Orchestra, Dynamic Drums, Bass', concept: '앨범 전체의 핵심 서사와 강렬한 감정을 담은 메인 타이틀 곡' },
-      { role: 'Sub Title Track', titleSuffix: '서브타이틀: 도시의 네온사인', genre: 'City Pop', bpm: 118, instruments: 'Funky Bass, Brass Section, Rhythm Electric Guitar', concept: '세련된 도심의 감성을 경쾌한 리듬으로 풀어낸 서브 타이틀' },
-      { role: 'B-Side 1: Acoustic', titleSuffix: '골목길의 기억', genre: 'Acoustic Indie Pop', bpm: 92, instruments: 'Acoustic Guitar, Soft Shaker, Warm Cello', concept: '진솔한 고백과 추억을 회상하는 따뜻한 어쿠스틱 트랙' },
-      { role: 'B-Side 2: Chillhop', titleSuffix: '자정의 빗소리', genre: 'Lo-Fi Chillhop', bpm: 82, instruments: 'Vinyl Rhodes, Muted Guitar, Rain Sound FX', concept: '깊은 밤 사색과 휴식을 안겨주는 감성 칠홉 트랙' },
-      { role: 'Interlude', titleSuffix: 'Interlude: 시간의 틈', genre: 'Neo-Classical', bpm: 68, instruments: 'Upright Piano, Solo Violin, Ambient Atmosphere', concept: '다음 챕터로의 감정적 전환을 유도하는 서정적 인터루드' },
-      { role: 'Dramatic Climax', titleSuffix: '폭풍 속으로', genre: 'Modern Rock', bpm: 130, instruments: 'Distortion Guitars, Powerful Drum Kit, Screaming Bass', concept: '갈등과 감정의 폭발을 표현한 앨범의 하이라이트 록 트랙' },
-      { role: 'R&B Reflection', titleSuffix: '새벽 네 시', genre: 'R&B / Soul', bpm: 80, instruments: 'Electric Piano, 808 Sub, Finger Snaps, Harmony', concept: '폭풍이 지나간 뒤 홀로 남은 감정을 노래하는 R&B 소울' },
-      { role: 'Electronic Elevation', titleSuffix: '별빛의 바다', genre: 'Synthwave', bpm: 122, instruments: 'Analog Synths, Retro Drums, Chorus Guitars', concept: '희망과 해방감을 선사하는 레트로 신스웨이브 트랙' },
-      { role: 'Epilogue / Outro', titleSuffix: 'Outro: 영원의 멜로디', genre: 'Cinematic Ambient', bpm: 65, instruments: 'Solo Grand Piano, Reverb Strings, Gentle Fadeout', concept: '여운을 남기며 앨범의 여정을 완성하는 마지막 에필로그' },
-      { role: 'Bonus Track 1', titleSuffix: 'Bonus: 봄날의 기억', genre: 'Acoustic Pop', bpm: 98, instruments: 'Acoustic Guitar, Accordion, Percussion', concept: '팬들을 위한 선물 같은 밝고 산뜻한 보너스 트랙' },
-      { role: 'Bonus Track 2', titleSuffix: 'Bonus: 클럽 믹스', genre: 'Deep House', bpm: 124, instruments: 'Pluck Synth, 4-on-the-floor Kick, Bass', concept: '흥을 돋우는 댄서블한 보너스 믹스' },
-      { role: 'Alternate Ver.', titleSuffix: 'Special: 피아노 솔로 Ver.', genre: 'Neo-Classical', bpm: 70, instruments: 'Grand Piano Solo', concept: '타이틀곡의 순수 피아노 독주 편곡' },
-      { role: 'Extended Cut', titleSuffix: 'Extended: 별빛의 항해', genre: 'Dream Pop', bpm: 105, instruments: 'Shimmer Guitars, Synths, Echo', concept: '우주적 공간감을 확장한 익스텐디드 트랙' },
-      { role: 'Midnight Remix', titleSuffix: 'Midnight: 달빛 산책', genre: 'Jazz Hop', bpm: 84, instruments: 'Muted Trumpet, Upright Bass, Wurlitzer', concept: '심야 라디오 분위기의 재즈 편곡' },
-      { role: 'Remaster Track', titleSuffix: '2026 Remaster: 회상', genre: 'Folk Acoustic', bpm: 88, instruments: 'Harmonica, Mandolin, Acoustic Guitars', concept: '클래식 포크 감성의 리마스터 트랙' },
-      { role: 'Orchestral Suite', titleSuffix: 'Orchestral: 대성당의 울림', genre: 'Cinematic Ambient', bpm: 60, instruments: 'Full Orchestra, Cathedral Reverb', concept: '웅장한 클래식 오케스트라 스위트' },
-      { role: 'Synth Reprise', titleSuffix: 'Reprise: 네온의 그림자', genre: 'Synthwave', bpm: 115, instruments: 'Vintage Synths, Arpeggio, Bass', concept: '앨범 모티프를 재해석한 신스 리프라이즈' },
-      { role: 'Acoustic Duet', titleSuffix: 'Duet: 너와 나의 거리', genre: 'K-Pop Ballad', bpm: 74, instruments: 'Acoustic Piano, Dual Vocals, Cello', concept: '두 사람의 대화를 형상화한 듀엣 발라드' },
-      { role: 'Final Farewell', titleSuffix: 'Final: 안녕, 나의 계절', genre: 'Acoustic Indie Pop', bpm: 86, instruments: 'Acoustic Guitar, Soft Strings, Clock Tick FX', concept: '모든 이야기를 닫으며 건네는 마지막 작별 인사' }
+    // Album narrative catalog
+    const albumCatalog = [
+      { role: 'Prologue / Intro', titleSuffix: 'Intro: 여명의 빛', genre: 'Cinematic Ambient', bpm: 64, instruments: 'Ambient Drone, Solo Piano', sunoStyle: 'Cinematic ambient, solo piano, atmospheric drone, 64 bpm, prologue intro' },
+      { role: 'Lead Title Track', titleSuffix: '타이틀: 운명의 밤', genre: 'Emotional K-Pop Ballad', bpm: 76, instruments: 'Grand Piano, Full Strings', sunoStyle: 'Korean emotional ballad, grand piano, lush string orchestra, 76 bpm, powerful lead title track' },
+      { role: 'Sub Title Track', titleSuffix: '서브타이틀: 도시의 네온사인', genre: '80s Japanese City Pop', bpm: 118, instruments: 'Funky Bass, Brass Section', sunoStyle: '80s city pop, funk slap bass, brass, 118 bpm, groovy sub title track' },
+      { role: 'B-Side 1: Acoustic', titleSuffix: '골목길의 기억', genre: 'Acoustic Indie Folk Pop', bpm: 92, instruments: 'Acoustic Guitar, Warm Cello', sunoStyle: 'Acoustic indie folk, steel string guitar, cello, 92 bpm, cozy b-side' },
+      { role: 'Epilogue / Outro', titleSuffix: 'Outro: 영원의 멜로디', genre: 'Cinematic Ambient', bpm: 65, instruments: 'Solo Grand Piano, Strings', sunoStyle: 'Cinematic ambient, solo piano, string quartet, 65 bpm, epilogue outro, fade out' }
     ];
 
     for (let i = 0; i < count; i++) {
@@ -247,57 +317,82 @@ Every track must include structured Korean lyrics with [Verse 1], [Chorus], and 
       let genre = '';
       let bpm = 120;
       let instruments = '';
+      let sunoStyle = '';
       let lyricTheme = '';
-      let promptText = '';
       let concept = '';
       let verse1 = '';
+      let preChorus = '';
       let chorus = '';
       let verse2 = '';
+      let bridge = '';
+      let outro = '';
 
       if (mode === 'single') {
-        const item = singleVariations[i % singleVariations.length];
+        const item = singleCatalog[i % singleCatalog.length];
+        const base = exploreCatalog[0];
         title = `${keyword} (${item.name})`;
         genre = item.genre;
         bpm = item.bpm;
         instruments = item.instruments;
-        concept = item.concept;
-        lyricTheme = `${keyword}을 주제로 한 ${item.name} 버전의 깊이 있는 감성 연출`;
+        sunoStyle = item.sunoStyle;
+        concept = `[Single Variation] ${item.name}`;
+        lyricTheme = `${keyword}의 ${item.name} 감성 편곡`;
 
-        verse1 = `[Verse 1]\n어두워진 거리에 홀로 서서 ${keyword}의 잔향을 느껴\n흐릿해진 가로등 불빛 아래 너와의 약속이 떠오르네`;
-        chorus = `[Chorus]\n잊으려 해도 잊을 수 없는 "${keyword}"의 멜로디\n가슴 속 가장 깊은 곳에서 영원히 살아 숨 쉬네`;
-        verse2 = `[Verse 2]\n바람에 실려 온 익숙한 향기가 뺨을 스치고\n새로운 내일이 와도 너의 자리는 여전히 여기에`;
-
-        promptText = `[Genre: ${genre}] [BPM: ${bpm}] [Instruments: ${instruments}] [Mood: Atmospheric, Emotional, ${item.concept}] [Theme: ${keyword}] [Variation: ${item.name}]`;
+        verse1 = base.verse1;
+        preChorus = base.preChorus;
+        chorus = base.chorus;
+        verse2 = base.verse2;
+        bridge = base.bridge;
+        outro = base.outro;
       } else if (mode === 'album') {
-        const item = albumConcepts[i % albumConcepts.length];
+        const item = albumCatalog[i % albumCatalog.length];
+        const base = exploreCatalog[i % exploreCatalog.length];
         title = `${item.titleSuffix} - ${keyword}`;
         genre = item.genre;
         bpm = item.bpm;
         instruments = item.instruments;
-        concept = `[${item.role}] ${item.concept}`;
-        lyricTheme = `앨범 [${keyword}]의 ${item.role} 트랙: ${item.concept}`;
+        sunoStyle = item.sunoStyle;
+        concept = `[${item.role}] ${item.titleSuffix}`;
+        lyricTheme = `앨범 [${keyword}]의 ${item.role} 트랙`;
 
-        verse1 = `[Verse 1]\n${keyword}의 이야기 속 ${i + 1}번째 페이지를 펼쳐\n끝나지 않은 시간의 여운이 이 공간을 가득 채우네`;
-        chorus = `[Chorus]\n우리가 함께 부르던 찬란했던 날들의 노래\n세상이 멈춘다 해도 영원히 메아리칠 ${keyword}`;
-        verse2 = `[Verse 2]\n새벽빛이 어둠을 밀어내듯 서서히 차오르는 용기\n다음 이야기로 이어지는 우리의 발걸음`;
-
-        promptText = `[Genre: ${genre}] [BPM: ${bpm}] [Instruments: ${instruments}] [Album: ${keyword}] [Track Role: ${item.role}] [Mood: Cohesive, Cinematic]`;
+        verse1 = base.verse1;
+        preChorus = base.preChorus;
+        chorus = base.chorus;
+        verse2 = base.verse2;
+        bridge = base.bridge;
+        outro = base.outro;
       } else {
-        // 'explore' mode
-        const item = exploreGenres[i % exploreGenres.length];
-        title = `${keyword} - ${item.genre} #${i + 1}`;
-        genre = item.genre;
-        bpm = item.bpm;
-        instruments = item.instruments;
-        concept = `Explore Genre #${i + 1} (${item.genre})`;
-        lyricTheme = `${keyword}을 ${item.genre} 장르 감성으로 재해석한 스토리텔링`;
+        const template = exploreCatalog[i % exploreCatalog.length];
+        title = `${keyword} - ${template.genre} #${i + 1}`;
+        genre = template.genre;
+        bpm = template.bpm;
+        instruments = template.instruments;
+        sunoStyle = template.sunoStyle;
+        concept = `Explore Variation #${i + 1} (${genre})`;
+        lyricTheme = `${keyword}을 주제로 한 ${template.genre} 완성형 음악 스토리텔링`;
 
-        verse1 = `[Verse 1]\n창밖에 내리는 ${keyword}의 기억들 조용히 흐르고\n멈춰버린 시간 속에 너의 미소가 깃드네`;
-        chorus = `[Chorus]\n잊혀지지 않는 그날의 멜로디 가슴 깊이 울려 퍼져\n${keyword} 속에서 피어나는 우리만의 감성`;
-        verse2 = `[Verse 2]\n바람에 실려온 너의 목소리 귓가에 맴돌고\n다시금 흩어지는 추억의 조각을 모아 노래하네`;
-
-        promptText = `[Genre: ${genre}] [BPM: ${bpm}] [Instruments: ${instruments}] [Mood: Emotional, Polished, Studio Quality] [Theme: ${keyword}]`;
+        verse1 = template.verse1;
+        preChorus = template.preChorus;
+        chorus = template.chorus;
+        verse2 = template.verse2;
+        bridge = template.bridge;
+        outro = template.outro;
       }
+
+      const sunoStylePrompt = `[Style Tags: ${sunoStyle}]`;
+      const fullLyrics = [
+        `[Intro - ${instruments.split(',')[0]} & Groove]`,
+        `[Verse 1]\n${verse1}`,
+        preChorus ? `[Pre-Chorus]\n${preChorus}` : '',
+        `[Chorus]\n${chorus}`,
+        `[Verse 2]\n${verse2}`,
+        bridge ? `[Bridge]\n${bridge}` : '',
+        `[Instrumental Break - ${instruments.split(',')[1] || 'Solo'}]`,
+        `[Chorus]\n${chorus}`,
+        `[Outro]\n${outro}`
+      ].filter(Boolean).join('\n\n');
+
+      const promptText = `[Genre: ${genre}] [BPM: ${bpm}] [Suno Style: ${sunoStyle}] [Theme: ${keyword}]`;
 
       recipes.push({
         id,
@@ -307,10 +402,16 @@ Every track must include structured Korean lyrics with [Verse 1], [Chorus], and 
         instruments,
         lyricTheme,
         lyrics: {
-          verse1,
-          chorus,
-          verse2
+          intro: `[Intro - ${instruments.split(',')[0]}]`,
+          verse1: `[Verse 1]\n${verse1}`,
+          preChorus: preChorus ? `[Pre-Chorus]\n${preChorus}` : '',
+          chorus: `[Chorus]\n${chorus}`,
+          verse2: `[Verse 2]\n${verse2}`,
+          bridge: bridge ? `[Bridge]\n${bridge}` : '',
+          outro: `[Outro]\n${outro}`
         },
+        fullLyrics,
+        sunoStylePrompt,
         promptText,
         mode,
         concept

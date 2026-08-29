@@ -39,17 +39,8 @@ export function createDirectorRouter({ directorService, vaultService }) {
         for (let i = 0; i < result.styles.length; i++) {
           const style = result.styles[i];
           try {
-            let lyricsRaw = '';
-            if (typeof style.lyrics === 'string') {
-              lyricsRaw = style.lyrics;
-            } else if (style.lyrics && typeof style.lyrics === 'object') {
-              lyricsRaw = Object.entries(style.lyrics)
-                .map(([part, text]) => `[${part.toUpperCase()}]\n${text}`)
-                .join('\n\n');
-            }
-
+            const lyricsRaw = style.fullLyrics || (typeof style.lyrics === 'string' ? style.lyrics : Object.entries(style.lyrics || {}).map(([part, text]) => `[${part.toUpperCase()}]\n${text}`).join('\n\n'));
             const trackId = `TRK-${Date.now().toString().slice(-6)}-${String(i + 1).padStart(2, '0')}`;
-            const initialScore = 85 + (i < 3 ? (10 - i * 3) : Math.floor(Math.random() * 5));
 
             const track = new Track({
               id: trackId,
@@ -57,8 +48,8 @@ export function createDirectorRouter({ directorService, vaultService }) {
               genre: style.genre || 'City Pop',
               bpm: style.bpm || 118,
               lyricsRaw: lyricsRaw,
-              aiScore: initialScore,
-              aiReview: `감성 키워드 '${result.keyword}' 테마의 ${style.concept || style.genre} 기획 완성. ${style.bpm} BPM 그루브와 [Verse/Chorus] 가사 구조화 탑재.`,
+              aiScore: 0,
+              aiReview: `감성 키워드 '${result.keyword}' 테마의 ${style.genre} 기획 완료. (초안 음원 생성 및 1차 채점 대기 중)`,
               status: 'draft'
             });
 

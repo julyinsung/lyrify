@@ -302,9 +302,15 @@
           }
           if (!lyricsDisplay) lyricsDisplay = '가사 정보 없음';
 
-          const rankBadge = idx === 0 ? '🏆 TOP 1 PICK' : (idx === 1 ? '🥈 TOP 2' : (idx === 2 ? '🥉 TOP 3' : '🎵 TRACK'));
-          const badgeClass = idx === 0 ? 'badge-warning' : (idx < 3 ? 'badge-primary' : 'badge-secondary');
+          const isEvaluated = Boolean(t.aiScore && t.aiScore > 0);
           const grade = t.aiScore >= 90 ? 'S' : (t.aiScore >= 80 ? 'A' : (t.aiScore >= 70 ? 'B' : 'C'));
+          
+          let rankBadge = '🎵 RECIPE';
+          let badgeClass = 'badge-secondary';
+          if (isEvaluated) {
+            rankBadge = idx === 0 ? '🏆 TOP 1 PICK' : (idx === 1 ? '🥈 TOP 2' : (idx === 2 ? '🥉 TOP 3' : '⭐ EVALUATED'));
+            badgeClass = idx === 0 ? 'badge-warning' : (idx < 3 ? 'badge-primary' : 'badge-secondary');
+          }
 
           const hasAudio = Boolean(t.audioPathSuno || t.audioPathAceStep || (t.assetsStatus && (t.assetsStatus.hasFinalAudio || t.assetsStatus.hasDraft)));
 
@@ -314,10 +320,17 @@
               <div>
                 <span class="badge ${badgeClass}">${rankBadge}</span>
                 <span class="track-title" style="margin-left: 8px;">${t.title}</span>
-                ${hasAudio ? '<span class="badge badge-success" style="margin-left: 6px;">🎧 실제 음원 탑재됨</span>' : '<span class="badge badge-secondary" style="margin-left: 6px;">⏳ 초안 대기 중</span>'}
+                ${hasAudio ? '<span class="badge badge-success" style="margin-left: 6px;">🎧 음원 탑재됨</span>' : '<span class="badge badge-secondary" style="margin-left: 6px;">⏳ 초안 대기 중</span>'}
               </div>
               <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="score-box">${t.aiScore || 85}<span style="font-size: 12px; color: var(--text-muted);">점 (${grade}급)</span></div>
+                ${isEvaluated ? `
+                  <div class="score-box">${t.aiScore}<span style="font-size: 12px; color: var(--text-muted);">점 (${grade}급)</span></div>
+                ` : `
+                  <div style="font-size: 11px; color: #94a3b8; text-align: right; line-height: 1.2;">
+                    <span style="font-weight: bold; color: #cbd5e1;">미채점</span><br>
+                    <span style="font-size: 10px; color: var(--text-muted);">초안 생성 대기</span>
+                  </div>
+                `}
                 <button class="btn btn-secondary" onclick="deleteTrack('${t.id}', '${t.title}')" style="width: auto; padding: 2px 8px; font-size: 12px; color: #f87171; border-color: rgba(239, 68, 68, 0.3);" title="트랙 삭제">🗑️</button>
               </div>
             </div>
@@ -331,20 +344,22 @@
             <!-- Real HTML5 Audio Player -->
             <div style="background: #080c14; padding: 8px; border-radius: 8px; border: 1px solid var(--card-border);">
               <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between;">
-                <span>🔊 실제 AI 음악 오디오 플레이어 (ACE-Step / Suno)</span>
-                ${hasAudio ? '<span style="color: #34d399;">● 재생 준비 완료</span>' : '<span style="color: #fbbf24;">● 아래 버튼으로 ACE 초안을 연결하세요</span>'}
+                <span>🔊 실제 AI 음악 오디오 플레이어</span>
+                ${hasAudio ? '<span style="color: #34d399;">● 재생 준비 완료 (스트리밍 가능)</span>' : '<span style="color: #fbbf24;">● 아래 버튼으로 Suno / ACE 음원을 매핑하세요</span>'}
               </div>
               <audio controls src="/api/tracks/${t.id}/audio" style="width: 100%; height: 36px; outline: none; border-radius: 4px;"></audio>
             </div>
 
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">📝 기획 가사 (Verse / Chorus)</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">📝 기획 가사 & Suno 메타태그 (Intro / Verse / Chorus / Outro)</div>
             <div class="lyrics-box">${lyricsDisplay}</div>
 
             <div class="btn-group">
-              <button class="btn" style="background: linear-gradient(135deg, #3b82f6, #6366f1); flex: 1.2;" onclick="autoAttachAceAudio('${t.id}')" id="ace-btn-${t.id}">
-                ⚡ ACE-Step 초안 음원 즉시 연결 & 채점
+              <button class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); flex: 1.2;" onclick="copySunoPrompt('${t.id}')">
+                📋 Suno AI 웹 프롬프트 복사
               </button>
               <button class="btn btn-secondary" onclick="copyAcePrompt('${t.id}')">📋 ACE 프롬프트 복사</button>
+              <button class="btn btn-secondary" onclick="mapAudioModal('${t.id}')">📁 음원 파일 연결</button>
+              <button class="btn btn-secondary" onclick="evaluateTrack('${t.id}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">🔍 AI 품질 채점</button>
               <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'youtube_16x9')">🎬 16:9 비디오</button>
               <button class="btn btn-secondary" onclick="exportVideo('${t.id}', 'shorts_9x16')">📱 9:16 숏폼</button>
               <button class="btn btn-secondary" onclick="openReleaseModal('${t.id}')">🚀 릴리즈 키트</button>
@@ -354,23 +369,58 @@
         }).join('');
       }
 
-      async function autoAttachAceAudio(trackId) {
-        const btn = document.getElementById(`ace-btn-${trackId}`);
-        if (btn) { btn.innerText = '⏳ ACE 음원 연결 중...'; btn.disabled = true; }
+      async function copySunoPrompt(trackId) {
+        try {
+          const res = await fetch(`${API_BASE}/tracks/${trackId}`);
+          const data = await res.json();
+          const t = data.track || {};
+          const stylePrompt = `${t.genre || 'City Pop'}, ${t.bpm || 118} bpm, melodic, high quality, studio mastering`;
+          const text = `[SUNO AI - STYLE OF MUSIC]\n${stylePrompt}\n\n[SUNO AI - LYRICS]\n${t.lyricsRaw || ''}`;
+          navigator.clipboard.writeText(text);
+          alert('🎉 [Suno AI 최적화 프롬프트]가 클립보드에 복사되었습니다!\n\n1. Suno AI 웹(suno.com)의 Custom Mode 접속\n2. Style of Music & Lyrics 란에 붙여넣기 후 Create 버튼을 누르세요.');
+        } catch (e) {
+          alert('복사 오류: ' + e.message);
+        }
+      }
+
+      async function mapAudioModal(trackId) {
+        const audioPath = prompt('연결할 실제 오디오 파일의 로컬 경로(.mp3/.wav)를 입력해 주세요:\n(예: C:/Users/julyi/Documents/ACE-Step-1.5/output/sample.mp3)');
+        if (!audioPath || !audioPath.trim()) return;
 
         try {
-          const res = await fetch(`${API_BASE}/tracks/${trackId}/auto-ace`, { method: 'POST' });
+          const res = await fetch(`${API_BASE}/tracks/${trackId}/map-suno`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sunoAudioPath: audioPath.trim() })
+          });
           const data = await res.json();
           if (data.success) {
-            alert(`🎉 ACE-Step 실제 초안 음원이 연결되었습니다!\n품질 채점: ${data.evaluation ? data.evaluation.aiScore : 90}점\n위의 오디오 플레이어에서 바로 들어보세요!`);
+            alert('🎉 실제 음원이 성공적으로 매핑되었습니다!\n상단 오디오 플레이어에서 바로 들어보실 수 있습니다.');
             fetchTracks();
           } else {
-            alert('오류: ' + (data.error || 'ACE 음원을 찾을 수 없습니다.'));
+            alert('매핑 실패: ' + (data.error || '파일을 찾을 수 없습니다.'));
           }
         } catch (e) {
-          alert('연결 오류: ' + e.message);
-        } finally {
-          if (btn) { btn.innerText = '⚡ ACE-Step 초안 음원 즉시 연결 & 채점'; btn.disabled = false; }
+          alert('매핑 오류: ' + e.message);
+        }
+      }
+
+      async function evaluateTrack(trackId) {
+        try {
+          const res = await fetch(`${API_BASE}/tracks/${trackId}/evaluate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert(`🔍 AI 1차 퀄리티 채점 완료!\n• 점수: ${data.aiScore}점 (${data.grade || 'A'}급)\n• 총평: ${data.aiReview}`);
+            fetchTracks();
+          } else {
+            alert('채점 실패: ' + (data.error || '채점 중 오류가 발생했습니다.'));
+          }
+        } catch (e) {
+          alert('채점 오류: ' + e.message);
         }
       }
 
@@ -379,9 +429,9 @@
           const res = await fetch(`${API_BASE}/tracks/${trackId}`);
           const data = await res.json();
           const t = data.track || {};
-          const prompt = `[PROMPT]\nGenre: ${t.genre || 'City Pop'}\nBPM: ${t.bpm || 118}\nMood: ${t.title}\n\n[LYRICS]\n${t.lyricsRaw || ''}`;
+          const prompt = `[ACE-STEP 1.5 PROMPT]\nGenre: ${t.genre || 'City Pop'}\nBPM: ${t.bpm || 118}\nMood: ${t.title}\n\n[STRUCTURED LYRICS]\n${t.lyricsRaw || ''}`;
           navigator.clipboard.writeText(prompt);
-          alert('📋 ACE-Step 1.5 전용 프롬프트 & 가사가 클립보드에 복사되었습니다!\nACE-Step CLI 또는 WebUI에 붙여넣어 실행하세요.');
+          alert('📋 [ACE-Step 1.5 전용 프롬프트 & 가사]가 복사되었습니다!\nACE-Step CLI 또는 WebUI에 붙여넣어 초안을 생성하세요.');
         } catch (e) {
           alert('복사 오류: ' + e.message);
         }
