@@ -80,13 +80,15 @@ export class GeminiProvider {
     // Clean API Key to strictly ASCII
     const cleanApiKey = String(this.apiKey || '').trim().replace(/[^\x20-\x7E]/g, '');
 
+    const requestedModel = options.model || this.model;
     const candidateModels = [
-      this.model,
+      requestedModel,
+      'gemini-2.0-flash-lite-preview-02-05',
+      'gemini-2.0-flash-lite',
+      'gemini-1.5-flash-8b',
       'gemini-2.5-flash',
       'gemini-2.5-pro',
-      'gemini-2.0-flash-exp',
       'gemini-1.5-flash-latest',
-      'gemini-1.5-pro-latest',
       'gemini-3.7-flash'
     ].filter(Boolean);
 
@@ -898,7 +900,7 @@ Generate a complete, deeply emotional, commercial-ready deep production blueprin
    * [v0.2.0] AI Co-Producer Agent Tuning Interaction (API-013, SCN-008)
    * Interacts with Gemini LLM or advanced NLP parser to tune lyrics and music style based on user instructions.
    */
-  async tuneWithCoProducer({ trackTitle, currentLyrics, currentStyle, userInstruction, currentSections = [] }) {
+  async tuneWithCoProducer({ trackTitle, currentLyrics, currentStyle, userInstruction, currentSections = [], model }) {
     const inst = String(userInstruction || '').trim();
 
     // 1. If Gemini API is configured, use online Google Gemini API
@@ -926,7 +928,7 @@ Task:
   "suggestedBranchName": "take_02_sax_solo"
 }`;
 
-        const rawJsonText = await this._callGeminiApiDirect(prompt, { jsonMode: true, temperature: 0.7 });
+        const rawJsonText = await this._callGeminiApiDirect(prompt, { jsonMode: true, temperature: 0.7, model });
 
         if (rawJsonText) {
           // Clean potential markdown code fences

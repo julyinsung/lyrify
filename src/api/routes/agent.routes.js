@@ -15,7 +15,7 @@ export function createAgentRouter({ vaultService, geminiProvider }) {
   // POST /api/agent/co-produce (API-013, SCN-008)
   router.post('/co-produce', async (req, res, next) => {
     try {
-      const { trackId, userInstruction, branchId = 'master' } = req.body || {};
+      const { trackId, userInstruction, branchId = 'master', model } = req.body || {};
       if (!userInstruction || typeof userInstruction !== 'string') {
         return res.status(400).json({ success: false, error: 'userInstruction is required' });
       }
@@ -29,7 +29,8 @@ export function createAgentRouter({ vaultService, geminiProvider }) {
         trackTitle: track.title,
         currentLyrics: track.lyricsRaw,
         currentStyle: track.sunoStylePrompt,
-        userInstruction
+        userInstruction,
+        model
       });
 
       // Automatically create a tuned branch take

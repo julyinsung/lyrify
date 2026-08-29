@@ -70,9 +70,13 @@ export function createDirectorRouter({ directorService, vaultService }) {
   // POST /api/director/deep-produce (API-009, SCN-006) - Single Track Deep Production Blueprint & Rationale
   router.post('/deep-produce', async (req, res, next) => {
     try {
-      const { story, mood, reference, targetGenre, bpm } = req.body || {};
+      const { story, mood, reference, targetGenre = 'auto', bpm = 0, model } = req.body || {};
       if (!story || typeof story !== 'string' || !story.trim()) {
         return res.status(400).json({ success: false, error: 'Story or narrative theme is required' });
+      }
+
+      if (model) {
+        directorService.geminiProvider.model = model.trim();
       }
 
       const result = await directorService.deepProduceTrack({
@@ -115,20 +119,30 @@ export function createDirectorRouter({ directorService, vaultService }) {
   // GET /api/director/ai-status - Check current Gemini AI model configuration
   router.get('/ai-status', (req, res) => {
     const isConfigured = directorService.geminiProvider.isConfigured();
-    const model = directorService.geminiProvider.model || 'gemini-2.0-flash';
+    const model = directorService.geminiProvider.model || 'gemini-2.0-flash-lite';
     return res.json({
       success: true,
       isConfigured,
       model,
       statusMessage: isConfigured 
-        ? `⚡ Google Gemini 2.0 (${model}) 플래그십 AI 엔진 활성화됨` 
+        ? `⚡ Google Gemini (${model}) AI 엔진 활성화됨` 
         : '⚠️ Gemini API 키 미등록 (스마트 오프라인 추론 모드로 동작 중)'
     });
   });
 
+  // POST /api/director/ai-model - Change active model immediately without re-entering key
+  router.post('/ai-model', (req, res) => {
+    const { model } = req.body || {};
+    if (model && typeof model === 'string') {
+      directorService.geminiProvider.model = model.trim();
+      return res.json({ success: true, model: directorService.geminiProvider.model });
+    }
+    return res.status(400).json({ success: false, error: 'Model name is required' });
+  });
+
   // POST /api/director/ai-key - Dynamically register or update Gemini API Key
   router.post('/ai-key', (req, res) => {
-    const { apiKey, model = 'gemini-3.7-flash' } = req.body || {};
+    const { apiKey, model = 'gemini-2.0-flash-lite' } = req.body || {};
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 10) {
       return res.status(400).json({ success: false, error: '유효한 Google Gemini API 키를 입력해 주세요.' });
     }
