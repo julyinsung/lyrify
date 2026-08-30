@@ -410,9 +410,15 @@
     <!-- [TAB 2] AI 탐색 & 트랙 볼트 (Library) -->
     <div id="view-vault" style="display: none;">
       <div class="panel">
-        <div class="panel-title">
-          <span>🗄️ ZENION-MUSIC 트랙 볼트 라이브러리</span>
-          <span class="badge badge-success" id="vault-count-badge">0 Tracks</span>
+        <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span>🗄️ ZENION-MUSIC 트랙 볼트 라이브러리</span>
+            <span class="badge badge-success" id="vault-count-badge">0 Tracks</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" onclick="fetchTracks()">🔄 새로고침</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAllVaultTracks()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5;">🧹 볼트 전체 비우기</button>
+          </div>
         </div>
         <div id="tracks-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px;">
           <!-- Track Cards Rendered Here -->
@@ -997,6 +1003,10 @@
       function renderVaultGrid(tracks) {
         const grid = document.getElementById('tracks-grid');
         grid.innerHTML = '';
+        if (!tracks || tracks.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">저장된 트랙이 없습니다. [1곡 심층 프로덕션 기획]을 실행해 보세요!</div>';
+          return;
+        }
         tracks.forEach(t => {
           const card = document.createElement('div');
           card.className = 'panel';
@@ -1005,13 +1015,52 @@
               <strong style="font-size: 14px;">${t.title}</strong>
               <span class="badge badge-primary">${t.genre} / ${t.bpm} BPM</span>
             </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">${t.aiReview || ''}</div>
-            <div style="display: flex; gap: 6px; margin-top: 10px;">
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; max-height: 40px; overflow: hidden; text-overflow: ellipsis;">${t.aiReview || ''}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 8px;">
               <button class="btn btn-sm btn-secondary" onclick="loadTrackToStudio('${t.id}')">🎛️ 스튜디오 로드</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteTrack('${t.id}', '${(t.title||'').replace(/'/g, "\\'")}') " style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; font-size: 11px;">🗑️ 삭제</button>
             </div>
           `;
           grid.appendChild(card);
         });
+      }
+
+      async function deleteTrack(trackId, title) {
+        if (!confirm(`정말로 트랙 [${title || trackId}]을(를) 삭제하시겠습니까?\n(ZENION-MUSIC 볼트 폴더 및 메타데이터가 영구 삭제됩니다)`)) {
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/tracks/${trackId}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            showToast(`🗑️ [${title || trackId}] 트랙이 삭제되었습니다.`);
+            fetchTracks();
+          } else {
+            alert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
+          }
+        } catch (err) {
+          alert('삭제 중 오류: ' + err.message);
+        }
+      }
+
+      async function clearAllVaultTracks() {
+        if (!confirm('⚠️ 주의: ZENION-MUSIC 트랙 볼트의 모든 트랙과 생성된 폴더를 완전히 비우시겠습니까?')) {
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/tracks', { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            showToast('🧹 트랙 볼트의 모든 폴더가 정리되었습니다.');
+            fetchTracks();
+          } else {
+            alert('볼트 정리 실패: ' + (data.error || '알 수 없는 오류'));
+          }
+        } catch (err) {
+          alert('볼트 정리 중 오류: ' + err.message);
+        }
       }
 
       async function loadTrackToStudio(trackId) {
@@ -1121,11 +1170,80 @@
         }
       }
 
+      function initDefaultBlueprintPreview() {
+        const defaultStory = '상처에 대한 곡을 쓰고 싶은데.. 상처라고 하면 마음의 상처 외과적인 상처가 있지만 내가 생각하는 상처는 이런거야 불투명한 아크릴이 있고 아크릴 뒤에 등이 켜있어.. 깊은 스크래치는 빛을 더 잘 통과해서 보여줘.. 결국 상처는 아크릴 입장에서는 보기 안 좋은 것일 수 있지만 상처가 깊을수록 내면의 빛을 발산하는 역설적인 상황이 생기지..';
+        
+        currentBlueprint = {
+          title: '빛을 품은 스크래치 - Masterpiece Edition',
+          genre: 'Cinematic Acoustic Pop',
+          bpm: 88,
+          key: 'D Major',
+          rationale: {
+            aiAdvisory: '디렉터님의 [아크릴과 스크래치의 역설] 철학을 극대화하기 위해, [Verse: 담담한 펠트 피아노/첼로 독백]에서 [Chorus: 웅장한 신스 패드와 풀 오케스트라 빛의 폭발]로 이어지는 2단계 다이내믹스 빌드업 사운드를 기획했습니다.',
+            originalManifesto: defaultStory,
+            tempoRationale: '88 BPM - 담담한 독백으로 시작하여 후반부의 웅장한 감정 폭발을 모두 완벽하게 담아내는 마스터피스 미디엄 템포',
+            keyRationale: 'D Major - 단조의 어둠을 뚫고 내면의 빛이 흘러나오는 숭고한 메이저 화성 진행',
+            instrumentationRationale: [
+              'Felt Piano & Intimate Cello (도입부): 불투명한 아크릴과 차가운 스크래치의 질감을 조용히 어루만지는 클래시컬한 깊이',
+              'Ambient Synth Pads & Sub Bass (전개부): 아크릴 뒤에서 서서히 켜지는 은은한 조명과 온기를 묘사하는 몽환적인 공간감',
+              'Cinematic Drums & Full Strings (클라이맥스): 상처의 틈새를 뚫고 뿜어져 나오는 내면의 빛을 폭발시키는 웅장한 오케스트레이션',
+              'Vocal Dynamics: [Verse: 속삭이듯 친밀한 독백] ➔ [Chorus: 상처가 빛으로 터져나오는 웅장한 호소력]'
+            ],
+            vocalDirection: '1단계(Verse): 담담한 독백 ➔ 2단계(Chorus): 벅찬 감정의 폭발'
+          },
+          alternatives: [
+            { genre: 'Lo-Fi Chillhop', bpm: 84, reason: '따뜻한 로우파이 감성' },
+            { genre: 'City Pop', bpm: 118, reason: '도시적인 세련된 그루브' }
+          ],
+          sections: [
+            {
+              part: 'Intro',
+              tag: '[Intro - solitary felt piano, intimate cello bowing, subtle ambient air, 88 BPM, bright D Major]',
+              rationale: '고요한 펠트 피아노와 첼로의 쓸쓸한 독주로 불투명한 아크릴의 차가운 공간감을 제시',
+              lyrics: '(Solitary Felt Piano & Cello Opening)',
+              vocalAdlibs: ''
+            },
+            {
+              part: 'Verse 1',
+              tag: '[Verse 1 - dry intimate vocals close-to-mic, quiet felt piano chords, no drums, breathy monologue]',
+              rationale: '드럼을 완전히 빼고 피아노와 숨소리만으로 화자의 담담한 성찰과 고백을 전달',
+              lyrics: '불투명한 아크릴 뒤로 켜진 은은한 불빛\n흐릿하게 번지는 내 작은 세상의 테두리\n스쳐간 상처들이 차가운 표면에 남아서\n아물지 못한 채 깊은 자국을 남겼지',
+              vocalAdlibs: '(차가운 표면 위로)'
+            },
+            {
+              part: 'Pre-Chorus',
+              tag: '[Pre-Chorus - cello enters with deep resonance, ambient synth pads swell, gentle heartbeat bass enters]',
+              rationale: '첼로와 신스 패드가 차오르며 심장 박동 같은 킥 드럼이 빛의 전조를 알리는 빌드업',
+              lyrics: '그런데 이상하지, 빛은 언제나\n가장 깊게 패인 그 틈새를 찾아와\n어둠에 갇혀 있던 내 안의 숨겨진 빛을\n세상에서 가장 눈부시게 통과시키네',
+              vocalAdlibs: '(그 틈새를 따라서...)'
+            },
+            {
+              part: 'Chorus',
+              tag: '[Chorus - dynamic driving full strings, soaring emotional vocals, uplifting acoustic guitar, cinematic hybrid drums]',
+              rationale: '풀 스트링과 드럼이 터져 나오며 상처를 딛고 일어선 빛의 환희를 웅장하게 분출',
+              lyrics: '상처가 깊을수록 내 안의 빛은 더 멀리 퍼져가\n아무도 보지 못한 눈부신 내일을 환하게 비추네\n흠집이라 불렸던 모든 아픔의 틈 사이로\n이제는 가장 찬란한 빛이 흘러내린다',
+              vocalAdlibs: '(더 밝게 타오르는 빛)'
+            }
+          ],
+          sunoStylePrompt: '[Dynamic 88 BPM Cinematic Acoustic Pop, emotional D Major chord progression, intimate whisper to explosive anthemic climax, inspiring and poignant mood], [solitary felt piano, deep emotive cello, atmospheric ambient synth pads, swelling orchestral strings, soaring lead guitar, cinematic hybrid drums, high-fidelity studio production], [dry intimate emotional female vocals front-and-center, transitioning from breathy whisper monologue to powerful belted climax with lush choir harmonies]',
+          fullLyrics: '[Intro - solitary felt piano, intimate cello bowing, subtle ambient air, 88 BPM, bright D Major]\n(Solitary Felt Piano & Cello Opening)\n\n[Verse 1 - dry intimate vocals close-to-mic, quiet felt piano chords, no drums, breathy monologue]\n불투명한 아크릴 뒤로 켜진 은은한 불빛\n흐릿하게 번지는 내 작은 세상의 테두리\n스쳐간 상처들이 차가운 표면에 남아서\n아물지 못한 채 깊은 자국을 남겼지\n(차가운 표면 위로)\n\n[Pre-Chorus - cello enters with deep resonance, ambient synth pads swell, gentle heartbeat bass enters]\n그런데 이상하지, 빛은 언제나\n가장 깊게 패인 그 틈새를 찾아와\n어둠에 갇혀 있던 내 안의 숨겨진 빛을\n세상에서 가장 눈부시게 통과시키네\n(그 틈새를 따라서...)\n\n[Chorus - dynamic driving full strings, soaring emotional vocals, uplifting acoustic guitar, cinematic hybrid drums]\n상처가 깊을수록 내 안의 빛은 더 멀리 퍼져가\n아무도 보지 못한 눈부신 내일을 환하게 비추네\n흠집이라 불렸던 모든 아픔의 틈 사이로\n이제는 가장 찬란한 빛이 흘러내린다\n(더 밝게 타오르는 빛)',
+          negativePrompt: '[no autotune hiss, no distorted vocal, no muddy bass, no aggressive heavy metal guitar, no flat mono mix, no rushed tempo]',
+          sunoTips: {
+            extendGuide: '1차 생성 시 Verse 1 ~ Chorus(약 1분 20초)를 먼저 생성 후 마음에 들면 [Extend]로 완성하세요.',
+            inpaintGuide: '솔로 구간이나 브릿지가 어색할 때는 해당 타임스탬프에서 [Inpaint (Replace Section)]를 사용하세요.',
+            customModeGuide: 'Suno 웹의 Custom Mode를 켜고 Style of Music과 Lyrics를 각각 붙여넣으세요.'
+          }
+        };
+
+        renderBlueprint(currentBlueprint);
+        renderBranchList('master');
+      }
+
       // Initial Load
       fetchTracks();
       checkAiStatus();
-      // Auto-generate default preview
-      generateDeepProduction();
+      // Render static preview without generating new track folders on refresh
+      initDefaultBlueprintPreview();
     </script>
   </body>
 </html>

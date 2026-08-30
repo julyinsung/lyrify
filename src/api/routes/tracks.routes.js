@@ -229,6 +229,17 @@ export function createTracksRouter({ vaultService, judgeService }) {
     }
   });
 
+  // DELETE /api/tracks - Clear all tracks and cleanup generated folders
+  router.delete('/', (req, res, next) => {
+    try {
+      const { deleteFolders = true } = req.query || {};
+      const success = vaultService.clearAllTracks({ deleteFolders: deleteFolders === 'true' || deleteFolders === true });
+      return res.json({ success: true, message: '모든 트랙 및 볼트 폴더가 성공적으로 정리되었습니다.' });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   // DELETE /api/tracks/:id - Delete single track
   router.delete('/:id', (req, res, next) => {
     try {
